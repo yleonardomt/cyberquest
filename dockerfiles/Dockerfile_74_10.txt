@@ -1,0 +1,5 @@
+FROM php:8.2-apache
+RUN apt update && apt install -y curl unzip && rm -rf /var/lib/apt/lists/* && a2enmod rewrite && echo "CTF{flag_web_docker_123}" > /var/www/html/flag.txt && echo "CTF{flag_secreta_456}" > /flag_secreta.txt && chown -R www-data:www-data /var/www/html
+ENV FLAG="CTF{flag_env_789}"
+EXPOSE 80
+CMD ["apache2-foreground"]

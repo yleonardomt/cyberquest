@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - Eventos CTF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'principal.css' %}">
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .evento-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        /* Evento donde estás inscrito - pinta de verde */
+        .evento-card.inscrito {
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(0, 170, 0, 0.15) 100%);
+            border-color: #00aa00;
+        }
+        .evento-card.inscrito:hover {
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 170, 0, 0.3);
+        }
+        .evento-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+        .evento-titulo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            padding-right: 100px;
+        }
+        .evento-descripcion {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+        .evento-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 0.8rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--border-dark);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .badge-activo {
+            background: #00aa00;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        .badge-inactivo {
+            background: #aa8800;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+        }
+        .badge-finalizado {
+            background: #aa0000;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+        }
+        .badge-inscrito {
+            background: #00aa00;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+        .badge-proximamente {
+            background: #2496ed;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+        .btn-sm {
+            padding: 0.3rem 0.8rem;
+            font-size: 0.7rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-dark);
+        }
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        .btn-outline:hover {
+            background: var(--primary-light);
+        }
+        .btn-success {
+            background: #00aa00;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #00cc00;
+        }
+        .btn-warning {
+            background: #ff8800;
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #ffaa00;
+        }
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            color: var(--text-primary);
+        }
+        .retos-count {
+            background: var(--primary-light);
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            color: var(--primary);
+        }
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        .stats-resumen {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .resumen-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius);
+            padding: 0.8rem 1.2rem;
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+        }
+        .resumen-number {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .resumen-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+        .filtros-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .form-control {
+            padding: 0.5rem 0.8rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+        }
+        .mensaje-flotante {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #00aa00;
+            color: white;
+            padding: 1rem;
+            border-radius: var(--radius);
+            z-index: 1000;
+            animation: fadeOut 3s ease forwards;
+        }
+        .mensaje-flotante.error {
+            background: #ff0000;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translateY(0); }
+            70% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); visibility: hidden; }
+        }
+        .alert {
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+        }
+        .alert-success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+        }
+        .btn-unirse {
+            background: #00aa00;
+            color: white;
+        }
+        .btn-unirse:hover {
+            background: #00cc00;
+            transform: translateY(-2px);
+        }
+        .btn-inscrito {
+            background: #00aa00;
+            color: white;
+            cursor: default;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    {% include 'nav.html' %}
+
+    <main class="main-content">
+        <div class="top-header">
+            <h1 class="page-title">
+                <i class="fas fa-calendar-alt"></i> Eventos CTF
+            </h1>
+            <div class="btn-group" style="margin: 0;">
+                {% if rol == 'INSTRUCTOR' %}
+                <a href="{% url 'crear_evento' %}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i> Crear Evento
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Mensajes -->
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Resumen de participación para estudiantes -->
+        {% if rol == 'ESTUDIANTE' %}
+        <div class="stats-resumen">
+            <div class="resumen-card">
+                <div class="resumen-number">{{ total_eventos }}</div>
+                <div class="resumen-label">Total Eventos</div>
+            </div>
+            <div class="resumen-card">
+                <div class="resumen-number" style="color: #00aa00;">{{ eventos_inscritos }}</div>
+                <div class="resumen-label">Mis Inscripciones</div>
+            </div>
+            <div class="resumen-card">
+                <div class="resumen-number" style="color: #ff8800;">{{ eventos_participando }}</div>
+                <div class="resumen-label">Participando Ahora</div>
+            </div>
+            <div class="resumen-card">
+                <div class="resumen-number" style="color: #2496ed;">{{ eventos_finalizados }}</div>
+                <div class="resumen-label">Finalizados</div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filtros-bar">
+            <form method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%;">
+                <select name="estado" class="form-control" style="min-width: 150px;">
+                    <option value="">Todos los eventos</option>
+                    <option value="inscrito" {% if request.GET.estado == 'inscrito' %}selected{% endif %}>✓ Mis inscripciones</option>
+                    <option value="activo" {% if request.GET.estado == 'activo' %}selected{% endif %}>🎯 Activos ahora</option>
+                    <option value="proximos" {% if request.GET.estado == 'proximos' %}selected{% endif %}>⏰ Próximos</option>
+                    <option value="finalizados" {% if request.GET.estado == 'finalizados' %}selected{% endif %}>🏁 Finalizados</option>
+                </select>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter"></i> Filtrar
+                </button>
+                {% if request.GET.estado %}
+                <a href="{% url 'listar_eventos' %}" class="btn btn-outline">
+                    <i class="fas fa-times"></i> Limpiar
+                </a>
+                {% endif %}
+            </form>
+        </div>
+        {% endif %}
+
+        {% if eventos %}
+        <div class="stats-grid">
+            {% for evento in eventos %}
+            <div class="evento-card {% if evento.esta_inscrito %}inscrito{% endif %}">
+                
+                <!-- Badges de estado -->
+                {% if evento.esta_inscrito %}
+                <span class="badge-inscrito">
+                    <i class="fas fa-check-circle"></i> ¡Inscrito!
+                </span>
+                {% elif evento.fecha_inicio > now %}
+                <span class="badge-proximamente">
+                    <i class="fas fa-clock"></i> Próximamente
+                </span>
+                {% endif %}
+                
+                <div class="evento-titulo">
+                    <i class="fas fa-trophy" style="margin-right: 0.5rem;"></i>
+                    {{ evento.nombre }}
+                </div>
+                <div class="evento-descripcion">
+                    {{ evento.descripcion|truncatechars:120 }}
+                </div>
+                
+                <div class="evento-meta">
+                    <span class="retos-count">
+                        <i class="fas fa-flag"></i> {{ evento.retos.count }} retos
+                    </span>
+                    <span>
+                        <i class="fas fa-users"></i> {{ evento.participantes.count }} participantes
+                    </span>
+                </div>
+                <div class="evento-meta">
+                    <span>
+                        <i class="fas fa-calendar"></i> {{ evento.fecha_inicio|date:"d/m/Y H:i" }}
+                    </span>
+                    <span>
+                        <i class="fas fa-calendar-check"></i> {{ evento.fecha_fin|date:"d/m/Y H:i" }}
+                    </span>
+                </div>
+                <div class="evento-meta">
+                    <span>
+                        {% if evento.fecha_fin < now %}
+                        <span class="badge-finalizado"><i class="fas fa-check-circle"></i> Finalizado</span>
+                        {% elif evento.fecha_inicio <= now and evento.fecha_fin >= now %}
+                        <span class="badge-activo"><i class="fas fa-play"></i> En curso</span>
+                        {% else %}
+                        <span class="badge-inactivo"><i class="fas fa-clock"></i> Próximamente</span>
+                        {% endif %}
+                    </span>
+                    {% if evento.esta_inscrito and evento.fecha_fin >= now %}
+                    <span>
+                        <i class="fas fa-trophy"></i> Mi puntuación: {{ evento.puntuacion_usuario|default:0 }} pts
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <div class="action-buttons">
+                    <a href="{% url 'detalle_evento' evento.id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-eye"></i> Ver detalles
+                    </a>
+                    
+                    {% if not evento.esta_inscrito and rol == 'ESTUDIANTE' %}
+                        {% if evento.fecha_inicio > now %}
+                        <button onclick="unirseEvento({{ evento.id }}, '{{ evento.nombre|escapejs }}')" class="btn btn-success btn-sm btn-unirse">
+                            <i class="fas fa-user-plus"></i> Unirse al Evento
+                        </button>
+                        {% elif evento.fecha_inicio <= now and evento.fecha_fin >= now %}
+                        <button onclick="unirseEvento({{ evento.id }}, '{{ evento.nombre|escapejs }}')" class="btn btn-warning btn-sm">
+                            <i class="fas fa-play"></i> Unirse ahora
+                        </button>
+                        {% endif %}
+                    {% elif evento.esta_inscrito and evento.fecha_inicio <= now and evento.fecha_fin >= now %}
+                    <a href="{% url 'listar_retos' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-flag-checkered"></i> Comenzar a Jugar
+                    </a>
+                    {% elif evento.esta_inscrito %}
+                    <span class="btn btn-inscrito btn-sm">
+                        <i class="fas fa-check"></i> Ya estás inscrito
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-calendar-times"></i>
+            <h3>No hay eventos disponibles</h3>
+            <p>No se encontraron eventos con los filtros seleccionados.</p>
+            {% if rol == 'INSTRUCTOR' %}
+            <a href="{% url 'crear_evento' %}" class="btn btn-primary" style="margin-top: 1rem;">
+                <i class="fas fa-plus-circle"></i> Crear el primer evento
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </main>
+</div>
+
+<script>
+    function unirseEvento(eventoId, eventoNombre) {
+        // Mostrar mensaje de carga
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uniendo...';
+        btn.disabled = true;
+        
+        fetch(`/event/${eventoId}/join/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarMensaje(data.message, 'success');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                mostrarMensaje(data.message, 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            mostrarMensaje('Error al unirse al evento', 'error');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    }
+    
+    function mostrarMensaje(mensaje, tipo) {
+        // Eliminar mensajes anteriores
+        const existingMessages = document.querySelectorAll('.mensaje-flotante');
+        existingMessages.forEach(msg => msg.remove());
+        
+        const div = document.createElement('div');
+        div.className = `mensaje-flotante ${tipo === 'error' ? 'error' : ''}`;
+        div.innerHTML = `<i class="fas ${tipo === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${mensaje}`;
+        document.body.appendChild(div);
+        
+        setTimeout(() => {
+            if (div && div.remove) {
+                div.remove();
+            }
+        }, 3000);
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
+</body>
+</html>

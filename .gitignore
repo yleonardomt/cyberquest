@@ -1,4 +1,54 @@
-.env
-venv/
+# Python
 __pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Entorno virtual
+venv/
+env/
+ENV/
+.venv
+
+# Base de datos
+db.sqlite3
+*.db
+
+# Archivos de entorno y secretos
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+*.log.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Django
 *.pyc
+/media/
+/staticfiles/
+*.mo
+
+# Archivos de media subidos
+media/
+
+# Docker
+docker_instances/
+dockerfile-prueba
+
+# Cyberquest específico
+cyberquest/__pycache__/
+core/__pycache__/
+
+# Archivos temporales
+*.tmp
+*.temp
+.DS_Store

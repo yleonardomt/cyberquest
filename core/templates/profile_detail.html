@@ -1,0 +1,383 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - CyberQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'principal.css' %}">
+    <style>
+        /* Perfil Container */
+        .perfil-contenedor {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        /* Cabecera del perfil */
+        .perfil-cabecera {
+            background: linear-gradient(135deg, var(--bg-secondary), var(--bg-primary));
+            padding: 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Avatar */
+        .avatar-circulo {
+            width: 130px;
+            height: 130px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            border: 3px solid var(--primary);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .avatar-circulo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-circulo i {
+            font-size: 3.5rem;
+            color: var(--primary);
+        }
+
+        /* Nombre de usuario */
+        .usuario-nombre {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Rol badge */
+        .rol-etiqueta {
+            display: inline-block;
+            background: var(--primary-light);
+            padding: 0.3rem 1.2rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Cuerpo del perfil */
+        .perfil-cuerpo {
+            padding: 2rem;
+        }
+
+        /* Sección de información */
+        .seccion-info {
+            margin-bottom: 2rem;
+        }
+
+        .seccion-titulo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 1.2rem;
+            border-left: 3px solid var(--primary);
+            padding-left: 1rem;
+        }
+
+        .seccion-titulo i {
+            margin-right: 0.5rem;
+        }
+
+        /* Grid de información */
+        .info-rejilla {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .info-tarjeta {
+            background: var(--bg-secondary);
+            padding: 1rem 1.2rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border-dark);
+            transition: all 0.2s;
+        }
+
+        .info-tarjeta:hover {
+            border-color: var(--primary);
+            transform: translateX(3px);
+        }
+
+        .info-etiqueta {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+            letter-spacing: 0.5px;
+        }
+
+        .info-etiqueta i {
+            margin-right: 0.3rem;
+        }
+
+        .info-valor {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Grid de estadísticas */
+        .estadisticas-rejilla {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .estadistica-tarjeta {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius);
+            padding: 1.2rem;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .estadistica-tarjeta:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+
+        .estadistica-numero {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .estadistica-texto {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+        }
+
+        /* Botones de acción */
+        .acciones-grupo {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-editar {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: var(--primary);
+            color: white;
+            padding: 0.7rem 1.8rem;
+            border-radius: var(--radius);
+            text-decoration: none;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-editar:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-volver {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 0.7rem 1.8rem;
+            border-radius: var(--radius);
+            text-decoration: none;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-volver:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        /* Badge de estado */
+        .estado-activo {
+            color: #00ff00;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .estado-bloqueado {
+            color: #ff4444;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 80px;
+                padding: 1rem;
+            }
+            
+            .info-rejilla {
+                grid-template-columns: 1fr;
+            }
+
+            .estadisticas-rejilla {
+                grid-template-columns: 1fr;
+            }
+
+            .usuario-nombre {
+                font-size: 1.3rem;
+            }
+
+            .avatar-circulo {
+                width: 90px;
+                height: 90px;
+            }
+
+            .avatar-circulo i {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        {% include 'nav.html' %}
+
+        <main class="main-content">
+            <div class="perfil-contenedor">
+                <div class="perfil-cabecera">
+                    <div class="avatar-circulo">
+                        {% if perfil.avatar %}
+                        <img src="{{ perfil.avatar.url }}" alt="Avatar">
+                        {% else %}
+                        <i class="fas fa-user"></i>
+                        {% endif %}
+                    </div>
+                    <h1 class="usuario-nombre">{{ perfil.usuario.username }}</h1>
+                    <span class="rol-etiqueta">
+                        <i class="fas fa-{% if perfil.rol == 'ESTUDIANTE' %}user-graduate{% elif perfil.rol == 'INSTRUCTOR' %}chalkboard-user{% else %}crown{% endif %}"></i>
+                        {% if perfil.rol == 'ESTUDIANTE' %}Competidor
+                        {% elif perfil.rol == 'INSTRUCTOR' %}Instructor
+                        {% else %}Administrador{% endif %}
+                    </span>
+                </div>
+
+                <div class="perfil-cuerpo">
+                    <!-- Estadísticas -->
+                    <div class="estadisticas-rejilla">
+                        <div class="estadistica-tarjeta">
+                            <div class="estadistica-numero">{{ perfil.puntos|default:"0" }}</div>
+                            <div class="estadistica-texto">
+                                <i class="fas fa-star"></i> Puntos Totales
+                            </div>
+                        </div>
+                        <div class="estadistica-tarjeta">
+                            <div class="estadistica-numero">{{ retos_completados|default:"0" }}</div>
+                            <div class="estadistica-texto">
+                                <i class="fas fa-flag-checkered"></i> Retos Resueltos
+                            </div>
+                        </div>
+                        <div class="estadistica-tarjeta">
+                            <div class="estadistica-numero">#{{ posicion|default:"0" }}</div>
+                            <div class="estadistica-texto">
+                                <i class="fas fa-chart-line"></i> Posición Global
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Información Personal -->
+                    <div class="seccion-info">
+                        <h3 class="seccion-titulo">
+                            <i class="fas fa-user-circle"></i> Información Personal
+                        </h3>
+                        <div class="info-rejilla">
+                            <div class="info-tarjeta">
+                                <div class="info-etiqueta">
+                                    <i class="fas fa-user"></i> Nombre de usuario
+                                </div>
+                                <div class="info-valor">{{ perfil.usuario.username }}</div>
+                            </div>
+                            <div class="info-tarjeta">
+                                <div class="info-etiqueta">
+                                    <i class="fas fa-envelope"></i> Correo electrónico
+                                </div>
+                                <div class="info-valor">{{ perfil.usuario.email }}</div>
+                            </div>
+                            <div class="info-tarjeta">
+                                <div class="info-etiqueta">
+                                    <i class="fas fa-phone"></i> Teléfono
+                                </div>
+                                <div class="info-valor">{{ perfil.telefono|default:"No especificado" }}</div>
+                            </div>
+                            <div class="info-tarjeta">
+                                <div class="info-etiqueta">
+                                    <i class="fas fa-calendar-alt"></i> Miembro desde
+                                </div>
+                                <div class="info-valor">{{ perfil.usuario.date_joined|date:"d/m/Y" }}</div>
+                            </div>
+                            <div class="info-tarjeta">
+                                <div class="info-etiqueta">
+                                    <i class="fas fa-clock"></i> Último acceso
+                                </div>
+                                <div class="info-valor">{{ perfil.usuario.last_login|date:"d/m/Y H:i"|default:"Nunca" }}</div>
+                            </div>
+                            <div class="info-tarjeta">
+                                <div class="info-etiqueta">
+                                    <i class="fas fa-shield-alt"></i> Estado
+                                </div>
+                                <div class="info-valor">
+                                    {% if perfil.esta_bloqueado %}
+                                    <span class="estado-bloqueado">
+                                        <i class="fas fa-lock"></i> Bloqueado
+                                    </span>
+                                    {% else %}
+                                    <span class="estado-activo">
+                                        <i class="fas fa-check-circle"></i> Activo
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botones de acción -->
+                    <div class="acciones-grupo">
+                        <a href="{% url 'perfil_editar' %}" class="btn-editar">
+                            <i class="fas fa-user-edit"></i> Editar Perfil
+                        </a>
+                        <a href="{% url 'dashboard' %}" class="btn-volver">
+                            <i class="fas fa-arrow-left"></i> Volver al Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

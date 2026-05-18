@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Contraseña - CyberQuest</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0F0F12 0%, #1a1a24 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .reset-container {
+            max-width: 450px;
+            width: 100%;
+            margin: 2rem;
+        }
+
+        .reset-card {
+            background: rgba(22, 22, 28, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(225, 6, 0, 0.3);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-img {
+            height: 60px;
+            width: auto;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo p {
+            color: #B3B3B3;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #E10600;
+            font-size: 1.1rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            background: rgba(15, 15, 18, 0.8);
+            border: 1px solid rgba(225, 6, 0, 0.3);
+            border-radius: 12px;
+            color: #F5F5F5;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #E10600;
+            box-shadow: 0 0 0 3px rgba(225, 6, 0, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #6c6c7a;
+        }
+
+        .btn-reset {
+            width: 100%;
+            padding: 1rem;
+            background: #E10600;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-reset:hover {
+            background: #FF2A2A;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(225, 6, 0, 0.3);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(225, 6, 0, 0.2);
+            color: #B3B3B3;
+        }
+
+        .login-link a {
+            color: #E10600;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        /* Mensaje ERROR - Rojo */
+        .error-message {
+            background: rgba(255, 0, 0, 0.15);
+            border: 1px solid #ff0000;
+            border-radius: 10px;
+            padding: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: #ff4444;
+            font-size: 0.85rem;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        /* Mensaje ÉXITO - Verde */
+        .success-message {
+            background: rgba(0, 255, 0, 0.15);
+            border: 1px solid #00ff00;
+            border-radius: 10px;
+            padding: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: #00ff88;
+            font-size: 0.85rem;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .strength-bar {
+            margin-top: 0.5rem;
+            height: 4px;
+            background: rgba(225, 6, 0, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .strength-fill {
+            width: 0%;
+            height: 100%;
+            background: #E10600;
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+<div class="reset-container">
+    <div class="reset-card">
+        <div class="logo">
+            <img src="{% static 'logo.png' %}" alt="CyberQuest" class="logo-img">
+            <p>Establecer nueva contraseña</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if 'error' in message.tags %}
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        {{ message }}
+                    </div>
+                {% else %}
+                    <div class="success-message">
+                        <i class="fas fa-check-circle"></i>
+                        {{ message }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <form method="post" id="resetForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" id="password" placeholder="Nueva contraseña" required>
+                <div class="strength-bar">
+                    <div class="strength-fill" id="strengthFill"></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <i class="fas fa-check-circle"></i>
+                <input type="password" name="password2" id="password2" placeholder="Confirmar contraseña" required>
+            </div>
+            <button type="submit" class="btn-reset">
+                <i class="fas fa-save"></i> Actualizar Contraseña
+            </button>
+        </form>
+
+        <div class="login-link">
+            <a href="{% url 'login' %}">
+                <i class="fas fa-arrow-left"></i> Volver al inicio de sesión
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const password = document.getElementById('password');
+    const strengthFill = document.getElementById('strengthFill');
+
+    password.addEventListener('input', function() {
+        const val = this.value;
+        let strength = 0;
+        
+        if (val.length >= 6) strength += 25;
+        if (val.length >= 10) strength += 25;
+        if (/[A-Z]/.test(val)) strength += 25;
+        if (/[0-9]/.test(val)) strength += 25;
+        
+        strengthFill.style.width = strength + '%';
+        
+        if (strength <= 25) strengthFill.style.background = '#E10600';
+        else if (strength <= 50) strengthFill.style.background = '#ff6600';
+        else if (strength <= 75) strengthFill.style.background = '#ffcc00';
+        else strengthFill.style.background = '#00ff88';
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - Auditoría</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&family=Chakra+Petch:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <style>
+        :root {
+            --primary: #E10600;
+            --primary-light: rgba(225, 6, 0, 0.15);
+            --bg-card: #1a1a24;
+            --bg-secondary: #16161C;
+            --text-primary: #F5F5F5;
+            --text-secondary: #B3B3B3;
+            --text-muted: #6c6c7a;
+            --border-dark: #8B0000;
+            --radius: 8px;
+            --radius-lg: 16px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Share Tech Mono', monospace; background: #0F0F12; color: var(--text-primary); }
+        
+        .app-container { display: flex; min-height: 100vh; }
+        .main-content { flex: 1; margin-left: 280px; padding: 2rem; }
+        
+        .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .page-title { font-family: 'Orbitron', monospace; font-size: 1.5rem; color: var(--text-primary); }
+        
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; transition: all 0.3s ease; }
+        .stat-card:hover { border-color: var(--primary); transform: translateY(-3px); }
+        .stat-icon { font-size: 2rem; color: var(--primary); margin-bottom: 1rem; }
+        .stat-value { font-family: 'Orbitron', monospace; font-size: 2rem; font-weight: 800; }
+        .stat-label { color: var(--text-muted); font-size: 0.8rem; margin-top: 0.5rem; }
+        
+        .filters { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; align-items: center; }
+        .filter-select { background: var(--bg-secondary); border: 1px solid var(--border-dark); border-radius: var(--radius); padding: 0.5rem 1rem; color: var(--text-primary); font-family: 'Share Tech Mono', monospace; }
+        .btn { padding: 0.5rem 1rem; border-radius: var(--radius); text-decoration: none; background: var(--primary); color: white; border: none; cursor: pointer; font-family: 'Orbitron', monospace; transition: all 0.2s ease; }
+        .btn:hover { background: var(--primary); opacity: 0.9; transform: translateY(-1px); }
+        .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
+        .btn-outline:hover { background: var(--primary-light); }
+        
+        .table-container { background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-lg); overflow-x: auto; }
+        .audit-table { width: 100%; border-collapse: collapse; }
+        .audit-table th { background: var(--bg-secondary); padding: 1rem; text-align: left; font-family: 'Orbitron', monospace; font-size: 0.7rem; color: var(--primary); border-bottom: 1px solid var(--border-dark); }
+        .audit-table td { padding: 1rem; border-bottom: 1px solid rgba(225, 6, 0, 0.1); font-size: 0.8rem; }
+        .audit-table tr:hover { background: var(--primary-light); }
+        
+        .badge { padding: 0.2rem 0.6rem; border-radius: 20px; font-size: 0.65rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.3rem; }
+        .badge-success { background: #28a745; color: white; }
+        .badge-danger { background: #dc3545; color: white; }
+        .badge-warning { background: #ffc107; color: #000; }
+        .badge-info { background: #17a2b8; color: white; }
+        .badge-primary { background: #E10600; color: white; }
+        
+        .accion-icon { width: 32px; height: 32px; background: var(--primary-light); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-right: 0.5rem; }
+        
+        .top-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 2rem; }
+        
+        @media (max-width: 1024px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .top-cards { grid-template-columns: 1fr; }
+        }
+        
+        @media (max-width: 768px) {
+            .main-content { margin-left: 80px; padding: 1rem; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .stat-card, .table-container { animation: fadeIn 0.3s ease; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    {% include 'nav.html' %}
+
+    <main class="main-content">
+        <div class="top-header">
+            <h1 class="page-title">
+                <i class="fas fa-chart-simple"></i> Auditoría del Sistema
+            </h1>
+            <button onclick="window.location.reload()" class="btn btn-outline">
+                <i class="fas fa-sync-alt"></i> Actualizar
+            </button>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-list"></i></div>
+                <div class="stat-value">{{ total_registros }}</div>
+                <div class="stat-label">Total de Acciones</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-calendar-day"></i></div>
+                <div class="stat-value">{{ acciones_hoy }}</div>
+                <div class="stat-label">Acciones Hoy</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-value">{{ usuarios_activos|length }}</div>
+                <div class="stat-label">Usuarios Activos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                <div class="stat-value">{{ tipos_acciones|length }}</div>
+                <div class="stat-label">Tipos de Acciones</div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters">
+            <form method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                <select name="tipo" class="filter-select">
+                    <option value="">📋 Todos los tipos</option>
+                    <option value="INICIAR_SESION" {% if request.GET.tipo == 'INICIAR_SESION' %}selected{% endif %}>🔓 Inicio de Sesión</option>
+                    <option value="CERRAR_SESION" {% if request.GET.tipo == 'CERRAR_SESION' %}selected{% endif %}>🔒 Cierre de Sesión</option>
+                    <option value="CREAR" {% if request.GET.tipo == 'CREAR' %}selected{% endif %}>➕ Creaciones</option>
+                    <option value="EDITAR" {% if request.GET.tipo == 'EDITAR' %}selected{% endif %}>✏️ Ediciones</option>
+                    <option value="ELIMINAR" {% if request.GET.tipo == 'ELIMINAR' %}selected{% endif %}>🗑️ Eliminaciones</option>
+                    <option value="BLOQUEAR" {% if request.GET.tipo == 'BLOQUEAR' %}selected{% endif %}>🚫 Bloqueos</option>
+                    <option value="RESOLVER_RETO" {% if request.GET.tipo == 'RESOLVER_RETO' %}selected{% endif %}>🏆 Retos Resueltos</option>
+                    <option value="EQUIPO" {% if request.GET.tipo == 'EQUIPO' %}selected{% endif %}>👥 Equipos</option>
+                    <option value="ENTORNO" {% if request.GET.tipo == 'ENTORNO' %}selected{% endif %}>🐳 Docker</option>
+                </select>
+                
+                <select name="usuario" class="filter-select">
+                    <option value="">👤 Todos los usuarios</option>
+                    {% for u in usuarios_activos %}
+                    <option value="{{ u.usuario__id }}" {% if request.GET.usuario == u.usuario__id|stringformat:"s" %}selected{% endif %}>
+                        {{ u.usuario__username }} ({{ u.total }} acciones)
+                    </option>
+                    {% endfor %}
+                </select>
+                
+                <button type="submit" class="btn">
+                    <i class="fas fa-search"></i> Filtrar
+                </button>
+                
+                {% if request.GET.tipo or request.GET.usuario %}
+                <a href="{% url 'auditoria' %}" class="btn btn-outline">
+                    <i class="fas fa-times"></i> Limpiar filtros
+                </a>
+                {% endif %}
+            </form>
+        </div>
+
+        <!-- Tabla de Auditoría -->
+        <div class="table-container">
+            <table class="audit-table">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-calendar"></i> Fecha y Hora</th>
+                        <th><i class="fas fa-user"></i> Usuario</th>
+                        <th><i class="fas fa-cog"></i> Acción</th>
+                        <th><i class="fas fa-network-wired"></i> Dirección IP</th>
+                    </thead>
+                </thead>
+                <tbody>
+                    {% for registro in registros %}
+                    <tr>
+                        <td>
+                            <i class="far fa-clock"></i> {{ registro.timestamp|date:"d/m/Y H:i:s" }}
+                        </a>
+                        <td>
+                            <div style="display: flex; align-items: center;">
+                                <div class="accion-icon">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <strong>{{ registro.usuario.username }}</strong>
+                            </div>
+                        </a>
+                        <td>
+                            {% if 'INICIAR_SESION' in registro.accion %}
+                                <span class="badge badge-success"><i class="fas fa-sign-in-alt"></i> {{ registro.accion }}</span>
+                            {% elif 'CERRAR_SESION' in registro.accion %}
+                                <span class="badge badge-warning"><i class="fas fa-sign-out-alt"></i> {{ registro.accion }}</span>
+                            {% elif 'CREAR' in registro.accion and 'RETO' in registro.accion %}
+                                <span class="badge badge-primary"><i class="fas fa-plus-circle"></i> {{ registro.accion }}</span>
+                            {% elif 'CREAR' in registro.accion %}
+                                <span class="badge badge-success"><i class="fas fa-plus"></i> {{ registro.accion }}</span>
+                            {% elif 'EDITAR' in registro.accion %}
+                                <span class="badge badge-info"><i class="fas fa-edit"></i> {{ registro.accion }}</span>
+                            {% elif 'ELIMINAR' in registro.accion %}
+                                <span class="badge badge-danger"><i class="fas fa-trash"></i> {{ registro.accion }}</span>
+                            {% elif 'BLOQUEAR' in registro.accion %}
+                                <span class="badge badge-danger"><i class="fas fa-ban"></i> {{ registro.accion }}</span>
+                            {% elif 'RESOLVER_RETO' in registro.accion %}
+                                <span class="badge badge-success"><i class="fas fa-flag-checkered"></i> {{ registro.accion }}</span>
+                            {% elif 'UNIRSE_EQUIPO' in registro.accion or 'SALIR_EQUIPO' in registro.accion %}
+                                <span class="badge badge-info"><i class="fas fa-users"></i> {{ registro.accion }}</span>
+                            {% elif 'ENTORNO' in registro.accion %}
+                                <span class="badge badge-primary"><i class="fab fa-docker"></i> {{ registro.accion }}</span>
+                            {% elif 'EVENTO' in registro.accion %}
+                                <span class="badge badge-warning"><i class="fas fa-calendar-alt"></i> {{ registro.accion }}</span>
+                            {% else %}
+                                <span class="badge badge-info"><i class="fas fa-info-circle"></i> {{ registro.accion }}</span>
+                            {% endif %}
+                        </a>
+                        <td>
+                            <code style="background: var(--bg-secondary); padding: 0.2rem 0.4rem; border-radius: 4px;">{{ registro.direccion_ip|default:"No registrada" }}</code>
+                        </a>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 3rem;">
+                            <i class="fas fa-chart-line fa-3x" style="color: var(--text-muted); margin-bottom: 1rem; display: block;"></i>
+                            <p>No hay registros de auditoría</p>
+                            <p style="font-size: 0.7rem; color: var(--text-muted);">Las acciones se registrarán automáticamente cuando los usuarios interactúen con el sistema</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Top Acciones y Usuarios -->
+        <div class="top-cards">
+            <div class="stat-card">
+                <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-chart-bar" style="color: var(--primary);"></i> 
+                    Acciones más frecuentes
+                </h3>
+                <div>
+                    {% for accion in tipos_acciones %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border-dark);">
+                        <span style="font-size: 0.8rem;">
+                            {% if 'INICIAR_SESION' in accion.accion %}
+                                <i class="fas fa-sign-in-alt" style="color: #28a745;"></i>
+                            {% elif 'CREAR' in accion.accion %}
+                                <i class="fas fa-plus" style="color: #28a745;"></i>
+                            {% elif 'EDITAR' in accion.accion %}
+                                <i class="fas fa-edit" style="color: #17a2b8;"></i>
+                            {% elif 'ELIMINAR' in accion.accion %}
+                                <i class="fas fa-trash" style="color: #dc3545;"></i>
+                            {% else %}
+                                <i class="fas fa-circle" style="color: var(--primary); font-size: 0.5rem;"></i>
+                            {% endif %}
+                            {{ accion.accion }}
+                        </span>
+                        <span class="badge" style="background: var(--primary);">{{ accion.total }} veces</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i class="fas fa-users" style="color: var(--primary);"></i> 
+                    Usuarios más activos
+                </h3>
+                <div>
+                    {% for usuario in usuarios_activos %}
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; border-bottom: 1px solid var(--border-dark);">
+                        <span style="font-size: 0.8rem;">
+                            <i class="fas fa-user-circle" style="color: var(--primary);"></i> 
+                            {{ usuario.usuario__username }}
+                        </span>
+                        <span class="badge" style="background: var(--primary);">{{ usuario.total }} acciones</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,331 @@
+<!-- SIDEBAR IZQUIERDO - nav.html -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <h2><span>CYBER</span>QUEST</h2>
+        <p>Security Training Platform</p>
+    </div>
+
+    <div class="sidebar-profile">
+        <div class="profile-avatar">
+            {% if perfil.avatar %}
+            <img src="{{ perfil.avatar.url }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius);">
+            {% else %}
+            <i class="fas fa-user"></i>
+            {% endif %}
+        </div>
+        <div class="profile-info">
+            <h4>{{ perfil.usuario.username }}</h4>
+            <span class="role-badge">
+                {% if rol == 'ADMIN' %}
+                    <i class="fas fa-crown"></i> Admin
+                {% elif rol == 'INSTRUCTOR' %}
+                    <i class="fas fa-chalkboard-user"></i> Instructor
+                {% else %}
+                    <i class="fas fa-user-graduate"></i> Competidor
+                {% endif %}
+            </span>
+        </div>
+    </div>
+
+    <div class="nav-menu">
+        <!-- ============================================================ -->
+        <!-- PRINCIPAL - Visible para TODOS -->
+        <!-- ============================================================ -->
+        <div class="nav-title">PRINCIPAL</div>
+        
+        <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>Dashboard</span>
+        </a>
+        
+        <a href="{% url 'listar_retos' %}" class="nav-item {% if request.resolver_match.url_name == 'listar_retos' %}active{% endif %}">
+            <i class="fas fa-flag"></i>
+            <span>Retos</span>
+        </a>
+        
+        <a href="{% url 'ranking_individual' %}" class="nav-item {% if request.resolver_match.url_name == 'ranking_individual' %}active{% endif %}">
+            <i class="fas fa-chart-line"></i>
+            <span>Rankings</span>
+        </a>
+        
+        <a href="{% url 'listar_equipos' %}" class="nav-item {% if request.resolver_match.url_name == 'listar_equipos' %}active{% endif %}">
+            <i class="fas fa-users"></i>
+            <span>Equipos</span>
+        </a>
+        
+        <a href="{% url 'consultar_asistente' %}" class="nav-item {% if request.resolver_match.url_name == 'consultar_asistente' %}active{% endif %}">
+            <i class="fas fa-robot"></i>
+            <span>Asistente IA</span>
+        </a>
+
+        <!-- ============================================================ -->
+        <!-- APRENDIZAJE - Solo para ESTUDIANTE e INSTRUCTOR -->
+        <!-- ============================================================ -->
+        {% if rol == 'ESTUDIANTE' or rol == 'INSTRUCTOR' %}
+        <div class="nav-title">APRENDIZAJE</div>
+        
+        <a href="{% url 'listar_modulos' %}" class="nav-item {% if request.resolver_match.url_name == 'listar_modulos' %}active{% endif %}">
+            <i class="fas fa-book"></i>
+            <span>Mis Cursos</span>
+        </a>
+        {% endif %}
+
+        <!-- ============================================================ -->
+        <!-- COMPETENCIAS - Solo para ESTUDIANTE e INSTRUCTOR -->
+        <!-- ============================================================ -->
+        {% if rol == 'ESTUDIANTE' or rol == 'INSTRUCTOR' %}
+        <div class="nav-title">COMPETENCIAS</div>
+        
+        <a href="{% url 'listar_eventos' %}" class="nav-item {% if request.resolver_match.url_name == 'listar_eventos' %}active{% endif %}">
+            <i class="fas fa-calendar-alt"></i>
+            <span>Eventos CTF</span>
+        </a>
+        {% endif %}
+
+        <!-- ============================================================ -->
+        <!-- GESTIÓN - Solo para INSTRUCTOR y ADMIN -->
+        <!-- ============================================================ -->
+        {% if rol == 'INSTRUCTOR' or rol == 'ADMIN' %}
+        <div class="nav-title">GESTION</div>
+        
+        <a href="{% url 'listar_retos' %}" class="nav-item">
+            <i class="fas fa-edit"></i>
+            <span>Gestionar Retos</span>
+        </a>
+        
+        <a href="{% url 'listar_modulos' %}" class="nav-item">
+            <i class="fas fa-book-open"></i>
+            <span>Gestionar Cursos</span>
+        </a>
+        
+        <a href="{% url 'listar_eventos' %}" class="nav-item">
+            <i class="fas fa-calendar-plus"></i>
+            <span>Gestionar Eventos</span>
+        </a>
+        {% endif %}
+
+        <!-- ============================================================ -->
+        <!-- ADMIN PANEL - Solo para ADMIN -->
+        <!-- ============================================================ -->
+        {% if rol == 'ADMIN' %}
+        <div class="nav-title">ADMINISTRACION</div>
+        
+        <a href="{% url 'listar_usuarios' %}" class="nav-item {% if request.resolver_match.url_name == 'listar_usuarios' %}active{% endif %}">
+            <i class="fas fa-user-shield"></i>
+            <span>Gestionar Usuarios</span>
+        </a>
+        
+        <a href="{% url 'auditoria' %}" class="nav-item {% if request.resolver_match.url_name == 'auditoria' %}active{% endif %}">
+            <i class="fas fa-chart-simple"></i>
+            <span>Auditoria</span>
+        </a>
+        <a href="{% url 'configuracion_ia' %}" class="nav-item {% if request.resolver_match.url_name == 'configuracion_ia' %}active{% endif %}">
+        <i class="fas fa-robot"></i>
+        <span>Asistente IA</span>
+    </a>
+        {% endif %}
+
+        <!-- ============================================================ -->
+        <!-- PERFIL - Visible para TODOS -->
+        <!-- ============================================================ -->
+        <div class="nav-title">PERFIL</div>
+        
+        <a href="{% url 'perfil_detalle' %}" class="nav-item {% if request.resolver_match.url_name == 'perfil_detalle' %}active{% endif %}">
+            <i class="fas fa-user-circle"></i>
+            <span>Mi Perfil</span>
+        </a>
+    </div>
+
+    <div class="sidebar-footer">
+        <a href="{% url 'logout' %}" class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Cerrar Sesion</span>
+        </a>
+    </div>
+</aside>
+
+<style>
+    /* ========== ESTILOS DEL SIDEBAR ========== */
+    .sidebar {
+        width: 280px;
+        background: #0a0a0f;
+        border-right: 1px solid #E10600;
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        height: 100vh;
+        overflow-y: auto;
+        z-index: 1000;
+    }
+
+    .sidebar-logo {
+        padding: 1.8rem;
+        border-bottom: 1px solid #E10600;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+
+    .sidebar-logo h2 {
+        font-family: 'Orbitron', monospace;
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #F5F5F5;
+        letter-spacing: 2px;
+    }
+
+    .sidebar-logo h2 span {
+        color: #E10600;
+    }
+
+    .sidebar-logo p {
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 0.65rem;
+        color: #6c6c7a;
+        margin-top: 0.5rem;
+        letter-spacing: 1px;
+    }
+
+    .sidebar-profile {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0 1.5rem 1.5rem 1.5rem;
+        border-bottom: 1px solid rgba(225, 6, 0, 0.2);
+        margin-bottom: 1.5rem;
+    }
+
+    .profile-avatar {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #E10600, #8B0000);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+        overflow: hidden;
+    }
+
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .profile-info h4 {
+        font-family: 'Orbitron', monospace;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-bottom: 0.2rem;
+        color: #F5F5F5;
+    }
+
+    .role-badge {
+        background: rgba(225, 6, 0, 0.15);
+        color: #E10600;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.6rem;
+        font-weight: 600;
+        display: inline-block;
+        font-family: 'Share Tech Mono', monospace;
+    }
+
+    .nav-menu {
+        flex: 1;
+        padding: 0 1rem;
+    }
+
+    .nav-title {
+        font-family: 'Orbitron', monospace;
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        color: #6c6c7a;
+        padding: 1rem 1rem 0.5rem 1rem;
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.7rem 1rem;
+        margin-bottom: 0.35rem;
+        border-radius: 8px;
+        color: #B3B3B3;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-family: 'Share Tech Mono', monospace;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .nav-item i {
+        width: 24px;
+        font-size: 1rem;
+    }
+
+    .nav-item:hover {
+        background: rgba(225, 6, 0, 0.15);
+        color: #E10600;
+    }
+
+    .nav-item.active {
+        background: #E10600;
+        color: white;
+    }
+
+    .sidebar-footer {
+        padding: 1.5rem;
+        border-top: 1px solid rgba(225, 6, 0, 0.2);
+        margin-top: auto;
+    }
+
+    .logout-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: #ff0000;
+        text-decoration: none;
+        padding: 0.5rem;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+        font-family: 'Share Tech Mono', monospace;
+    }
+
+    .logout-btn:hover {
+        background: rgba(255, 0, 0, 0.1);
+        color: #ff4444;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+        width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #0a0a0f;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #E10600;
+        border-radius: 4px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 80px;
+        }
+        .sidebar-logo h2,
+        .sidebar-logo p,
+        .profile-info,
+        .nav-item span,
+        .nav-title,
+        .sidebar-footer span {
+            display: none;
+        }
+        .nav-item {
+            justify-content: center;
+        }
+    }
+</style>

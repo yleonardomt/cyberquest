@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - Asistente IA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'principal.css' %}">
+    <style>
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 180px);
+            min-height: 500px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .message {
+            display: flex;
+            gap: 0.8rem;
+            max-width: 85%;
+            animation: fadeIn 0.3s ease;
+        }
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        .message.bot {
+            align-self: flex-start;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        .message.user .message-avatar {
+            background: var(--primary);
+            color: white;
+        }
+        .message.bot .message-avatar {
+            background: #6c5ce7;
+            color: white;
+        }
+        .message-content {
+            background: var(--bg-secondary);
+            padding: 0.7rem 1rem;
+            border-radius: 18px;
+            max-width: 100%;
+            word-wrap: break-word;
+            line-height: 1.4;
+            font-size: 0.9rem;
+        }
+        .message.user .message-content {
+            background: var(--primary);
+            color: white;
+            border-radius: 18px 18px 4px 18px;
+        }
+        .message.bot .message-content {
+            background: var(--bg-secondary);
+            border-radius: 18px 18px 18px 4px;
+        }
+        .message-content p {
+            margin: 0 0 0.3rem 0;
+        }
+        .message-content p:last-child {
+            margin-bottom: 0;
+        }
+        .chat-input-area {
+            padding: 1rem;
+            border-top: 1px solid var(--border-dark);
+            display: flex;
+            gap: 0.8rem;
+            background: var(--bg-card);
+        }
+        .chat-input {
+            flex: 1;
+            padding: 0.8rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-dark);
+            border-radius: 25px;
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+            resize: none;
+            font-size: 0.9rem;
+        }
+        .chat-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .chat-input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .btn-send {
+            padding: 0.8rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-send:hover {
+            background: var(--primary-hover);
+            transform: scale(1.02);
+        }
+        .btn-send:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .typing-indicator {
+            display: flex;
+            gap: 0.3rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border-radius: 18px;
+            width: fit-content;
+        }
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+            30% { transform: translateY(-8px); opacity: 1; }
+        }
+        .suggestions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.8rem;
+            padding: 0.5rem 0;
+        }
+        .suggestion-btn {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-dark);
+            border-radius: 20px;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .suggestion-btn:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+        .suggestion-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+        }
+        .btn-clear {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+        .btn-clear:hover {
+            background: var(--primary-light);
+        }
+        .alert-warning {
+            background: rgba(255, 136, 0, 0.15);
+            border: 1px solid #ff8800;
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: #ffaa00;
+        }
+        .alert-warning i {
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    {% include 'nav.html' %}
+
+    <main class="main-content">
+        <div class="top-header">
+            <h1 class="page-title">
+                <i class="fas fa-robot"></i> Asistente IA
+            </h1>
+            <button onclick="limpiarChat()" class="btn-clear">
+                <i class="fas fa-trash-alt"></i> Limpiar chat
+            </button>
+        </div>
+
+        <!-- Mensaje si la IA está deshabilitada -->
+        {% if not ia_habilitado %}
+        <div class="alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <div>
+                <strong>Asistente IA deshabilitado</strong><br>
+                El administrador ha deshabilitado temporalmente el asistente. Por favor, intenta más tarde.
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="chat-container">
+            <div class="chat-messages" id="chatMessages">
+                <div class="message bot">
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        {% if ia_habilitado %}
+                            Hola, soy CyberAI. Pregúntame sobre retos, puntos, ranking, equipos o eventos.
+                        {% else %}
+                            <i class="fas fa-ban"></i> El asistente IA se encuentra deshabilitado. Contacta al administrador para más información.
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-input-area">
+                <textarea id="chatInput" class="chat-input" rows="1" 
+                    placeholder="Escribe tu pregunta aquí..." 
+                    {% if not ia_habilitado %}disabled{% endif %}></textarea>
+                <button id="sendBtn" class="btn-send" onclick="enviarMensaje()" 
+                    {% if not ia_habilitado %}disabled{% endif %}>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="suggestions">
+            <button class="suggestion-btn" onclick="preguntar('Cuantos retos he resuelto')" {% if not ia_habilitado %}disabled{% endif %}>Mi progreso</button>
+            <button class="suggestion-btn" onclick="preguntar('Cuantos puntos tengo')" {% if not ia_habilitado %}disabled{% endif %}>Mis puntos</button>
+            <button class="suggestion-btn" onclick="preguntar('En que posicion estoy')" {% if not ia_habilitado %}disabled{% endif %}>Mi ranking</button>
+            <button class="suggestion-btn" onclick="preguntar('Que retos hay')" {% if not ia_habilitado %}disabled{% endif %}>Retos</button>
+            <button class="suggestion-btn" onclick="preguntar('En que equipo estoy')" {% if not ia_habilitado %}disabled{% endif %}>Mi equipo</button>
+            <button class="suggestion-btn" onclick="preguntar('Que eventos hay activos')" {% if not ia_habilitado %}disabled{% endif %}>Eventos</button>
+        </div>
+    </main>
+</div>
+
+<script>
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const iaHabilitado = {{ ia_habilitado|yesno:"true,false" }};
+    
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    function agregarMensaje(texto, tipo) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${tipo}`;
+        
+        let avatarIcon = tipo === 'user' ? 'fa-user' : 'fa-robot';
+        
+        let formattedText = texto
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\n/g, '<br>');
+        
+        messageDiv.innerHTML = `
+            <div class="message-avatar">
+                <i class="fas ${avatarIcon}"></i>
+            </div>
+            <div class="message-content">
+                ${formattedText}
+            </div>
+        `;
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+    }
+    
+    function mostrarTyping() {
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message bot';
+        typingDiv.id = 'typingIndicator';
+        typingDiv.innerHTML = `
+            <div class="message-avatar">
+                <i class="fas fa-robot"></i>
+            </div>
+            <div class="typing-indicator">
+                <span></span><span></span><span></span>
+            </div>
+        `;
+        chatMessages.appendChild(typingDiv);
+        scrollToBottom();
+    }
+    
+    function quitarTyping() {
+        const typing = document.getElementById('typingIndicator');
+        if (typing) typing.remove();
+    }
+    
+    async function enviarMensaje() {
+        if (!iaHabilitado) {
+            agregarMensaje('El asistente IA esta deshabilitado por el administrador. No puedo responder preguntas.', 'bot');
+            return;
+        }
+        
+        const pregunta = chatInput.value.trim();
+        if (!pregunta) return;
+        
+        sendBtn.disabled = true;
+        agregarMensaje(pregunta, 'user');
+        chatInput.value = '';
+        mostrarTyping();
+        
+        try {
+            const response = await fetch('/ai/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `pregunta=${encodeURIComponent(pregunta)}`
+            });
+            
+            quitarTyping();
+            const data = await response.json();
+            
+            if (data.success) {
+                agregarMensaje(data.message, 'bot');
+            } else {
+                agregarMensaje(data.message, 'bot');
+            }
+        } catch (error) {
+            quitarTyping();
+            agregarMensaje('Error de conexion. Intenta de nuevo.', 'bot');
+        } finally {
+            sendBtn.disabled = false;
+            chatInput.focus();
+            ajustarAlturaInput();
+        }
+    }
+    
+    function preguntar(texto) {
+        if (!iaHabilitado) {
+            agregarMensaje('El asistente IA esta deshabilitado por el administrador. No puedo responder preguntas.', 'bot');
+            return;
+        }
+        chatInput.value = texto;
+        enviarMensaje();
+    }
+    
+    function limpiarChat() {
+        chatMessages.innerHTML = `
+            <div class="message bot">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    ${iaHabilitado ? 'Hola, soy CyberAI. Preguntame sobre retos, puntos, ranking, equipos o eventos.' : '<i class="fas fa-ban"></i> El asistente IA se encuentra deshabilitado. Contacta al administrador para mas informacion.'}
+                </div>
+            </div>
+        `;
+    }
+    
+    function ajustarAlturaInput() {
+        chatInput.style.height = 'auto';
+        chatInput.style.height = Math.min(chatInput.scrollHeight, 100) + 'px';
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    chatInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey && iaHabilitado) {
+            e.preventDefault();
+            enviarMensaje();
+        }
+    });
+    
+    chatInput.addEventListener('input', ajustarAlturaInput);
+    chatInput.focus();
+</script>
+
+</body>
+</html>

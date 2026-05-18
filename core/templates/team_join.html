@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - Unirse a Equipo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'principal.css' %}">
+    <style>
+        .form-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+            font-family: 'Orbitron', monospace;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-family: monospace;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Orbitron', monospace;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        .top-header {
+            margin-bottom: 1.5rem;
+        }
+        .page-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    {% include 'nav.html' %}
+
+    <main class="main-content">
+        <div class="top-header">
+            <h1 class="page-title">Unirse a un Equipo</h1>
+        </div>
+
+        <div class="form-card">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label><i class="fas fa-key"></i> Código de invitación</label>
+                    <input type="text" name="codigo" class="form-control" placeholder="XXXX-XXXX-XXXX" required>
+                </div>
+                <div class="btn-group">
+                    <a href="{% url 'listar_equipos' %}" class="btn btn-outline">Cancelar</a>
+                    <button type="submit" class="btn btn-primary">Unirse al Equipo</button>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

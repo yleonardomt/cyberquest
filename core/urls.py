@@ -1,0 +1,131 @@
+from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
+from . import views
+
+urlpatterns = [
+    # ============================================================
+    # VISTAS PÚBLICAS
+    # ============================================================
+    path("", views.home, name="home"),
+    path("register/", views.register, name="register"),
+    path("login/", views.login_view, name="login"),
+    path("logout/", views.logout_view, name="logout"),
+    path("reset/", views.reset_password_request, name="reset"),
+    path("reset/<str:token>/", views.reset_password_confirm, name="reset_confirm"),
+    # ============================================================
+    # DASHBOARD Y PERFIL (M1)
+    # ============================================================
+    path("dashboard/", views.dashboard, name="dashboard"),
+    path("profile/", views.perfil_detalle, name="perfil_detalle"),
+    path("profile/edit/", views.perfil_editar, name="perfil_editar"),
+    # ============================================================
+    # CRUD USUARIOS (ADMIN)
+    # ============================================================
+    path("users/", views.listar_usuarios, name="listar_usuarios"),
+    path("users/create/", views.crear_usuario, name="crear_usuario"),
+    path("users/<int:user_id>/edit/", views.editar_usuario, name="editar_usuario"),
+    path(
+        "users/<int:user_id>/delete/", views.eliminar_usuario, name="eliminar_usuario"
+    ),
+    path("users/<int:user_id>/block/", views.bloquear_usuario, name="bloquear_usuario"),
+    # ============================================================
+    # EQUIPOS (M2)
+    # ============================================================
+    path("teams/create/", views.crear_equipo, name="crear_equipo"),
+    path("teams/join/", views.unirse_equipo, name="unirse_equipo"),
+    path("teams/<int:equipo_id>/", views.ver_equipo, name="ver_equipo"),
+    path("teams/", views.listar_equipos, name="listar_equipos"),
+    # ============================================================
+    # MÓDULOS Y APRENDIZAJE (M3)
+    # ============================================================
+    path("modules/", views.listar_modulos, name="listar_modulos"),
+    path("lesson/<int:leccion_id>/", views.ver_leccion, name="ver_leccion"),
+    path("module/create/", views.crear_modulo, name="crear_modulo"),
+    path("modulo/<int:modulo_id>/editar/", views.editar_modulo, name="editar_modulo"),
+    path(
+        "modulo/<int:modulo_id>/eliminar/",
+        views.eliminar_modulo,
+        name="eliminar_modulo",
+    ),
+    path(
+        "modulo/<int:modulo_id>/leccion/agregar/",
+        views.agregar_leccion,
+        name="agregar_leccion",
+    ),
+    path(
+        "modulo/<int:modulo_id>/progreso/",
+        views.progreso_modulo,
+        name="progreso_modulo",
+    ),
+    path(
+        "leccion/<int:leccion_id>/editar/", views.editar_leccion, name="editar_leccion"
+    ),
+    path(
+        "leccion/<int:leccion_id>/eliminar/",
+        views.eliminar_leccion,
+        name="eliminar_leccion",
+    ),
+    # ============================================================
+    # RETOS (M4)
+    # ============================================================
+    path("challenges/", views.listar_retos, name="listar_retos"),
+    path("challenge/<int:reto_id>/", views.detalle_reto, name="detalle_reto"),
+    path("challenge/create/", views.crear_reto, name="crear_reto"),
+    path("challenge/<int:reto_id>/edit/", views.editar_reto, name="editar_reto"),
+    path("challenge/<int:reto_id>/delete/", views.eliminar_reto, name="eliminar_reto"),
+    # ============================================================
+    # ENTORNOS (M5)
+    # ============================================================
+    path(
+        "environment/<int:reto_id>/start/",
+        views.iniciar_entorno,
+        name="iniciar_entorno",
+    ),
+    path(
+        "environment/<int:entorno_id>/stop/",
+        views.detener_entorno,
+        name="detener_entorno",
+    ),
+    # ============================================================
+    # RANKINGS (M7)
+    # ============================================================
+    path("ranking/individual/", views.ranking_individual, name="ranking_individual"),
+    path("ranking/teams/", views.ranking_equipos, name="ranking_equipos"),
+    # ============================================================
+    # ASISTENTE IA (M9)
+    # ============================================================
+    path("ai/", views.consultar_asistente, name="consultar_asistente"),
+    # ============================================================
+    # EVENTOS (M10)
+    # ============================================================
+    path("events/", views.listar_eventos, name="listar_eventos"),
+    path("event/<int:evento_id>/", views.detalle_evento, name="detalle_evento"),
+    path(
+        "event/<int:evento_id>/join/",
+        views.inscribirse_evento,
+        name="inscribirse_evento",
+    ),
+    path("event/create/", views.crear_evento, name="crear_evento"),
+    path("event/<int:evento_id>/editar/", views.editar_evento, name="editar_evento"),
+    path(
+        "event/<int:evento_id>/eliminar/", views.eliminar_evento, name="eliminar_evento"
+    ),
+    # ============================================================
+    # EQUIPOS - RETOS
+    # ============================================================
+    path("equipo/<int:equipo_id>/salir/", views.salir_equipo, name="salir_equipo"),
+    path("equipo/<int:equipo_id>/retos/", views.equipo_retos, name="equipo_retos"),
+    path(
+        "equipo/<int:equipo_id>/enviar-bandera/",
+        views.enviar_bandera_equipo,
+        name="enviar_bandera_equipo",
+    ),
+    path("auditoria/", views.auditoria, name="auditoria"),
+    path("configuracion-ia/", views.configuracion_ia, name="configuracion_ia"),
+    path("certificado/<int:modulo_id>/", views.certificado, name="certificado"),
+]
+
+# Para servir archivos multimedia en desarrollo
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - Editar Módulo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'principal.css' %}">
+    <style>
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 5px rgba(225, 6, 0, 0.3);
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            font-family: 'Orbitron', monospace;
+            font-size: 0.8rem;
+        }
+        textarea.form-control {
+            resize: vertical;
+        }
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            border: none;
+            font-family: 'Orbitron', monospace;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        .btn-outline:hover {
+            background: var(--primary-light);
+        }
+        .btn-danger {
+            background: #aa0000;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #cc0000;
+        }
+        .btn-warning {
+            background: #aa8800;
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #ccaa00;
+        }
+        .btn-sm {
+            padding: 0.3rem 0.8rem;
+            font-size: 0.7rem;
+        }
+        .activity-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            color: var(--text-primary);
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .checkbox-group input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .lecciones-section {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-dark);
+        }
+        .leccion-item {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s ease;
+        }
+        .leccion-item:hover {
+            background: var(--bg-primary);
+            border-left: 3px solid var(--primary);
+        }
+        .leccion-titulo {
+            color: var(--primary);
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        .leccion-contenido {
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background: var(--bg-dark);
+            border-radius: var(--radius);
+            max-height: 60px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .leccion-meta {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .alert {
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+        }
+        .alert-success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+        }
+        .alert-error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            color: #ff6666;
+        }
+        .alert-info {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+        }
+        .acciones {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+            margin-top: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .section-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-dark);
+            padding-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    {% include 'nav.html' %}
+
+    <main class="main-content">
+        <div class="top-header">
+            <h1 class="page-title">Editar Módulo: {{ modulo.titulo }}</h1>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}times-circle{% else %}info-circle{% endif %}"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="activity-card">
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label>Título del Módulo</label>
+                    <input type="text" name="titulo" class="form-control" value="{{ modulo.titulo }}" required>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label>Descripción</label>
+                    <textarea name="descripcion" rows="5" class="form-control" required>{{ modulo.descripcion }}</textarea>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" name="esta_publicado" id="esta_publicado" {% if modulo.esta_publicado %}checked{% endif %}>
+                    <label for="esta_publicado" style="margin-bottom: 0;">Publicar módulo (visible para estudiantes)</label>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                    <a href="{% url 'listar_modulos' %}" class="btn btn-outline">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- Lecciones del módulo -->
+        <div class="lecciones-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
+                <h3 class="section-title"><i class="fas fa-list"></i> Lecciones del Módulo ({{ modulo.lecciones.count }})</h3>
+                <a href="#" class="btn btn-primary btn-sm" id="btn-agregar-leccion">
+                    <i class="fas fa-plus"></i> Agregar Nueva Lección
+                </a>
+            </div>
+            
+            <div id="lecciones-container">
+                {% if modulo.lecciones.all %}
+                    {% for leccion in modulo.lecciones.all %}
+                    <div class="leccion-item" id="leccion-{{ leccion.id }}">
+                        <div class="leccion-titulo">
+                            <i class="fas fa-book"></i> {{ leccion.titulo }}
+                            <span style="float: right; font-size: 0.7rem; color: var(--text-muted);">
+                                Orden: {{ leccion.orden }}
+                            </span>
+                        </div>
+                        <div class="leccion-contenido">
+                            {{ leccion.contenido|truncatechars:100 }}
+                        </div>
+                        <div class="leccion-meta">
+                            <span><i class="fas fa-question-circle"></i> {{ leccion.preguntas.count }} preguntas</span>
+                            <span><i class="fas fa-paperclip"></i> {{ leccion.recursos.count }} recursos</span>
+                        </div>
+                        <div class="acciones">
+                            <a href="{% url 'ver_leccion' leccion.id %}" class="btn btn-outline btn-sm" target="_blank">
+                                <i class="fas fa-eye"></i> Ver
+                            </a>
+                            <a href="#" class="btn btn-warning btn-sm btn-editar-leccion" 
+                               data-id="{{ leccion.id }}" 
+                               data-titulo="{{ leccion.titulo }}" 
+                               data-contenido="{{ leccion.contenido|escapejs }}" 
+                               data-orden="{{ leccion.orden }}">
+                                <i class="fas fa-edit"></i> Editar
+                            </a>
+                            <a href="#" class="btn btn-danger btn-sm btn-eliminar-leccion" 
+                               data-id="{{ leccion.id }}" 
+                               data-titulo="{{ leccion.titulo }}">
+                                <i class="fas fa-trash"></i> Eliminar
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align: center; padding: 3rem; background: var(--bg-secondary); border-radius: var(--radius);">
+                        <i class="fas fa-book-open" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem; display: block;"></i>
+                        <p>Este módulo no tiene lecciones aún.</p>
+                        <a href="#" class="btn btn-primary btn-sm" id="btn-agregar-leccion-empty">
+                            <i class="fas fa-plus"></i> Agregar primera lección
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Modal para agregar/editar lección -->
+<div id="modal-leccion" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-lg); padding: 2rem; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto;">
+        <h2 id="modal-title" style="color: var(--primary); margin-bottom: 1rem; font-family: 'Orbitron', monospace;">Agregar Lección</h2>
+        <form id="form-leccion" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="leccion_id" id="leccion_id" value="">
+            <div style="margin-bottom: 1rem;">
+                <label>Título de la Lección</label>
+                <input type="text" name="titulo" id="leccion_titulo" class="form-control" required>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label>Contenido</label>
+                <textarea name="contenido" id="leccion_contenido" rows="8" class="form-control" required></textarea>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label>Orden</label>
+                <input type="number" name="orden" id="leccion_orden" class="form-control" value="0" style="width: 100px;">
+            </div>
+            <div class="btn-group" style="justify-content: flex-end; margin-top: 1rem;">
+                <button type="button" class="btn btn-outline" id="btn-cerrar-modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar Lección</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Modal para agregar/editar lección
+    const modal = document.getElementById('modal-leccion');
+    const modalTitle = document.getElementById('modal-title');
+    const leccionId = document.getElementById('leccion_id');
+    const leccionTitulo = document.getElementById('leccion_titulo');
+    const leccionContenido = document.getElementById('leccion_contenido');
+    const leccionOrden = document.getElementById('leccion_orden');
+    const formLeccion = document.getElementById('form-leccion');
+    
+    function abrirModal(titulo, id, tituloLeccion, contenido, orden) {
+        modalTitle.textContent = titulo;
+        leccionId.value = id || '';
+        leccionTitulo.value = tituloLeccion || '';
+        leccionContenido.value = contenido || '';
+        leccionOrden.value = orden || '0';
+        
+        if (id) {
+            formLeccion.action = "{% url 'editar_leccion' 0 %}".replace('0', id);
+        } else {
+            formLeccion.action = "{% url 'agregar_leccion' modulo.id %}";
+        }
+        
+        modal.style.display = 'flex';
+    }
+    
+    function cerrarModal() {
+        modal.style.display = 'none';
+    }
+    
+    // Eventos para abrir modal de agregar lección
+    const btnAgregar = document.getElementById('btn-agregar-leccion');
+    const btnAgregarEmpty = document.getElementById('btn-agregar-leccion-empty');
+    
+    if (btnAgregar) {
+        btnAgregar.addEventListener('click', (e) => {
+            e.preventDefault();
+            abrirModal('Agregar Nueva Lección', '', '', '', '0');
+        });
+    }
+    
+    if (btnAgregarEmpty) {
+        btnAgregarEmpty.addEventListener('click', (e) => {
+            e.preventDefault();
+            abrirModal('Agregar Nueva Lección', '', '', '', '0');
+        });
+    }
+    
+    // Eventos para editar lección
+    document.querySelectorAll('.btn-editar-leccion').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const id = btn.dataset.id;
+            const titulo = btn.dataset.titulo;
+            const contenido = btn.dataset.contenido;
+            const orden = btn.dataset.orden;
+            abrirModal('Editar Lección', id, titulo, contenido, orden);
+        });
+    });
+    
+    // Eventos para eliminar lección
+    document.querySelectorAll('.btn-eliminar-leccion').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const id = btn.dataset.id;
+            const titulo = btn.dataset.titulo;
+            if (confirm(`¿Eliminar la lección "${titulo}"? Esta acción no se puede deshacer.`)) {
+                window.location.href = "{% url 'eliminar_leccion' 0 %}".replace('0', id);
+            }
+        });
+    });
+    
+    // Cerrar modal
+    const btnCerrar = document.getElementById('btn-cerrar-modal');
+    if (btnCerrar) {
+        btnCerrar.addEventListener('click', cerrarModal);
+    }
+    
+    // Cerrar modal con click fuera
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) cerrarModal();
+    });
+</script>
+
+</body>
+</html>

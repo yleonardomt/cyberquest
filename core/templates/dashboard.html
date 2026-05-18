@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'principal.css' %}">
+    <style>
+        .welcome-section {
+            margin-bottom: 2rem;
+            padding: 1.8rem;
+            background: linear-gradient(135deg, rgba(225, 6, 0, 0.08) 0%, rgba(225, 6, 0, 0.02) 100%);
+            border-radius: var(--radius-lg);
+            border-left: 4px solid var(--primary);
+        }
+        
+        .greeting {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .greeting-highlight {
+            color: var(--primary);
+        }
+        
+        .greeting-sub {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+        
+        .role-badge-dash {
+            display: inline-block;
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 0.2rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 1.3rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), transparent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover::after {
+            transform: scaleX(1);
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-light);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.4rem;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(225, 6, 0, 0.3);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(225, 6, 0, 0.4);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--border-dark);
+            color: var(--text-secondary);
+        }
+        
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+            background: var(--primary-light);
+        }
+        
+        .btn-ghost {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+        }
+        
+        .btn-ghost:hover {
+            background: var(--primary-light);
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+        
+        .progress-section, .admin-section, .instructor-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+        
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-primary);
+        }
+        
+        .section-title i {
+            color: var(--primary);
+        }
+        
+        .progress-bar-container {
+            background: var(--bg-dark);
+            border-radius: 20px;
+            height: 8px;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+        
+        .progress-bar-fill {
+            background: linear-gradient(90deg, var(--primary), #ff6b6b);
+            border-radius: 20px;
+            height: 100%;
+            width: 0%;
+            transition: width 1s ease;
+        }
+        
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+        
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .admin-stat-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .admin-stat-number {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .admin-stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        
+        .recent-activity {
+            margin-top: 1rem;
+        }
+        
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid var(--border-dark);
+        }
+        
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 0.8rem;
+        }
+        
+        .activity-text {
+            flex: 1;
+        }
+        
+        .activity-title {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .activity-time {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .admin-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .admin-stats {
+                grid-template-columns: 1fr;
+            }
+            .btn-group {
+                flex-direction: column;
+            }
+            .btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    {% include 'nav.html' %}
+
+    <main class="main-content">
+        <div class="welcome-section">
+            <div class="greeting">
+                Hola, <span class="greeting-highlight">{{ perfil.usuario.username }}</span>
+                <span class="role-badge-dash">
+                    {% if rol == 'ADMIN' %}
+                        <i class="fas fa-crown"></i> Administrador
+                    {% elif rol == 'INSTRUCTOR' %}
+                        <i class="fas fa-chalkboard-user"></i> Instructor
+                    {% else %}
+                        <i class="fas fa-user-graduate"></i> Competidor
+                    {% endif %}
+                </span>
+            </div>
+            <div class="greeting-sub">
+                {% if rol == 'ADMIN' %}
+                    Panel de control principal. Gestiona usuarios, retos y eventos.
+                {% elif rol == 'INSTRUCTOR' %}
+                    Gestiona tus cursos, crea nuevos retos y organiza eventos.
+                {% else %}
+                    Continúa tu viaje en el mundo de la ciberseguridad.
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Estadísticas generales según rol -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-flag-checkered"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ retos_completados }}</div>
+                <div class="stat-label">Retos Completados</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ puntos_totales }}</div>
+                <div class="stat-label">Puntos Totales</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ equipo_nombre }}</div>
+                <div class="stat-label">Equipo Actual</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                </div>
+                <div class="stat-value">{{ posicion }}</div>
+                <div class="stat-label">Posición Global</div>
+            </div>
+        </div>
+
+        <!-- Botones de acción según rol -->
+        <div class="btn-group">
+            <a href="{% url 'listar_retos' %}" class="btn btn-primary">
+                <i class="fas fa-play"></i> Comenzar Reto
+            </a>
+            <a href="{% url 'listar_equipos' %}" class="btn btn-outline">
+                <i class="fas fa-users"></i> Gestionar Equipo
+            </a>
+            <a href="{% url 'ranking_individual' %}" class="btn btn-outline">
+                <i class="fas fa-chart-simple"></i> Ver Ranking
+            </a>
+            <a href="{% url 'consultar_asistente' %}" class="btn btn-ghost">
+                <i class="fas fa-robot"></i> Asistente IA
+            </a>
+        </div>
+
+        <!-- Sección de progreso (solo para competidores) -->
+        {% if rol == 'ESTUDIANTE' %}
+        <div class="progress-section">
+            <div class="section-title">
+                <i class="fas fa-chart-line"></i>
+                Mi Progreso
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar-fill" style="width: {{ porcentaje_progreso }}%"></div>
+            </div>
+            <div class="progress-stats">
+                <span><i class="fas fa-flag-checkered"></i> {{ retos_completados }} retos</span>
+                <span><i class="fas fa-chart-line"></i> {{ porcentaje_progreso }}% completado</span>
+                <span><i class="fas fa-star"></i> {{ puntos_totales }} puntos</span>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Sección de administrador -->
+        {% if rol == 'ADMIN' %}
+        <div class="admin-section">
+            <div class="section-title">
+                <i class="fas fa-chart-pie"></i>
+                Estadísticas de la Plataforma
+            </div>
+            <div class="admin-stats">
+                <div class="admin-stat-card">
+                    <div class="admin-stat-number">{{ total_usuarios }}</div>
+                    <div class="admin-stat-label">Usuarios Registrados</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-number">{{ total_retos }}</div>
+                    <div class="admin-stat-label">Retos Disponibles</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-number">{{ total_eventos }}</div>
+                    <div class="admin-stat-label">Eventos CTF</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-number">{{ total_equipos }}</div>
+                    <div class="admin-stat-label">Equipos Creados</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-number">{{ total_puntos }}</div>
+                    <div class="admin-stat-label">Puntos Totales</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-number">{{ retos_resueltos_total }}</div>
+                    <div class="admin-stat-label">Retos Resueltos</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Sección de instructor -->
+        {% if rol == 'INSTRUCTOR' %}
+        <div class="instructor-section">
+            <div class="section-title">
+                <i class="fas fa-graduation-cap"></i>
+                Mis Estadísticas de Instructor
+            </div>
+            <div class="admin-stats">
+                <div class="admin-stat-card">
+                    <div class="admin-stat-number">{{ mis_cursos }}</div>
+                    <div class="admin-stat-label">Cursos Creados</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-number">{{ mis_retos }}</div>
+                    <div class="admin-stat-label">Retos Creados</div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-number">{{ mis_eventos }}</div>
+                    <div class="admin-stat-label">Eventos Organizados</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Actividad reciente para todos -->
+        <div class="progress-section">
+            <div class="section-title">
+                <i class="fas fa-clock"></i>
+                Actividad Reciente
+            </div>
+            <div class="recent-activity">
+                {% for actividad in actividad_reciente %}
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-circle"></i>
+                    </div>
+                    <div class="activity-text">
+                        <div class="activity-title">{{ actividad.accion }}</div>
+                        <div class="activity-time">{{ actividad.timestamp|timesince }} atrás</div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="activity-item">
+                    <div class="activity-icon">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div class="activity-text">
+                        <div class="activity-title">No hay actividad reciente</div>
+                        <div class="activity-time">Comienza a resolver retos</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const progressBar = document.querySelector('.progress-bar-fill');
+        if (progressBar) {
+            const width = progressBar.style.width;
+            progressBar.style.width = '0%';
+            setTimeout(() => {
+                progressBar.style.width = width;
+            }, 100);
+        }
+    });
+</script>
+
+</body>
+</html>

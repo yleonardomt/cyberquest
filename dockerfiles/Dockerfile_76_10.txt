@@ -1,0 +1,51 @@
+FROM ubuntu:22.04
+
+# Actualizar e instalar apache2 y curl
+RUN apt-get update && apt-get install -y \
+    apache2 \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Crear directorio web
+RUN mkdir -p /var/www/html
+
+# Crear página web con la bandera oculta
+RUN echo '<!DOCTYPE html>' > /var/www/html/index.html
+RUN echo '<html>' >> /var/www/html/index.html
+RUN echo '<head>' >> /var/www/html/index.html
+RUN echo '<title>CyberQuest CTF - Docker Challenge</title>' >> /var/www/html/index.html
+RUN echo '<style>' >> /var/www/html/index.html
+RUN echo 'body { font-family: monospace; background: #0a0a0f; color: #00ff00; text-align: center; padding: 50px; }' >> /var/www/html/index.html
+RUN echo 'h1 { color: #ff0000; }' >> /var/www/html/index.html
+RUN echo 'pre { background: #1a1a24; padding: 20px; border-radius: 10px; }' >> /var/www/html/index.html
+RUN echo '</style>' >> /var/www/html/index.html
+RUN echo '</head>' >> /var/www/html/index.html
+RUN echo '<body>' >> /var/www/html/index.html
+RUN echo '<h1>🚀 CyberQuest Docker Challenge</h1>' >> /var/www/html/index.html
+RUN echo '<p>Encuentra la bandera oculta en este servidor</p>' >> /var/www/html/index.html
+RUN echo '<pre>' >> /var/www/html/index.html
+RUN echo '$ ls -la' >> /var/www/html/index.html
+RUN echo 'total 48' >> /var/www/html/index.html
+RUN echo 'drwxr-xr-x 1 root root 4096 May 17 20:00 .' >> /var/www/html/index.html
+RUN echo 'drwxr-xr-x 1 root root 4096 May 17 20:00 ..' >> /var/www/html/index.html
+RUN echo '-rw-r--r-- 1 root root  500 May 17 20:00 flag.txt' >> /var/www/html/index.html
+RUN echo '</pre>' >> /var/www/html/index.html
+RUN echo '<p>Pista: Revisa los archivos ocultos en el servidor</p>' >> /var/www/html/index.html
+RUN echo '</body>' >> /var/www/html/index.html
+RUN echo '</html>' >> /var/www/html/index.html
+
+# Crear archivo con la bandera (flag)
+RUN echo 'flag{docker_challenge_complete_2025}' > /var/www/html/flag.txt
+
+# Crear un archivo .hidden con otra pista
+RUN echo 'La bandera está en flag.txt - Usa curl http://localhost/flag.txt' > /var/www/html/.hidden.txt
+
+# Configurar permisos
+RUN chown -R www-data:www-data /var/www/html
+RUN chmod 755 /var/www/html
+
+# Exponer puerto 80
+EXPOSE 80
+
+# Comando para iniciar Apache
+CMD ["apache2ctl", "-D", "FOREGROUND"]

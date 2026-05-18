@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - CyberQuest</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0F0F12 0%, #1a1a24 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .register-container {
+            max-width: 450px;
+            width: 100%;
+            margin: 2rem;
+        }
+
+        .register-card {
+            background: rgba(22, 22, 28, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(225, 6, 0, 0.3);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Logo con imagen */
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-img {
+            height: 60px;
+            width: auto;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo p {
+            color: #B3B3B3;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Botón volver */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: transparent;
+            border: none;
+            color: #E10600;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            color: #FF2A2A;
+            transform: translateX(-3px);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #E10600;
+            font-size: 1.1rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            background: rgba(15, 15, 18, 0.8);
+            border: 1px solid rgba(225, 6, 0, 0.3);
+            border-radius: 12px;
+            color: #F5F5F5;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #E10600;
+            box-shadow: 0 0 0 3px rgba(225, 6, 0, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #6c6c7a;
+        }
+
+        .btn-register {
+            width: 100%;
+            padding: 1rem;
+            background: #E10600;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-register:hover {
+            background: #FF2A2A;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(225, 6, 0, 0.3);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(225, 6, 0, 0.2);
+            color: #B3B3B3;
+        }
+
+        .login-link a {
+            color: #E10600;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-link a:hover {
+            color: #FF2A2A;
+        }
+
+        .error-message {
+            background: rgba(225, 6, 0, 0.15);
+            border: 1px solid #E10600;
+            border-radius: 10px;
+            padding: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: #E10600;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .success-message {
+            background: rgba(0, 255, 136, 0.15);
+            border: 1px solid #00ff88;
+            border-radius: 10px;
+            padding: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: #00ff88;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="register-container">
+    <div class="register-card">
+        <!-- Botón volver -->
+        <a href="{% url 'home' %}" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+
+        <!-- Logo -->
+        <div class="logo">
+            <img src="{% static 'logo.png' %}" alt="CyberQuest" class="logo-img">
+            <p>Plataforma de Entrenamiento CTF</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="{% if message.tags == 'error' %}error-message{% else %}success-message{% endif %}">
+                    <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %}"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <i class="fas fa-user"></i>
+                <input type="text" name="username" placeholder="Nombre de usuario" required>
+            </div>
+            <div class="form-group">
+                <i class="fas fa-envelope"></i>
+                <input type="email" name="email" placeholder="Correo electrónico" required>
+            </div>
+            <div class="form-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" placeholder="Contraseña" required>
+            </div>
+            <button type="submit" class="btn-register">
+                <i class="fas fa-user-plus"></i> Registrarse
+            </button>
+        </form>
+
+        <div class="login-link">
+            ¿Ya tienes cuenta? <a href="{% url 'login' %}">Iniciar Sesión</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

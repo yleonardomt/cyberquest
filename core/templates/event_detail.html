@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - {{ evento.nombre }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'principal.css' %}">
+    <style>
+        .evento-header {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .evento-titulo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        .evento-fechas {
+            display: flex;
+            gap: 2rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .evento-fecha {
+            background: var(--bg-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            font-size: 0.8rem;
+        }
+        .badge-estado {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+        .badge-activo {
+            background: #00aa00;
+            color: white;
+        }
+        .badge-inactivo {
+            background: #aa8800;
+            color: white;
+        }
+        .badge-finalizado {
+            background: #aa0000;
+            color: white;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .reto-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+            transition: all 0.2s ease;
+        }
+        .reto-card.resuelto {
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(0, 170, 0, 0.15) 100%);
+            border-color: #00aa00;
+        }
+        .reto-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .reto-titulo {
+            font-family: 'Orbitron', monospace;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+        .reto-meta {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+        .badge-resuelto {
+            background: #00aa00;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.6rem;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.7rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        .btn-outline:hover {
+            background: var(--primary-light);
+        }
+        .btn-success {
+            background: #00aa00;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #00cc00;
+        }
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .reglas-box {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-top: 1rem;
+            white-space: pre-line;
+            font-size: 0.85rem;
+        }
+        .participantes {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .participante-item {
+            display: inline-block;
+            background: var(--bg-dark);
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            margin: 0.25rem;
+            font-size: 0.7rem;
+        }
+        .progreso-evento {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .progreso-barra {
+            height: 8px;
+            background: var(--bg-dark);
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+        .progreso-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        .progreso-fill.completado {
+            background: #00aa00;
+        }
+        .stats-resumen {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .stat-mini {
+            background: var(--bg-dark);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            text-align: center;
+        }
+        .stat-number {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .stat-label {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+        }
+        .mensaje-flotante {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #00aa00;
+            color: white;
+            padding: 1rem;
+            border-radius: var(--radius);
+            z-index: 1000;
+            animation: fadeOut 3s ease forwards;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translateY(0); }
+            70% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); visibility: hidden; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    {% include 'nav.html' %}
+
+    <main class="main-content">
+        <div class="evento-header">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <h1 class="evento-titulo">{{ evento.nombre }}</h1>
+                <span class="badge-estado {% if evento.esta_activo %}badge-activo{% elif evento.fecha_fin < now %}badge-finalizado{% else %}badge-inactivo{% endif %}">
+                    {% if evento.esta_activo %}
+                        <i class="fas fa-play"></i> Activo
+                    {% elif evento.fecha_fin < now %}
+                        <i class="fas fa-check-circle"></i> Finalizado
+                    {% else %}
+                        <i class="fas fa-pause"></i> Inactivo
+                    {% endif %}
+                </span>
+            </div>
+            
+            <div class="evento-fechas">
+                <div class="evento-fecha">
+                    <i class="fas fa-calendar-alt"></i> Inicio: {{ evento.fecha_inicio|date:"d/m/Y H:i" }}
+                </div>
+                <div class="evento-fecha">
+                    <i class="fas fa-calendar-check"></i> Fin: {{ evento.fecha_fin|date:"d/m/Y H:i" }}
+                </div>
+                <div class="evento-fecha">
+                    <i class="fas fa-flag"></i> {{ evento.retos.count }} retos
+                </div>
+                <div class="evento-fecha">
+                    <i class="fas fa-users"></i> {{ evento.participantes.count }} participantes
+                </div>
+            </div>
+            
+            <div>
+                <h3><i class="fas fa-align-left"></i> Descripción</h3>
+                <p>{{ evento.descripcion|linebreaks }}</p>
+            </div>
+            
+            {% if evento.reglas %}
+            <div class="reglas-box">
+                <h3><i class="fas fa-gavel"></i> Reglas del Evento</h3>
+                {{ evento.reglas|linebreaks }}
+            </div>
+            {% endif %}
+            
+            <!-- Progreso del usuario en el evento (si está inscrito) -->
+            {% if evento.esta_inscrito and rol == 'ESTUDIANTE' %}
+            <div class="progreso-evento">
+                <h3><i class="fas fa-chart-line"></i> Mi Progreso en el Evento</h3>
+                <div class="progreso-barra">
+                    <div class="progreso-fill {% if retos_resueltos_count == total_retos %}completado{% endif %}" 
+                         style="width: {{ porcentaje }}%"></div>
+                </div>
+                <div class="stats-resumen">
+                    <div class="stat-mini">
+                        <div class="stat-number">{{ retos_resueltos_count }}/{{ total_retos }}</div>
+                        <div class="stat-label">Retos Completados</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-number">{{ puntos_obtenidos }}/{{ total_puntos }}</div>
+                        <div class="stat-label">Puntos Obtenidos</div>
+                    </div>
+                    <div class="stat-mini">
+                        <div class="stat-number">{{ porcentaje }}%</div>
+                        <div class="stat-label">Completado</div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="btn-group">
+                {% if rol == 'ESTUDIANTE' and not evento.esta_inscrito and evento.fecha_inicio > now %}
+                <button onclick="inscribirseEvento({{ evento.id }}, '{{ evento.nombre|escapejs }}')" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i> Inscribirme
+                </button>
+                {% endif %}
+                {% if evento.esta_inscrito and rol == 'ESTUDIANTE' %}
+                    {% if evento.fecha_inicio <= now and evento.fecha_fin >= now %}
+                    <a href="{% url 'listar_retos' %}?evento={{ evento.id }}" class="btn btn-success">
+                        <i class="fas fa-flag-checkered"></i> Comenzar a Jugar
+                    </a>
+                    {% else %}
+                    <span class="badge-estado badge-activo">
+                        <i class="fas fa-check"></i> Ya estás inscrito
+                    </span>
+                    {% endif %}
+                {% endif %}
+                {% if rol == 'INSTRUCTOR' %}
+                <a href="{% url 'editar_evento' evento.id %}" class="btn btn-outline">
+                    <i class="fas fa-edit"></i> Editar Evento
+                </a>
+                <a href="{% url 'eliminar_evento' evento.id %}" class="btn btn-outline" 
+                   onclick="return confirm('¿Eliminar el evento "{{ evento.nombre }}"?')">
+                    <i class="fas fa-trash"></i> Eliminar
+                </a>
+                {% endif %}
+                <a href="{% url 'listar_eventos' %}" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+
+        <!-- Retos del evento -->
+        <h2><i class="fas fa-flag"></i> Retos del Evento</h2>
+        <div class="stats-grid">
+            {% for reto in evento.retos.all %}
+            <div class="reto-card {% if reto.id in retos_resueltos_ids %}resuelto{% endif %}">
+                <div class="reto-titulo">
+                    <i class="fas fa-flag"></i> {{ reto.titulo }}
+                </div>
+                <div class="reto-meta">
+                    {{ reto.categoria.nombre }} • {{ reto.puntos }} pts
+                    {% if reto.dificultad == 'PRINCIPIANTE' %}
+                        <span style="color: #00ff00;">🌱 Principiante</span>
+                    {% elif reto.dificultad == 'INTERMEDIO' %}
+                        <span style="color: #ffaa00;">⚡ Intermedio</span>
+                    {% else %}
+                        <span style="color: #ff0000;">🔥 Avanzado</span>
+                    {% endif %}
+                </div>
+                {% if reto.id in retos_resueltos_ids %}
+                <div class="badge-resuelto">
+                    <i class="fas fa-check-circle"></i> Completado
+                </div>
+                {% endif %}
+                <div class="btn-group" style="margin-top: 0.5rem;">
+                    <a href="{% url 'detalle_reto' reto.id %}" class="btn btn-primary btn-sm" style="padding: 0.3rem 0.8rem; font-size: 0.7rem;">
+                        <i class="fas fa-play"></i> Resolver
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <p style="color: var(--text-muted);">No hay retos asignados a este evento.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Participantes -->
+        {% if evento.participantes.all %}
+        <div class="participantes">
+            <h3><i class="fas fa-users"></i> Participantes inscritos ({{ evento.participantes.count }})</h3>
+            <div>
+                {% for participante in evento.participantes.all %}
+                <span class="participante-item">
+                    <i class="fas fa-user"></i> {{ participante.username }}
+                </span>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </main>
+</div>
+
+<script>
+    function inscribirseEvento(eventoId, eventoNombre) {
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Inscribiendo...';
+        btn.disabled = true;
+        
+        fetch(`/event/${eventoId}/join/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                mostrarMensaje(data.message, 'success');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                mostrarMensaje(data.message, 'error');
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        })
+        .catch(error => {
+            mostrarMensaje('Error al inscribirse', 'error');
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    }
+    
+    function mostrarMensaje(mensaje, tipo) {
+        const existingMessages = document.querySelectorAll('.mensaje-flotante');
+        existingMessages.forEach(msg => msg.remove());
+        
+        const div = document.createElement('div');
+        div.className = 'mensaje-flotante';
+        div.style.background = tipo === 'error' ? '#ff0000' : '#00aa00';
+        div.innerHTML = `<i class="fas ${tipo === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${mensaje}`;
+        document.body.appendChild(div);
+        
+        setTimeout(() => {
+            if (div && div.remove) div.remove();
+        }, 3000);
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
+</body>
+</html>

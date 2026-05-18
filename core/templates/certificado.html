@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificado - CyberQuest</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary: #E10600;
+            --primary-hover: #FF2A2A;
+            --primary-light: rgba(225, 6, 0, 0.15);
+            --bg-primary: #0F0F12;
+            --bg-dark: #0a0a0f;
+            --text-primary: #F5F5F5;
+            --text-secondary: #B3B3B3;
+            --text-muted: #6c6c7a;
+            --shadow-gold: 0 0 30px rgba(255, 215, 0, 0.3);
+            --shadow-red: 0 0 15px rgba(225, 6, 0, 0.4);
+        }
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        /* ========== CERTIFICADO ========== */
+        .certificado-container {
+            max-width: 950px;
+            width: 100%;
+            background: linear-gradient(135deg, #1a1a2e 0%, #0f0f23 100%);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 3rem;
+            text-align: center;
+            box-shadow: var(--shadow-gold);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Efecto de fondo */
+        .certificado-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,215,0,0.05) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        
+        /* ========== ICONOS Y TÍTULOS ========== */
+        .certificado-icon {
+            font-size: 4.5rem;
+            color: #ffd700;
+            margin-bottom: 1rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .certificado-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #ffd700, #ffaa00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.3rem;
+            letter-spacing: 3px;
+        }
+        
+        .certificado-subtitle {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #ffd700;
+            display: inline-block;
+            padding-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        
+        /* ========== TEXTO DEL CERTIFICADO ========== */
+        .certificado-texto {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            letter-spacing: 1px;
+        }
+        
+        .certificado-nombre {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--primary), #FF6B6B);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 1rem 0;
+            font-family: 'Orbitron', monospace;
+            letter-spacing: 2px;
+        }
+        
+        .certificado-modulo {
+            font-size: 1.5rem;
+            margin: 1rem 0;
+            color: #ffd700;
+            font-weight: bold;
+        }
+        
+        .certificado-firma {
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px dashed rgba(255, 215, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .firma-item {
+            text-align: center;
+        }
+        
+        .firma-linea {
+            width: 150px;
+            height: 2px;
+            background: linear-gradient(90deg, #ffd700, transparent);
+            margin-bottom: 0.5rem;
+        }
+        
+        .firma-texto {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        
+        .certificado-fecha {
+            color: var(--text-muted);
+            margin: 1rem 0;
+            font-size: 0.9rem;
+        }
+        
+        .certificado-codigo {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 0.6rem;
+            border-radius: 8px;
+            font-family: monospace;
+            margin: 1rem 0;
+            font-size: 0.8rem;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            display: inline-block;
+        }
+        
+        /* ========== BOTONES MEJORADOS ========== */
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #E10600, #FF2A2A);
+            color: white;
+            box-shadow: var(--shadow-red);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 0 25px rgba(225, 6, 0, 0.6);
+            background: linear-gradient(135deg, #FF2A2A, #E10600);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #E10600;
+            color: #E10600;
+        }
+        
+        .btn-outline:hover {
+            background: rgba(225, 6, 0, 0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 0 15px rgba(225, 6, 0, 0.3);
+        }
+        
+        /* ========== RESPONSIVE ========== */
+        @media print {
+            .btn-group, .no-print {
+                display: none;
+            }
+            body {
+                background: white;
+                padding: 0;
+            }
+            .certificado-container {
+                box-shadow: none;
+                border: 2px solid #ffd700;
+                background: white;
+            }
+            .certificado-title, .certificado-nombre {
+                -webkit-text-fill-color: initial;
+                background: none;
+                color: #000;
+            }
+            .certificado-modulo {
+                color: #000;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .certificado-container {
+                padding: 1.5rem;
+            }
+            .certificado-nombre {
+                font-size: 1.8rem;
+            }
+            .certificado-modulo {
+                font-size: 1.2rem;
+            }
+            .firma-linea {
+                width: 100px;
+            }
+        }
+        
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="certificado-container">
+        <!-- Icono -->
+        <div class="certificado-icon">
+            <i class="fas fa-certificate"></i>
+        </div>
+        
+        <!-- Título -->
+        <div class="certificado-title">CYBERQUEST</div>
+        <div class="certificado-subtitle">Certificado de finalización</div>
+        
+        <!-- Texto principal -->
+        <div class="certificado-texto">
+            <p>Este certificado es otorgado a</p>
+        </div>
+        
+        <!-- Nombre del usuario -->
+        <div class="certificado-nombre">{{ usuario.get_full_name|default:usuario.username }}</div>
+        
+        <div class="certificado-texto">
+            <p>por completar exitosamente el módulo</p>
+        </div>
+        
+        <!-- Módulo completado -->
+        <div class="certificado-modulo">{{ modulo.titulo }}</div>
+        
+        <!-- Fecha y código -->
+        <div class="certificado-fecha">
+            <i class="fas fa-calendar-alt"></i> {{ fecha|date:"d/m/Y" }}
+        </div>
+        
+        <div class="certificado-codigo">
+            <i class="fas fa-qrcode"></i> Código de verificación: {{ certificado.codigo }}
+        </div>
+        
+        <!-- Firmas -->
+        <div class="certificado-firma">
+            <div class="firma-item">
+                <div class="firma-linea"></div>
+                <div class="firma-texto">Director de CyberQuest</div>
+            </div>
+            <div class="firma-item">
+                <div class="firma-linea"></div>
+                <div class="firma-texto">Coordinador Académico</div>
+            </div>
+            <div class="firma-item">
+                <div class="firma-linea"></div>
+                <div class="firma-texto">Sello de Calidad</div>
+            </div>
+        </div>
+        
+        <!-- Botones -->
+        <div class="btn-group no-print">
+            <button onclick="window.print()" class="btn btn-primary">
+                <i class="fas fa-print"></i> Imprimir / Guardar PDF
+            </button>
+            <a href="{% url 'progreso_modulo' modulo.id %}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Volver al progreso
+            </a>
+            <a href="{% url 'listar_modulos' %}" class="btn btn-outline">
+                <i class="fas fa-book"></i> Ver todos los módulos
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        // Animación al cargar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Efecto de brillo en el borde
+            const container = document.querySelector('.certificado-container');
+            if (container) {
+                setInterval(() => {
+                    container.style.boxShadow = '0 0 35px rgba(255, 215, 0, 0.4)';
+                    setTimeout(() => {
+                        container.style.boxShadow = '0 0 25px rgba(255, 215, 0, 0.2)';
+                    }, 500);
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+</html>

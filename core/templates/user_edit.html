@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - Editar Usuario</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'principal.css' %}">
+    <style>
+        .form-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .btn {
+            flex: 1;
+            padding: 0.75rem;
+            justify-content: center;
+        }
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            color: var(--text-primary);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        .btn-outline:hover {
+            background: var(--primary-light);
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+        .info-box {
+            background: var(--primary-light);
+            border: 1px solid var(--primary);
+            border-radius: var(--radius);
+            padding: 0.8rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    {% include 'nav.html' %}
+
+    <main class="main-content">
+        <div class="top-header">
+            <h1 class="page-title">
+                <i class="fas fa-user-edit"></i> Editar Usuario: {{ perfil.usuario.username }}
+            </h1>
+            <a href="{% url 'listar_usuarios' %}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+        </div>
+
+        <div class="form-container">
+            <div class="info-box">
+                <i class="fas fa-info-circle"></i> Editando usuario <strong>{{ perfil.usuario.username }}</strong>
+            </div>
+            
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label><i class="fas fa-envelope"></i> Correo electrónico</label>
+                    <input type="email" name="email" class="form-control" value="{{ perfil.usuario.email }}">
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-tag"></i> Rol</label>
+                    <select name="rol" class="form-control">
+                        <option value="ESTUDIANTE" {% if perfil.rol == 'ESTUDIANTE' %}selected{% endif %}>🎓 Competidor</option>
+                        <option value="INSTRUCTOR" {% if perfil.rol == 'INSTRUCTOR' %}selected{% endif %}>📚 Instructor</option>
+                        <option value="ADMIN" {% if perfil.rol == 'ADMIN' %}selected{% endif %}>👑 Administrador</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label><i class="fas fa-star"></i> Puntos</label>
+                    <input type="number" name="puntos" class="form-control" value="{{ perfil.puntos }}">
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                    <a href="{% url 'listar_usuarios' %}" class="btn btn-outline">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

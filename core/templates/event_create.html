@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - Crear Evento CTF</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'principal.css' %}">
+    <style>
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 5px rgba(225, 6, 0, 0.3);
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            font-family: 'Orbitron', monospace;
+            font-size: 0.8rem;
+        }
+        textarea.form-control {
+            resize: vertical;
+        }
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            border: none;
+            font-family: 'Orbitron', monospace;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        .btn-outline:hover {
+            background: var(--primary-light);
+        }
+        .btn-success {
+            background: #00aa00;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #00cc00;
+        }
+        .activity-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            color: var(--text-primary);
+        }
+        .section-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-dark);
+            padding-bottom: 0.5rem;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .checkbox-group input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .col {
+            flex: 1;
+            min-width: 200px;
+        }
+        hr {
+            border-color: var(--border-dark);
+            margin: 1.5rem 0;
+        }
+        .retos-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            max-height: 350px;
+            overflow-y: auto;
+            padding: 0.5rem;
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+        }
+        .reto-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .reto-checkbox:hover {
+            background: var(--primary-light);
+        }
+        .reto-checkbox input {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .reto-checkbox label {
+            margin-bottom: 0;
+            cursor: pointer;
+            color: var(--text-secondary);
+            flex: 1;
+        }
+        .seleccionar-todos {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 0.5rem;
+        }
+        .alert-info {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    {% include 'nav.html' %}
+
+    <main class="main-content">
+        <div class="top-header">
+            <h1 class="page-title">Crear Nuevo Evento CTF</h1>
+        </div>
+
+        <div class="alert-info">
+            <i class="fas fa-info-circle"></i> Completa los campos para crear un nuevo evento. Los retos seleccionados estarán disponibles durante el evento.
+        </div>
+
+        <div class="activity-card">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Información básica -->
+                <h3 class="section-title"><i class="fas fa-info-circle"></i> Información del Evento</h3>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label><i class="fas fa-tag"></i> Nombre del Evento</label>
+                    <input type="text" name="nombre" class="form-control" placeholder="Ej: CTF EMI 2026" required autofocus>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label><i class="fas fa-align-left"></i> Descripción</label>
+                    <textarea name="descripcion" rows="4" class="form-control" placeholder="Describe el evento, las reglas y los objetivos..." required></textarea>
+                </div>
+                
+                <div class="row">
+                    <div class="col">
+                        <label><i class="fas fa-calendar-alt"></i> Fecha de Inicio</label>
+                        <input type="datetime-local" name="fecha_inicio" class="form-control" required 
+                               value="{% now 'Y-m-d\TH:i' %}">
+                    </div>
+                    <div class="col">
+                        <label><i class="fas fa-calendar-check"></i> Fecha de Fin</label>
+                        <input type="datetime-local" name="fecha_fin" class="form-control" required 
+                               value="{% now 'Y-m-d\TH:i' %}">
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label><i class="fas fa-gavel"></i> Reglas del Evento</label>
+                    <textarea name="reglas" rows="5" class="form-control" placeholder="Reglas del evento:&#10;- No compartir flags&#10;- No hacer trampa&#10;- No ataques a la infraestructura&#10;- Cada reto tiene un puntaje específico&#10;- El equipo con más puntos gana"></textarea>
+                    <small>Define las reglas que los participantes deben seguir</small>
+                </div>
+                
+                <hr>
+                
+                <!-- Retos del evento -->
+                <h3 class="section-title"><i class="fas fa-flag"></i> Retos del Evento</h3>
+                <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1rem;">
+                    <i class="fas fa-info-circle"></i> Selecciona los retos que formarán parte de este evento CTF
+                </p>
+                
+                <div class="seleccionar-todos">
+                    <button type="button" class="btn btn-success btn-sm" id="btn-seleccionar-todos" style="padding: 0.3rem 0.8rem; font-size: 0.7rem;">
+                        <i class="fas fa-check-double"></i> Seleccionar todos
+                    </button>
+                </div>
+                
+                <div class="retos-list" id="retos-list">
+                    {% for reto in retos %}
+                    <div class="reto-checkbox">
+                        <input type="checkbox" name="retos" value="{{ reto.id }}" id="reto_{{ reto.id }}">
+                        <label for="reto_{{ reto.id }}">
+                            <strong>{{ reto.titulo }}</strong> - {{ reto.puntos }} pts
+                            <span style="color: var(--text-muted);">({{ reto.categoria.nombre }})</span>
+                        </label>
+                    </div>
+                    {% empty %}
+                    <p style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                        No hay retos disponibles. Crea retos primero.
+                    </p>
+                    {% endfor %}
+                </div>
+                
+                <div class="checkbox-group" style="margin-top: 1rem;">
+                    <input type="checkbox" name="esta_activo" id="esta_activo">
+                    <label for="esta_activo" style="margin-bottom: 0;">Activar evento inmediatamente</label>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Crear Evento
+                    </button>
+                    <a href="{% url 'listar_eventos' %}" class="btn btn-outline">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Seleccionar/Deseleccionar todos los retos
+    const btnSeleccionarTodos = document.getElementById('btn-seleccionar-todos');
+    if (btnSeleccionarTodos) {
+        let todosSeleccionados = false;
+        
+        btnSeleccionarTodos.addEventListener('click', function() {
+            const checkboxes = document.querySelectorAll('.reto-checkbox input[type="checkbox"]');
+            
+            if (!todosSeleccionados) {
+                checkboxes.forEach(cb => cb.checked = true);
+                this.innerHTML = '<i class="fas fa-times"></i> Deseleccionar todos';
+                todosSeleccionados = true;
+            } else {
+                checkboxes.forEach(cb => cb.checked = false);
+                this.innerHTML = '<i class="fas fa-check-double"></i> Seleccionar todos';
+                todosSeleccionados = false;
+            }
+        });
+    }
+    
+    // Fechas: asegurar que fecha_fin sea mayor que fecha_inicio
+    const fechaInicio = document.querySelector('input[name="fecha_inicio"]');
+    const fechaFin = document.querySelector('input[name="fecha_fin"]');
+    
+    if (fechaInicio && fechaFin) {
+        fechaInicio.addEventListener('change', function() {
+            if (fechaFin.value && fechaFin.value < this.value) {
+                fechaFin.value = this.value;
+            }
+        });
+        
+        fechaFin.addEventListener('change', function() {
+            if (fechaInicio.value && this.value < fechaInicio.value) {
+                this.value = fechaInicio.value;
+            }
+        });
+    }
+</script>
+
+</body>
+</html>

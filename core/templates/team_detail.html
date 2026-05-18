@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - {{ equipo.nombre }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'principal.css' %}">
+    <style>
+        .team-header {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .team-nombre {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        .team-codigo {
+            background: var(--bg-dark);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            display: inline-block;
+            font-family: monospace;
+            margin-top: 1rem;
+        }
+        .team-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+        .stat-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+        .stat-number {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        .miembros-lista {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .miembro-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-dark);
+            transition: background 0.2s ease;
+        }
+        .miembro-item:hover {
+            background: var(--bg-secondary);
+        }
+        .miembro-item:last-child {
+            border-bottom: none;
+        }
+        .miembro-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .miembro-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        .miembro-lider {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.6rem;
+            margin-left: 0.5rem;
+        }
+        .miembro-actual {
+            background: rgba(225, 6, 0, 0.2);
+            color: var(--primary);
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.6rem;
+            margin-left: 0.5rem;
+        }
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        .btn-outline:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        .btn-danger {
+            background: #aa0000;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #cc0000;
+            transform: translateY(-2px);
+        }
+        .btn-warning {
+            background: #ff8800;
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #ffaa00;
+            transform: translateY(-2px);
+        }
+        .btn-success {
+            background: #00aa00;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #00cc00;
+            transform: translateY(-2px);
+        }
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            color: var(--text-primary);
+        }
+        .copy-btn {
+            background: var(--primary-light);
+            border: none;
+            color: var(--primary);
+            padding: 0.2rem 0.5rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            margin-left: 0.5rem;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.05);
+        }
+        .access-denied {
+            text-align: center;
+            padding: 3rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--danger);
+        }
+        .access-denied i {
+            font-size: 4rem;
+            color: var(--danger);
+            margin-bottom: 1rem;
+        }
+        .mensaje-flotante {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #00aa00;
+            color: white;
+            padding: 1rem;
+            border-radius: var(--radius);
+            z-index: 1000;
+            animation: fadeOut 3s ease forwards;
+        }
+        .mensaje-flotante.error {
+            background: #ff0000;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translateY(0); }
+            70% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); visibility: hidden; }
+        }
+        .btn-sm {
+            padding: 0.3rem 0.8rem;
+            font-size: 0.6rem;
+        }
+        .empty-members {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    {% include 'nav.html' %}
+
+    <main class="main-content">
+        <!-- VERIFICACIÓN DE ACCESO -->
+        {% if request.user == equipo.lider or request.user in equipo.miembros.all %}
+        
+        <div class="top-header">
+            <h1 class="page-title">
+                <i class="fas fa-users"></i> Detalle del Equipo
+            </h1>
+            <div class="btn-group">
+                <a href="{% url 'equipo_retos' equipo.id %}" class="btn btn-success">
+                    <i class="fas fa-flag-checkered"></i> Ver Retos del Equipo
+                </a>
+                <a href="{% url 'listar_equipos' %}" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+            </div>
+        </div>
+
+        <div class="team-header">
+            <div class="team-nombre">
+                <i class="fas fa-users"></i> {{ equipo.nombre }}
+            </div>
+            <p>{{ equipo.descripcion|default:"Sin descripción" }}</p>
+            
+            {% if request.user == equipo.lider %}
+            <div class="team-codigo">
+                <i class="fas fa-key"></i> Código de invitación: 
+                <strong>{{ equipo.codigo_invitacion }}</strong>
+                <button class="copy-btn" onclick="copiarCodigo('{{ equipo.codigo_invitacion }}')">
+                    <i class="fas fa-copy"></i> Copiar
+                </button>
+                <p style="font-size: 0.7rem; margin-top: 0.5rem; color: var(--text-muted);">
+                    Comparte este código con personas de confianza para que se unan al equipo
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="team-stats">
+            <div class="stat-card">
+                <div class="stat-number">{{ equipo.cantidad_miembros }}</div>
+                <div class="stat-label">Miembros</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ equipo.puntos }}</div>
+                <div class="stat-label">Puntos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ equipo.creado_en|date:"d/m/Y" }}</div>
+                <div class="stat-label">Creado</div>
+            </div>
+        </div>
+
+        <div class="miembros-lista">
+            <h3><i class="fas fa-user-friends"></i> Miembros del Equipo</h3>
+            
+            <!-- Líder -->
+            <div class="miembro-item">
+                <div class="miembro-info">
+                    <div class="miembro-avatar">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div>
+                        <strong>{{ equipo.lider.username }}</strong>
+                        <span class="miembro-lider">Líder</span>
+                        {% if request.user == equipo.lider %}
+                        <span class="miembro-actual">(Tú)</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if request.user == equipo.lider %}
+                <span class="text-muted" style="font-size: 0.7rem;">
+                    <i class="fas fa-star"></i> Eres el líder
+                </span>
+                {% endif %}
+            </div>
+            
+            <!-- Miembros -->
+            {% for miembro in equipo.miembros.all %}
+            <div class="miembro-item">
+                <div class="miembro-info">
+                    <div class="miembro-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <strong>{{ miembro.username }}</strong>
+                        {% if request.user == miembro %}
+                        <span class="miembro-actual">(Tú)</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if request.user == equipo.lider %}
+                <a href="#" class="btn btn-danger btn-sm" onclick="return confirm('¿Expulsar a {{ miembro.username }} del equipo?')">
+                    <i class="fas fa-user-minus"></i> Expulsar
+                </a>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="empty-members">
+                <i class="fas fa-user-plus"></i>
+                <p>No hay miembros adicionales en el equipo</p>
+                <p class="text-muted" style="font-size: 0.7rem;">Comparte el código de invitación para agregar más miembros</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="btn-group">
+            {% if request.user == equipo.lider %}
+            <a href="#" class="btn btn-outline" onclick="return confirm('Funcionalidad en desarrollo')">
+                <i class="fas fa-edit"></i> Editar Equipo
+            </a>
+            <a href="#" class="btn btn-danger" onclick="return confirm('¿Eliminar el equipo permanentemente? Esta acción no se puede deshacer.')">
+                <i class="fas fa-trash"></i> Eliminar Equipo
+            </a>
+            {% endif %}
+            
+            {% if request.user != equipo.lider %}
+            <a href="{% url 'salir_equipo' equipo.id %}" class="btn btn-warning" onclick="return confirm('¿Seguro que quieres salir del equipo? Perderás acceso a los retos del equipo.')">
+                <i class="fas fa-sign-out-alt"></i> Salir del Equipo
+            </a>
+            {% endif %}
+        </div>
+        
+        {% else %}
+        <!-- ACCESO DENEGADO -->
+        <div class="access-denied">
+            <i class="fas fa-lock"></i>
+            <h2>Acceso Restringido</h2>
+            <p>No tienes permiso para ver este equipo.</p>
+            <p>Este equipo es privado y solo visible para sus miembros.</p>
+            <div class="btn-group" style="margin-top: 1rem; justify-content: center;">
+                <a href="{% url 'listar_equipos' %}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left"></i> Volver a Equipos
+                </a>
+                <a href="{% url 'unirse_equipo' %}" class="btn btn-outline">
+                    <i class="fas fa-sign-in-alt"></i> Unirse con código
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </main>
+</div>
+
+<script>
+    function copiarCodigo(codigo) {
+        navigator.clipboard.writeText(codigo).then(function() {
+            mostrarMensaje('Código copiado: ' + codigo, 'success');
+        }).catch(function() {
+            alert('Código: ' + codigo);
+        });
+    }
+    
+    function mostrarMensaje(mensaje, tipo) {
+        // Eliminar mensajes anteriores
+        const existingMessages = document.querySelectorAll('.mensaje-flotante');
+        existingMessages.forEach(msg => msg.remove());
+        
+        const div = document.createElement('div');
+        div.className = `mensaje-flotante ${tipo === 'error' ? 'error' : ''}`;
+        div.innerHTML = `<i class="fas ${tipo === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${mensaje}`;
+        document.body.appendChild(div);
+        
+        setTimeout(() => {
+            if (div && div.remove) {
+                div.remove();
+            }
+        }, 3000);
+    }
+</script>
+
+</body>
+</html>

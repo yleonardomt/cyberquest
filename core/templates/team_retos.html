@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - Retos del Equipo: {{ equipo.nombre }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'principal.css' %}">
+    <style>
+        .reto-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.2s ease;
+        }
+        .reto-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+        .reto-card.resuelto {
+            border-color: #00aa00;
+            background: rgba(0, 170, 0, 0.05);
+        }
+        .reto-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-dark);
+        }
+        .reto-titulo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            color: var(--primary);
+        }
+        .reto-badges {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        .badge-dificultad {
+            background: var(--bg-dark);
+            color: var(--text-secondary);
+        }
+        .badge-dificultad.PRINCIPIANTE { background: #00aa00; color: white; }
+        .badge-dificultad.INTERMEDIO { background: #ff8800; color: white; }
+        .badge-dificultad.AVANZADO { background: #ff0000; color: white; }
+        .badge-puntos {
+            background: var(--primary);
+            color: white;
+        }
+        .badge-resuelto {
+            background: #00aa00;
+            color: white;
+        }
+        .reto-descripcion {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+        .reto-pista {
+            background: var(--bg-secondary);
+            padding: 0.8rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--primary);
+            font-size: 0.9rem;
+        }
+        .reto-pista i {
+            color: var(--primary);
+            margin-right: 0.5rem;
+        }
+        .flag-form {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+        .flag-input {
+            flex: 1;
+            padding: 0.8rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+        }
+        .flag-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+        .btn-success {
+            background: #00aa00;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #00cc00;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        .btn-outline:hover {
+            background: var(--primary-light);
+        }
+        .btn-docker {
+            background: #2496ed;
+            color: white;
+        }
+        .btn-docker:hover {
+            background: #1a7bc9;
+        }
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            color: var(--text-primary);
+        }
+        .filtros-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .search-box {
+            flex: 1;
+            max-width: 300px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 0.6rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+        }
+        .filtros {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .filtro-btn {
+            padding: 0.4rem 1rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+        }
+        .filtro-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .stats-equipo {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius);
+            padding: 1rem;
+            text-align: center;
+        }
+        .stat-number {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+        }
+        .mensaje-flotante {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #00aa00;
+            color: white;
+            padding: 1rem;
+            border-radius: var(--radius);
+            z-index: 1000;
+            animation: fadeOut 3s ease forwards;
+        }
+        .mensaje-flotante.error {
+            background: #ff0000;
+        }
+        @keyframes fadeOut {
+            0% { opacity: 1; transform: translateY(0); }
+            70% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); visibility: hidden; }
+        }
+        .entorno-info {
+            margin-top: 1rem;
+            padding: 0.8rem;
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            border: 1px solid var(--primary);
+        }
+        .entorno-url {
+            font-family: monospace;
+            color: var(--primary);
+            word-break: break-all;
+        }
+        .btn-sm {
+            padding: 0.3rem 0.8rem;
+            font-size: 0.6rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    {% include 'nav.html' %}
+
+    <main class="main-content">
+        <div class="top-header">
+            <h1 class="page-title">
+                <i class="fas fa-flag-checkered"></i> Retos del Equipo: {{ equipo.nombre }}
+            </h1>
+            <a href="{% url 'listar_equipos' %}" class="btn btn-outline">
+                <i class="fas fa-arrow-left"></i> Volver a Equipos
+            </a>
+        </div>
+
+        <!-- Estadísticas del equipo -->
+        <div class="stats-equipo">
+            <div class="stat-card">
+                <div class="stat-number">{{ equipo.nombre }}</div>
+                <div class="stat-label">Equipo</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ retos_resueltos_count }}</div>
+                <div class="stat-label">Retos Resueltos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ equipo.puntos }}</div>
+                <div class="stat-label">Puntos Totales</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ equipo.cantidad_miembros }}</div>
+                <div class="stat-label">Miembros</div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filtros-bar">
+            <div class="search-box">
+                <input type="text" id="buscarReto" placeholder="🔍 Buscar reto por nombre..." onkeyup="filtrarRetos()">
+            </div>
+            <div class="filtros">
+                <button class="filtro-btn active" data-dificultad="todos" onclick="filtrarPorDificultad('todos')">Todos</button>
+                <button class="filtro-btn" data-dificultad="PRINCIPIANTE" onclick="filtrarPorDificultad('PRINCIPIANTE')">🌱 Principiante</button>
+                <button class="filtro-btn" data-dificultad="INTERMEDIO" onclick="filtrarPorDificultad('INTERMEDIO')">⚡ Intermedio</button>
+                <button class="filtro-btn" data-dificultad="AVANZADO" onclick="filtrarPorDificultad('AVANZADO')">🔥 Avanzado</button>
+            </div>
+        </div>
+
+        <!-- Lista de retos -->
+        <div id="listaRetos">
+            {% for reto in retos %}
+            <div class="reto-card {% if reto.id in retos_resueltos_ids %}resuelto{% endif %}" 
+                 data-titulo="{{ reto.titulo|lower }}" 
+                 data-dificultad="{{ reto.dificultad }}">
+                
+                <div class="reto-header">
+                    <span class="reto-titulo">
+                        <i class="fas fa-flag"></i> {{ reto.titulo }}
+                    </span>
+                    <div class="reto-badges">
+                        <span class="badge badge-dificultad {{ reto.dificultad }}">
+                            {% if reto.dificultad == 'PRINCIPIANTE' %}🌱 Principiante
+                            {% elif reto.dificultad == 'INTERMEDIO' %}⚡ Intermedio
+                            {% else %}🔥 Avanzado{% endif %}
+                        </span>
+                        <span class="badge badge-puntos">
+                            <i class="fas fa-star"></i> {{ reto.puntos }} pts
+                        </span>
+                        {% if reto.id in retos_resueltos_ids %}
+                        <span class="badge badge-resuelto">
+                            <i class="fas fa-check-circle"></i> Resuelto
+                        </span>
+                        {% endif %}
+                        {% if reto.tiene_docker %}
+                        <span class="badge" style="background: #2496ed;">
+                            <i class="fab fa-docker"></i> Docker
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="reto-descripcion">
+                    {{ reto.descripcion|linebreaks }}
+                </div>
+                
+                {% if reto.pista %}
+                <div class="reto-pista">
+                    <i class="fas fa-lightbulb"></i>
+                    <strong>Pista:</strong> {{ reto.pista }}
+                </div>
+                {% endif %}
+                
+                <!-- Botón para entorno Docker -->
+                {% if reto.tiene_docker %}
+                <div class="entorno-info" id="entorno-{{ reto.id }}">
+                    {% if reto.entorno_activo and reto.entorno_activo.estado == 'EJECUTANDO' %}
+                        <p><i class="fas fa-play-circle" style="color: #00aa00;"></i> <strong>Entorno activo:</strong></p>
+                        <p class="entorno-url"><i class="fas fa-link"></i> URL: <a href="{{ reto.entorno_activo.configuracion_vpn }}" target="_blank">{{ reto.entorno_activo.configuracion_vpn }}</a></p>
+                        <a href="{% url 'detener_entorno' reto.entorno_activo.id %}" class="btn btn-outline btn-sm" onclick="return confirm('¿Detener el entorno?')">
+                            <i class="fas fa-stop"></i> Detener Entorno
+                        </a>
+                    {% else %}
+                        <a href="{% url 'iniciar_entorno' reto.id %}" class="btn btn-docker btn-sm">
+                            <i class="fab fa-docker"></i> Iniciar Entorno Docker
+                        </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <!-- Formulario para enviar bandera -->
+                {% if reto.id not in retos_resueltos_ids %}
+                <form method="POST" action="{% url 'enviar_bandera_equipo' equipo.id %}" class="flag-form" onsubmit="return enviarBandera(event, this, {{ reto.id }})">
+                    {% csrf_token %}
+                    <input type="hidden" name="reto_id" value="{{ reto.id }}">
+                    <input type="text" name="bandera" class="flag-input" placeholder="Ingresa la bandera (flag)..." required>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-paper-plane"></i> Enviar Bandera
+                    </button>
+                </form>
+                {% else %}
+                <div style="margin-top: 1rem; text-align: center; padding: 0.5rem; background: rgba(0, 170, 0, 0.1); border-radius: var(--radius);">
+                    <i class="fas fa-trophy" style="color: #00aa00;"></i> 
+                    <span style="color: #00aa00;">¡Este reto ya fue superado por el equipo!</span>
+                </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-flag" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                <h3>No hay retos disponibles</h3>
+                <p>Pronto se agregarán nuevos retos para tu equipo</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</div>
+
+<script>
+    let dificultadActual = 'todos';
+    
+    function filtrarRetos() {
+        const busqueda = document.getElementById('buscarReto').value.toLowerCase();
+        const retos = document.querySelectorAll('.reto-card');
+        
+        retos.forEach(reto => {
+            const titulo = reto.getAttribute('data-titulo');
+            const dificultad = reto.getAttribute('data-dificultad');
+            
+            const coincideBusqueda = titulo.includes(busqueda);
+            const coincideDificultad = dificultadActual === 'todos' || dificultad === dificultadActual;
+            
+            if (coincideBusqueda && coincideDificultad) {
+                reto.style.display = 'block';
+            } else {
+                reto.style.display = 'none';
+            }
+        });
+    }
+    
+    function filtrarPorDificultad(dificultad) {
+        dificultadActual = dificultad;
+        
+        document.querySelectorAll('.filtro-btn').forEach(btn => {
+            btn.classList.remove('active');
+            if (btn.getAttribute('data-dificultad') === dificultad) {
+                btn.classList.add('active');
+            }
+        });
+        
+        filtrarRetos();
+    }
+    
+    async function enviarBandera(event, form, retoId) {
+        event.preventDefault();
+        
+        // Mostrar mensaje de carga
+        const btn = form.querySelector('button[type="submit"]');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        btn.disabled = true;
+        
+        const formData = new FormData(form);
+        
+        try {
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                mostrarMensaje(data.message, 'success');
+                setTimeout(() => {
+                    location.reload();
+                }, 1500);
+            } else {
+                mostrarMensaje(data.message, 'error');
+                form.querySelector('.flag-input').value = '';
+                form.querySelector('.flag-input').focus();
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            mostrarMensaje('Error al conectar con el servidor: ' + error.message, 'error');
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+        
+        return false;
+    }
+    
+    function mostrarMensaje(mensaje, tipo) {
+        // Eliminar mensajes anteriores
+        const existingMessages = document.querySelectorAll('.mensaje-flotante');
+        existingMessages.forEach(msg => msg.remove());
+        
+        const div = document.createElement('div');
+        div.className = `mensaje-flotante ${tipo === 'error' ? 'error' : ''}`;
+        div.innerHTML = `<i class="fas ${tipo === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${mensaje}`;
+        document.body.appendChild(div);
+        
+        setTimeout(() => {
+            if (div && div.remove) {
+                div.remove();
+            }
+        }, 3000);
+    }
+    
+    // Inicializar búsqueda al cargar
+    document.addEventListener('DOMContentLoaded', function() {
+        // Asegurar que todos los retos sean visibles inicialmente
+        filtrarRetos();
+    });
+</script>
+
+</body>
+</html>

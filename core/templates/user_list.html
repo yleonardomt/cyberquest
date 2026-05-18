@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - Gestión de Usuarios</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'principal.css' %}">
+    <style>
+        .stats-resumen {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .resumen-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius);
+            padding: 0.8rem 1.2rem;
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+        }
+        .resumen-number {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .resumen-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .user-table th {
+            text-align: left;
+            padding: 0.8rem;
+            background: var(--bg-secondary);
+            font-family: 'Orbitron', monospace;
+            font-size: 0.7rem;
+            color: var(--text-primary);
+            border-bottom: 1px solid var(--border-dark);
+        }
+        .user-table td {
+            padding: 0.8rem;
+            border-bottom: 1px solid var(--border-dark);
+            font-size: 0.8rem;
+        }
+        .user-table tr:hover {
+            background: var(--bg-secondary);
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .user-avatar-small {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-light);
+        }
+        .badge-actual {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 0.1rem 0.3rem;
+            border-radius: 10px;
+            font-size: 0.6rem;
+            margin-left: 0.3rem;
+        }
+        .role-badge {
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+        .role-admin {
+            background: #ff0000;
+            color: white;
+        }
+        .role-instructor {
+            background: #ff8800;
+            color: white;
+        }
+        .role-estudiante {
+            background: #00aa00;
+            color: white;
+        }
+        .badge-activo {
+            background: rgba(0, 170, 0, 0.2);
+            color: #00ff00;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+        .badge-bloqueado {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6666;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+        }
+        .puntos-cell {
+            font-family: 'Orbitron', monospace;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .actions-cell {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .btn-icon {
+            padding: 0.3rem 0.6rem;
+            border-radius: var(--radius-sm);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-icon.edit {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+        .btn-icon.edit:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-icon.block {
+            background: rgba(255, 136, 0, 0.2);
+            color: #ff8800;
+        }
+        .btn-icon.block:hover {
+            background: #ff8800;
+            color: white;
+        }
+        .btn-icon.delete {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff0000;
+        }
+        .btn-icon.delete:hover {
+            background: #ff0000;
+            color: white;
+        }
+        .empty-row {
+            text-align: center;
+            padding: 2rem;
+        }
+        .empty-row i {
+            font-size: 3rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+        .alert {
+            padding: 0.8rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+        }
+        .alert-success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+        }
+        .alert-error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            color: #ff6666;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.7rem;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    {% include 'nav.html' %}
+
+    <main class="main-content">
+        <div class="top-header">
+            <h1 class="page-title">
+                <i class="fas fa-users"></i> Gestión de Usuarios
+            </h1>
+            <a href="{% url 'crear_usuario' %}" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i> Nuevo Usuario
+            </a>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="stats-resumen">
+            <div class="resumen-card">
+                <div class="resumen-number">{{ usuarios|length }}</div>
+                <div class="resumen-label">Total Usuarios</div>
+            </div>
+            <div class="resumen-card">
+                <div class="resumen-number" style="color: #00aa00;">{{ usuarios|length }}</div>
+                <div class="resumen-label">Usuarios Activos</div>
+            </div>
+            <div class="resumen-card">
+                <div class="resumen-number" style="color: var(--primary);">0</div>
+                <div class="resumen-label">Total Puntos</div>
+            </div>
+        </div>
+
+        <div class="activity-card">
+            <div style="overflow-x: auto;">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Usuario</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th>Puntos</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in usuarios %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <div class="user-info">
+                                    <div class="user-avatar-small">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <strong>{{ p.usuario.username }}</strong>
+                                    {% if p.usuario == request.user %}
+                                    <span class="badge-actual">(Tú)</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>{{ p.usuario.email }}</td>
+                            <td>
+                                <span class="role-badge role-{{ p.rol|lower }}">
+                                    {% if p.rol == 'ADMIN' %}
+                                    <i class="fas fa-crown"></i> Administrador
+                                    {% elif p.rol == 'INSTRUCTOR' %}
+                                    <i class="fas fa-chalkboard-user"></i> Instructor
+                                    {% else %}
+                                    <i class="fas fa-user-graduate"></i> Competidor
+                                    {% endif %}
+                                </span>
+                            </td>
+                            <td class="puntos-cell">{{ p.puntos }} pts</td>
+                            <td>
+                                {% if p.esta_bloqueado %}
+                                <span class="badge-bloqueado"><i class="fas fa-lock"></i> Bloqueado</span>
+                                {% else %}
+                                <span class="badge-activo"><i class="fas fa-check-circle"></i> Activo</span>
+                                {% endif %}
+                            </td>
+                            <td class="actions-cell">
+                                <a href="{% url 'editar_usuario' p.id %}" class="btn-icon edit" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'bloquear_usuario' p.id %}" class="btn-icon block" title="{% if p.esta_bloqueado %}Desbloquear{% else %}Bloquear{% endif %}">
+                                    {% if p.esta_bloqueado %}
+                                    <i class="fas fa-unlock-alt"></i>
+                                    {% else %}
+                                    <i class="fas fa-ban"></i>
+                                    {% endif %}
+                                </a>
+                                {% if p.usuario != request.user %}
+                                <a href="{% url 'eliminar_usuario' p.id %}" class="btn-icon delete" title="Eliminar" onclick="return confirm('¿Eliminar usuario {{ p.usuario.username }}?')">
+                                    <i class="fas fa-trash-alt"></i>
+                                </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="empty-row">
+                                <i class="fas fa-users-slash"></i>
+                                <p>No hay usuarios registrados</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

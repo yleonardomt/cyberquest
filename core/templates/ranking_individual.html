@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - Ranking Competidores</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Share+Tech+Mono&family=Chakra+Petch:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'principal.css' %}">
+    <style>
+        :root {
+            --primary: #E10600;
+            --primary-hover: #FF2A2A;
+            --primary-light: rgba(225, 6, 0, 0.15);
+            --primary-dark: #8B0000;
+            --bg-primary: #0F0F12;
+            --bg-secondary: #16161C;
+            --bg-card: #1a1a24;
+            --bg-sidebar: #0a0a0f;
+            --text-primary: #F5F5F5;
+            --text-secondary: #B3B3B3;
+            --text-muted: #6c6c7a;
+            --border: #E10600;
+            --border-dark: #8B0000;
+            --shadow: 0 0 10px rgba(225, 6, 0, 0.3);
+            --radius: 8px;
+            --radius-lg: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .stat-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: var(--shadow);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Charts */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+        }
+
+        .chart-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--primary);
+        }
+
+        canvas {
+            max-height: 300px;
+            width: 100%;
+        }
+
+        /* Podium */
+        .podium-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .podium {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .podium-item {
+            text-align: center;
+            padding: 1rem;
+            border-radius: var(--radius-lg);
+            transition: all 0.3s ease;
+        }
+
+        .podium-item.first {
+            order: 2;
+            transform: scale(1.1);
+        }
+
+        .podium-item.second {
+            order: 1;
+        }
+
+        .podium-item.third {
+            order: 3;
+        }
+
+        .podium-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .podium-medal {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .gold {
+            color: #FFD700;
+        }
+
+        .silver {
+            color: #C0C0C0;
+        }
+
+        .bronze {
+            color: #CD7F32;
+        }
+
+        .podium-name {
+            font-family: 'Orbitron', monospace;
+            font-weight: 600;
+            margin: 0.5rem 0;
+        }
+
+        .podium-points {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        /* Table */
+        .ranking-table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            overflow-x: auto;
+        }
+
+        .ranking-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .ranking-table th {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            text-align: left;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.8rem;
+            color: var(--primary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .ranking-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(225, 6, 0, 0.1);
+        }
+
+        .ranking-table tr:hover {
+            background: var(--primary-light);
+        }
+
+        .ranking-table tr.current-user {
+            background: var(--primary-light);
+            border-left: 3px solid var(--primary);
+        }
+
+        .avatar-sm {
+            width: 32px;
+            height: 32px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.5rem;
+        }
+
+        .badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .badge-competidor {
+            background: #28a745;
+            color: white;
+        }
+
+        .progress-bar-container {
+            background: rgba(225, 6, 0, 0.2);
+            border-radius: 10px;
+            height: 6px;
+            width: 100px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            background: var(--primary);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        .btn-toggle {
+            display: inline-flex;
+            gap: 0.5rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.5rem 1rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-toggle:hover,
+        .btn-toggle.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .podium {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .podium-item.first,
+            .podium-item.second,
+            .podium-item.third {
+                order: 0;
+                transform: none;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+
+        {% include 'nav.html' %}
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="top-header">
+                <h1 class="page-title">
+                    <i class="fas fa-trophy" style="color: #FFD700;"></i> Ranking Competidores
+                </h1>
+                <div style="display: flex; gap: 1rem;">
+                    <a href="{% url 'ranking_individual' %}" class="btn-toggle active">
+                        <i class="fas fa-user"></i> Individual
+                    </a>
+                    <a href="{% url 'ranking_equipos' %}" class="btn-toggle">
+                        <i class="fas fa-users"></i> Equipos
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-users"></i></div>
+                    <div class="stat-value">{{ total_competidores }}</div>
+                    <div class="stat-label">Competidores Activos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-trophy"></i></div>
+                    <div class="stat-value">{{ total_puntos_competidores }}</div>
+                    <div class="stat-label">Puntos Totales</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-flag-checkered"></i></div>
+                    <div class="stat-value">{{ total_retos_resueltos }}</div>
+                    <div class="stat-label">Retos Resueltos</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="stat-value">#{{ mi_posicion }}</div>
+                    <div class="stat-label">Tu Posición</div>
+                </div>
+            </div>
+
+            <!-- Gráficas -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-title">
+                        <i class="fas fa-chart-pie"></i> Distribución por Nivel
+                    </div>
+                    <canvas id="nivelChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">
+                        <i class="fas fa-chart-bar"></i> Top 10 Competidores
+                    </div>
+                    <canvas id="top10Chart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">
+                        <i class="fas fa-chart-line"></i> Evolución de Puntos
+                    </div>
+                    <canvas id="evolutionChart"></canvas>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">
+                        <i class="fas fa-chart-donut"></i> Retos por Dificultad
+                    </div>
+                    <canvas id="difficultyChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Podium Top 3 -->
+            <div class="podium-container">
+                <div class="podium">
+                    {% with top3=competencias|slice:":3" %}
+                    {% for competidor in top3 %}
+                    <div
+                        class="podium-item {% if forloop.counter == 1 %}first{% elif forloop.counter == 2 %}second{% else %}third{% endif %}">
+                        <div class="podium-icon">
+                            {% if forloop.counter == 1 %}
+                            <i class="fas fa-crown gold"></i>
+                            {% else %}
+                            <i class="fas fa-user-circle"></i>
+                            {% endif %}
+                        </div>
+                        <div
+                            class="podium-medal {% if forloop.counter == 1 %}gold{% elif forloop.counter == 2 %}silver{% else %}bronze{% endif %}">
+                            <i class="fas fa-medal"></i>
+                        </div>
+                        <div class="podium-name">{{ competidor.usuario.username }}</div>
+                        <div class="podium-points">{{ competidor.puntos }} pts</div>
+                        <div class="podium-number">{{ forloop.counter }}º Lugar</div>
+                    </div>
+                    {% endfor %}
+                    {% endwith %}
+                </div>
+            </div>
+
+            <!-- Tabla de Ranking -->
+            <div class="ranking-table-container">
+                <table class="ranking-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Competidor</th>
+                            <th>Retos</th>
+                            <th>Puntos</th>
+                            <th>Equipo</th>
+                            <th>Nivel</th>
+                            <th>Progreso</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for competidor in competencias %}
+                        <tr class="{% if competidor.usuario == request.user %}current-user{% endif %}">
+                            <td>
+                                {% if forloop.counter == 1 %}🥇
+                                {% elif forloop.counter == 2 %}🥈
+                                {% elif forloop.counter == 3 %}🥉
+                                {% else %}#{{ forloop.counter }}{% endif %}
+                                </a>
+                            <td>
+                                <div style="display: flex; align-items: center;">
+                                    <div class="avatar-sm">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    {{ competidor.usuario.username }}
+                                    {% if competidor.usuario == request.user %}
+                                    <span class="badge"
+                                        style="background: var(--primary); margin-left: 0.5rem;">Tú</span>
+                                    {% endif %}
+                                </div>
+                                </a>
+                            <td>{{ competidor.retos_completados }}</a>
+                            <td><strong style="color: var(--primary);">{{ competidor.puntos }}</strong></a>
+                            <td>
+                                {% if competidor.equipo_nombre %}
+                                <span class="badge" style="background: var(--primary-light); color: var(--primary);">
+                                    <i class="fas fa-users"></i> {{ competidor.equipo_nombre }}
+                                </span>
+                                {% else %}
+                                <span style="color: var(--text-muted);">Sin equipo</span>
+                                {% endif %}
+                                </a>
+                            <td>
+                                {% if competidor.puntos >= 2000 %}
+                                <span class="badge" style="background: #dc3545;">Experto</span>
+                                {% elif competidor.puntos >= 1000 %}
+                                <span class="badge" style="background: #ffc107; color: #000;">Avanzado</span>
+                                {% elif competidor.puntos >= 500 %}
+                                <span class="badge" style="background: #17a2b8;">Intermedio</span>
+                                {% else %}
+                                <span class="badge badge-competidor">Principiante</span>
+                                {% endif %}
+                                </a>
+                            <td>
+                                <div class="progress-bar-container">
+                                    <div class="progress-bar-fill" style="width: {{ competidor.progreso_porcentaje }}%">
+                                    </div>
+                                </div>
+                                </a>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding: 3rem;">
+                                <i class="fas fa-users fa-3x" style="color: var(--text-muted);"></i>
+                                <p>No hay competidores registrados</p>
+                                </a>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const nivelData = {{ nivel_data| safe }};
+        const top10Data = {{ top10_data| safe }};
+        const evolutionData = {{ evolution_data| safe }};
+        const difficultyData = {{ difficulty_data| safe }};
+
+        new Chart(document.getElementById('nivelChart'), {
+            type: 'doughnut',
+            data: { labels: nivelData.labels, datasets: [{ data: nivelData.values, backgroundColor: ['#E10600', '#FF6B6B', '#FFA07A', '#FFD700'], borderWidth: 0 }] },
+            options: { responsive: true, plugins: { legend: { labels: { color: '#F5F5F5' } } } }
+        });
+
+        new Chart(document.getElementById('top10Chart'), {
+            type: 'bar',
+            data: { labels: top10Data.labels, datasets: [{ label: 'Puntos', data: top10Data.values, backgroundColor: '#E10600', borderRadius: 8 }] },
+            options: { responsive: true, plugins: { legend: { labels: { color: '#F5F5F5' } } }, scales: { y: { ticks: { color: '#F5F5F5' }, grid: { color: 'rgba(225, 6, 0, 0.1)' } }, x: { ticks: { color: '#F5F5F5', rotation: 45 }, grid: { display: false } } } }
+        });
+
+        new Chart(document.getElementById('evolutionChart'), {
+            type: 'line',
+            data: { labels: evolutionData.labels, datasets: evolutionData.datasets },
+            options: { responsive: true, plugins: { legend: { labels: { color: '#F5F5F5' } } }, scales: { y: { ticks: { color: '#F5F5F5' }, grid: { color: 'rgba(225, 6, 0, 0.1)' } }, x: { ticks: { color: '#F5F5F5' }, grid: { display: false } } } }
+        });
+
+        new Chart(document.getElementById('difficultyChart'), {
+            type: 'pie',
+            data: { labels: difficultyData.labels, datasets: [{ data: difficultyData.values, backgroundColor: ['#E10600', '#FF6B6B', '#FFA07A'], borderWidth: 0 }] },
+            options: { responsive: true, plugins: { legend: { labels: { color: '#F5F5F5' } } } }
+        });
+    </script>
+
+</body>
+
+</html>

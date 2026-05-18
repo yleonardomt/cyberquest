@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - CyberQuest</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0F0F12 0%, #1a1a24 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            max-width: 450px;
+            width: 100%;
+            margin: 2rem;
+        }
+
+        .login-card {
+            background: rgba(22, 22, 28, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(225, 6, 0, 0.3);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo-img {
+            height: 60px;
+            width: auto;
+            margin-bottom: 0.5rem;
+        }
+
+        .logo p {
+            color: #B3B3B3;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: transparent;
+            border: none;
+            color: #E10600;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .back-btn:hover {
+            color: #FF2A2A;
+            transform: translateX(-3px);
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-group i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #E10600;
+            font-size: 1.1rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            background: rgba(15, 15, 18, 0.8);
+            border: 1px solid rgba(225, 6, 0, 0.3);
+            border-radius: 12px;
+            color: #F5F5F5;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #E10600;
+            box-shadow: 0 0 0 3px rgba(225, 6, 0, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #6c6c7a;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 1rem;
+            background: #E10600;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-login:hover {
+            background: #FF2A2A;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(225, 6, 0, 0.3);
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(225, 6, 0, 0.2);
+            color: #B3B3B3;
+        }
+
+        .register-link a {
+            color: #E10600;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-link a:hover {
+            color: #FF2A2A;
+        }
+
+        .forgot-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .forgot-link a {
+            color: #6c6c7a;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        .forgot-link a:hover {
+            color: #E10600;
+        }
+
+        /* Mensaje de ERROR - Rojo */
+        .error-message {
+            background: rgba(255, 0, 0, 0.15);
+            border: 1px solid #ff0000;
+            border-radius: 10px;
+            padding: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: #ff4444;
+            font-size: 0.85rem;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        /* Mensaje de ÉXITO - Verde */
+        .success-message {
+            background: rgba(0, 255, 0, 0.15);
+            border: 1px solid #00ff00;
+            border-radius: 10px;
+            padding: 0.75rem;
+            margin-bottom: 1.5rem;
+            color: #00ff88;
+            font-size: 0.85rem;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <div class="login-card">
+        <a href="{% url 'home' %}" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+
+        <div class="logo">
+            <img src="{% static 'logo.png' %}" alt="CyberQuest" class="logo-img">
+            <p>Plataforma de Entrenamiento CTF</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        {{ message }}
+                    </div>
+                {% else %}
+                    <div class="success-message">
+                        <i class="fas fa-check-circle"></i>
+                        {{ message }}
+                    </div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <i class="fas fa-user"></i>
+                <input type="text" name="username" placeholder="Nombre de usuario" required>
+            </div>
+            <div class="form-group">
+                <i class="fas fa-lock"></i>
+                <input type="password" name="password" placeholder="Contraseña" required>
+            </div>
+            <button type="submit" class="btn-login">
+                <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+            </button>
+        </form>
+
+        <div class="forgot-link">
+            <a href="{% url 'reset' %}"><i class="fas fa-key"></i> ¿Olvidaste tu contraseña?</a>
+        </div>
+
+        <div class="register-link">
+            ¿No tienes cuenta? <a href="{% url 'register' %}"><i class="fas fa-user-plus"></i> Regístrate</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

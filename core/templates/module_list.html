@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - Gestión de Módulos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'principal.css' %}">
+    <style>
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .modulo-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        /* Módulo completado - pinta de verde */
+        .modulo-card.completado {
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(0, 170, 0, 0.15) 100%);
+            border-color: #00aa00;
+        }
+        .modulo-card.completado:hover {
+            border-color: #00ff00;
+            box-shadow: 0 0 15px rgba(0, 170, 0, 0.3);
+        }
+        .modulo-card.en-progreso {
+            border-left: 4px solid var(--primary);
+        }
+        .modulo-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow);
+        }
+        .modulo-titulo {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.1rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            padding-right: 80px;
+        }
+        .modulo-descripcion {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+            line-height: 1.4;
+        }
+        .modulo-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--border-dark);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .lecciones-count {
+            background: var(--primary-light);
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            color: var(--primary);
+        }
+        .progreso-usuario {
+            background: rgba(0, 255, 0, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            color: #00ff00;
+        }
+        .progreso-barra {
+            margin-top: 0.8rem;
+            height: 6px;
+            background: var(--bg-dark);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .progreso-barra-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        .progreso-barra-fill.completado {
+            background: #00aa00;
+        }
+        .btn-sm {
+            padding: 0.3rem 0.8rem;
+            font-size: 0.7rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-dark);
+        }
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        .btn-outline:hover {
+            background: var(--primary-light);
+        }
+        .btn-danger {
+            background: #aa0000;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #cc0000;
+        }
+        .btn-warning {
+            background: #aa8800;
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #ccaa00;
+        }
+        .btn-success {
+            background: #00aa00;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #00cc00;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+        }
+        .filter-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .form-control {
+            padding: 0.5rem 0.8rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+        }
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            color: var(--text-primary);
+        }
+        .search-input {
+            min-width: 250px;
+        }
+        .alert {
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+        }
+        .alert-success {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+        }
+        .alert-error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff0000;
+            color: #ff6666;
+        }
+        .alert-info {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+        }
+        .badge-completado {
+            background: #00aa00;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+        .badge-progreso {
+            background: var(--primary);
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+        }
+        .stats-resumen {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .resumen-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius);
+            padding: 0.8rem 1.2rem;
+            text-align: center;
+            flex: 1;
+            min-width: 120px;
+        }
+        .resumen-number {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .resumen-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+        .filtro-estado {
+            margin-left: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    {% include 'nav.html' %}
+
+    <main class="main-content">
+        <div class="top-header">
+            <h1 class="page-title">
+                <i class="fas fa-book"></i> Gestión de Módulos
+            </h1>
+            {% if rol == 'INSTRUCTOR' %}
+            <a href="{% url 'crear_modulo' %}" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i> Crear Módulo
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- Mensajes -->
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}times-circle{% else %}info-circle{% endif %}"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Resumen de progreso para estudiantes -->
+        {% if rol == 'ESTUDIANTE' %}
+        <div class="stats-resumen">
+            <div class="resumen-card">
+                <div class="resumen-number">{{ total_modulos|default:modulos|length }}</div>
+                <div class="resumen-label">Total Módulos</div>
+            </div>
+            <div class="resumen-card">
+                <div class="resumen-number" style="color: #00aa00;">{{ modulos_completados|default:"0" }}</div>
+                <div class="resumen-label">Módulos Completados</div>
+            </div>
+            <div class="resumen-card">
+                <div class="resumen-number" style="color: #ffaa00;">{{ modulos_en_progreso|default:"0" }}</div>
+                <div class="resumen-label">En Progreso</div>
+            </div>
+            <div class="resumen-card">
+                <div class="resumen-number">{{ porcentaje_total|default:"0" }}%</div>
+                <div class="resumen-label">Progreso Total</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Búsqueda y filtros -->
+        <div class="btn-group">
+            <form method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%;">
+                <div class="filter-group">
+                    <input type="text" name="buscar" class="form-control search-input" 
+                           placeholder="Buscar módulo..." value="{{ request.GET.buscar|default:'' }}">
+                    
+                    {% if rol == 'ESTUDIANTE' %}
+                    <select name="estado" class="form-control filtro-estado">
+                        <option value="">Todos los módulos</option>
+                        <option value="completado" {% if request.GET.estado == 'completado' %}selected{% endif %}>✓ Completados</option>
+                        <option value="progreso" {% if request.GET.estado == 'progreso' %}selected{% endif %}>⏳ En progreso</option>
+                        <option value="pendiente" {% if request.GET.estado == 'pendiente' %}selected{% endif %}>📖 No iniciados</option>
+                    </select>
+                    {% endif %}
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                    
+                    {% if request.GET.buscar or request.GET.estado %}
+                    <a href="{% url 'listar_modulos' %}" class="btn btn-outline">
+                        <i class="fas fa-times"></i> Limpiar
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+
+        {% if modulos %}
+        <div class="stats-grid">
+            {% for modulo in modulos %}
+            <div class="modulo-card 
+                        {% if modulo.porcentaje_progreso == 100 %}completado
+                        {% elif modulo.porcentaje_progreso > 0 %}en-progreso{% endif %}">
+                
+                <!-- Badge de estado -->
+                {% if rol == 'ESTUDIANTE' %}
+                    {% if modulo.porcentaje_progreso == 100 %}
+                    <span class="badge-completado">
+                        <i class="fas fa-check-circle"></i> Completado
+                    </span>
+                    {% elif modulo.porcentaje_progreso > 0 %}
+                    <span class="badge-progreso">
+                        <i class="fas fa-chart-line"></i> {{ modulo.porcentaje_progreso }}%
+                    </span>
+                    {% endif %}
+                {% endif %}
+                
+                <div class="modulo-titulo">
+                    <i class="fas fa-book" style="margin-right: 0.5rem;"></i>
+                    {{ modulo.titulo }}
+                </div>
+                <div class="modulo-descripcion">
+                    {{ modulo.descripcion|truncatechars:120 }}
+                </div>
+                <div class="modulo-meta">
+                    <span class="lecciones-count">
+                        <i class="fas fa-list"></i> {{ modulo.lecciones.count }} lecciones
+                    </span>
+                    <span>
+                        <i class="fas fa-calendar"></i> {{ modulo.creado_en|date:"d/m/Y" }}
+                    </span>
+                </div>
+                <div class="modulo-meta">
+                    <span>
+                        <i class="fas fa-user"></i> {{ modulo.creado_por.username }}
+                    </span>
+                    <span>
+                        {% if modulo.esta_publicado %}
+                        <span style="color: #00ff00;"><i class="fas fa-check-circle"></i> Publicado</span>
+                        {% else %}
+                        <span style="color: #ffaa00;"><i class="fas fa-edit"></i> Borrador</span>
+                        {% endif %}
+                    </span>
+                </div>
+                
+                <!-- Progreso del estudiante con barra -->
+                {% if rol == 'ESTUDIANTE' %}
+                <div class="progreso-barra">
+                    <div class="progreso-barra-fill {% if modulo.porcentaje_progreso == 100 %}completado{% endif %}" 
+                         style="width: {{ modulo.porcentaje_progreso }}%"></div>
+                </div>
+                <div class="modulo-meta">
+                    <span class="progreso-usuario">
+                        <i class="fas fa-chart-line"></i> Progreso: {{ modulo.lecciones_completadas }}/{{ modulo.lecciones.count }} lecciones
+                    </span>
+                    <span>
+                        <i class="fas fa-star"></i> {{ modulo.puntos_obtenidos }}/{{ modulo.puntos_totales }} pts
+                    </span>
+                </div>
+                {% endif %}
+                
+                <div class="action-buttons">
+                    <!-- Ver módulo - para todos -->
+                    {% if modulo.lecciones.exists %}
+                    <a href="{% url 'ver_leccion' modulo.lecciones.first.id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-play"></i> 
+                        {% if rol == 'ESTUDIANTE' %}
+                            {% if modulo.porcentaje_progreso == 0 %}Comenzar
+                            {% elif modulo.porcentaje_progreso == 100 %}Repasar
+                            {% else %}Continuar{% endif %}
+                        {% else %}
+                            Ver módulo
+                        {% endif %}
+                    </a>
+                    {% else %}
+                    <button class="btn btn-outline btn-sm" disabled title="Este módulo no tiene lecciones">
+                        <i class="fas fa-eye-slash"></i> Sin lecciones
+                    </button>
+                    {% endif %}
+                    
+                    <!-- Ver progreso - para estudiantes -->
+                    {% if rol == 'ESTUDIANTE' %}
+                    <a href="{% url 'progreso_modulo' modulo.id %}" class="btn btn-outline btn-sm">
+                        <i class="fas fa-chart-line"></i> Detalle
+                    </a>
+                    {% endif %}
+                    
+                    <!-- Editar y eliminar - solo para instructores -->
+                    {% if rol == 'INSTRUCTOR' %}
+                    <a href="{% url 'editar_modulo' modulo.id %}" class="btn btn-warning btn-sm">
+                        <i class="fas fa-edit"></i> Editar
+                    </a>
+                    <a href="{% url 'eliminar_modulo' modulo.id %}" class="btn btn-danger btn-sm" 
+                       onclick="return confirm('¿Eliminar el módulo "{{ modulo.titulo }}"? Todas las lecciones, preguntas y recursos serán eliminados.')">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-book-open"></i>
+            <h3>No hay módulos disponibles</h3>
+            <p>No se encontraron módulos con los filtros seleccionados.</p>
+            {% if rol == 'INSTRUCTOR' %}
+            <a href="{% url 'crear_modulo' %}" class="btn btn-primary" style="margin-top: 1rem;">
+                <i class="fas fa-plus-circle"></i> Crear el primer módulo
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </main>
+</div>
+
+</body>
+</html>

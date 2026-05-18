@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - {{ reto.titulo }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'principal.css' %}">
+    <style>
+        .flag-input {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+        .docker-info {
+            background: var(--bg-dark);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .docker-info pre {
+            background: #0a0a0f;
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            overflow-x: auto;
+            font-size: 0.7rem;
+            margin-top: 0.5rem;
+        }
+        .recurso-item {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 0.5rem 1rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .recurso-item a {
+            color: var(--primary);
+        }
+        .entorno-activo {
+            background: rgba(0, 255, 0, 0.1);
+            border: 1px solid #00ff00;
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+        .entorno-url {
+            font-size: 1.2rem;
+            font-family: monospace;
+            background: var(--bg-primary);
+            padding: 0.5rem;
+            border-radius: var(--radius);
+            margin-top: 0.5rem;
+        }
+        .entorno-url a {
+            color: #00ff00;
+            text-decoration: underline;
+        }
+        .alert-error {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff0000;
+            color: #ff6666;
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+        }
+        .alert-success {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+        }
+        .alert-warning {
+            background: rgba(255, 255, 0, 0.2);
+            border: 1px solid #ffff00;
+            color: #ffff00;
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+        }
+        .alert-info {
+            background: rgba(0, 255, 255, 0.2);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    {% include 'nav.html' %}
+
+    <main class="main-content">
+        <div class="top-header">
+            <h1 class="page-title">{{ reto.titulo }}</h1>
+            <span class="badge" style="background: var(--primary); padding: 0.25rem 1rem; border-radius: 20px;">
+                {{ reto.puntos }} pts
+            </span>
+        </div>
+
+        <!-- Mostrar mensajes -->
+        {% if messages %}
+        <div style="margin-bottom: 1.5rem;">
+            {% for message in messages %}
+            <div class="alert-{{ message.tags }}">
+                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="activity-card">
+            <!-- Informacion del reto -->
+            <div style="margin-bottom: 1.5rem;">
+                <p><strong><i class="fas fa-folder"></i> Categoria:</strong> {{ reto.categoria.nombre }}</p>
+                <p><strong><i class="fas fa-chart-line"></i> Dificultad:</strong> 
+                    {% if reto.dificultad == 'PRINCIPIANTE' %}
+                        <span style="color: #00ff00;">Principiante</span>
+                    {% elif reto.dificultad == 'INTERMEDIO' %}
+                        <span style="color: #ffaa00;">Intermedio</span>
+                    {% else %}
+                        <span style="color: #ff0000;">Avanzado</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <!-- Descripcion -->
+            <div style="margin-bottom: 1.5rem;">
+                <h3><i class="fas fa-align-left"></i> Descripcion</h3>
+                <p style="white-space: pre-line;">{{ reto.descripcion|linebreaks }}</p>
+            </div>
+            
+            <!-- Pista -->
+            {% if reto.pista %}
+            <div style="margin-bottom: 1.5rem; background: var(--primary-light); padding: 1rem; border-radius: var(--radius);">
+                <h3><i class="fas fa-lightbulb"></i> Pista</h3>
+                <p>{{ reto.pista }}</p>
+            </div>
+            {% endif %}
+            
+            <!-- Archivos del reto -->
+            {% if reto.recursos.all %}
+            <div style="margin-bottom: 1.5rem;">
+                <h3><i class="fas fa-paperclip"></i> Archivos adjuntos</h3>
+                {% for recurso in reto.recursos.all %}
+                <div class="recurso-item">
+                    <i class="fas fa-file"></i>
+                    <a href="{{ recurso.archivo.url }}" target="_blank">{{ recurso.titulo }}</a>
+                    <small style="margin-left: auto;">Click para descargar</small>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Entorno Docker -->
+            {% if reto.tiene_docker and reto.dockerfile %}
+            <div class="docker-info">
+                <h3><i class="fab fa-docker"></i> Entorno Docker</h3>
+                
+                <!-- Mostrar entorno activo si existe -->
+                {% if entorno and entorno.estado == 'EJECUTANDO' %}
+                <div class="entorno-activo">
+                    <h4><i class="fas fa-play-circle" style="color: #00ff00;"></i> Entorno Activo</h4>
+                    <p>Tu entorno de laboratorio está corriendo:</p>
+                    <div class="entorno-url">
+                        <i class="fas fa-link"></i> 
+                        <a href="{{ entorno.configuracion_vpn }}" target="_blank">
+                            {{ entorno.configuracion_vpn }}
+                        </a>
+                    </div>
+                    <div class="btn-group" style="margin-top: 1rem;">
+                        <a href="{% url 'detener_entorno' entorno.id %}" class="btn btn-danger">
+                            <i class="fas fa-stop"></i> Detener entorno
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="btn-group" style="margin-top: 1rem;">
+                    <a href="{% url 'iniciar_entorno' reto.id %}" class="btn btn-primary">
+                        <i class="fas fa-play"></i> Iniciar entorno Docker
+                    </a>
+                </div>
+                {% endif %}
+                
+                <details style="margin-top: 1rem;">
+                    <summary style="cursor: pointer; color: var(--primary);">Ver Dockerfile</summary>
+                    <pre>{{ reto.dockerfile }}</pre>
+                </details>
+            </div>
+            {% endif %}
+            
+            <hr>
+            
+            <!-- Enviar flag -->
+            <div style="margin-top: 1.5rem;">
+                <h3><i class="fas fa-flag"></i> Enviar Flag</h3>
+                <form method="POST">
+                    {% csrf_token %}
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <input type="text" name="bandera" class="form-control flag-input" 
+                               placeholder="flag{...}" style="flex: 1;" required>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Validar Flag
+                        </button>
+                    </div>
+                </form>
+                
+                {% if intento and intento.es_correcto %}
+                <div style="margin-top: 1rem; background: rgba(0,255,0,0.1); border: 1px solid #00ff00; border-radius: var(--radius); padding: 1rem;">
+                    <i class="fas fa-check-circle" style="color: #00ff00;"></i>
+                    <strong>¡Reto completado!</strong> Ya resolviste este reto anteriormente.
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Botones de accion -->
+            <div class="btn-group" style="margin-top: 1.5rem;">
+                <a href="{% url 'listar_retos' %}" class="btn btn-outline">
+                    <i class="fas fa-arrow-left"></i> Volver a retos
+                </a>
+                {% if request.user.perfil.rol == 'INSTRUCTOR' or request.user.perfil.rol == 'ADMIN' %}
+                <a href="{% url 'editar_reto' reto.id %}" class="btn btn-secondary">
+                    <i class="fas fa-edit"></i> Editar reto
+                </a>
+                <a href="{% url 'eliminar_reto' reto.id %}" class="btn btn-danger" 
+                   onclick="return confirm('¿Eliminar este reto?')">
+                    <i class="fas fa-trash"></i> Eliminar
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

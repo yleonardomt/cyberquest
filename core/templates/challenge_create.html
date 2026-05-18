@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - Crear Reto</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'principal.css' %}">
+    <style>
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 5px rgba(225, 6, 0, 0.3);
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--primary);
+            font-family: 'Orbitron', monospace;
+            font-size: 0.8rem;
+        }
+        small {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+        }
+        textarea.form-control {
+            resize: vertical;
+            font-family: 'Courier New', monospace;
+        }
+        .docker-config {
+            background: var(--bg-dark);
+            border-radius: var(--radius);
+            padding: 1rem;
+        }
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .checkbox-group input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .checkbox-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+        hr {
+            border-color: var(--border-dark);
+            margin: 1.5rem 0;
+        }
+        .method-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid var(--border-dark);
+            flex-wrap: wrap;
+        }
+        .method-tab {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            background: var(--bg-secondary);
+            border-radius: var(--radius) var(--radius) 0 0;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+        .method-tab.active {
+            background: var(--primary);
+            color: white;
+        }
+        .method-content {
+            display: none;
+        }
+        .method-content.active {
+            display: block;
+        }
+        .file-upload-area {
+            border: 2px dashed var(--border-dark);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .file-upload-area:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        .file-upload-area i {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        .preview-code {
+            background: var(--bg-dark);
+            border-radius: var(--radius);
+            padding: 0.75rem;
+            font-family: monospace;
+            font-size: 0.75rem;
+            max-height: 200px;
+            overflow: auto;
+            margin-top: 0.5rem;
+        }
+        .code-editor {
+            background: var(--bg-dark);
+            border-radius: var(--radius);
+            padding: 0.75rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            width: 100%;
+            min-height: 200px;
+            color: var(--text-primary);
+            border: 1px solid var(--border-dark);
+        }
+        .code-editor:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    {% include 'nav.html' %}
+
+    <main class="main-content">
+        <div class="top-header">
+            <h1 class="page-title">Crear Nuevo Reto</h1>
+        </div>
+
+        <div class="activity-card">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <!-- Informacion basica -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label><i class="fas fa-tag"></i> Titulo del Reto</label>
+                    <input type="text" name="titulo" class="form-control" placeholder="Ej: SQL Injection 101" required>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label><i class="fas fa-align-left"></i> Descripcion</label>
+                    <textarea name="descripcion" rows="6" class="form-control" placeholder="Describe el reto, el objetivo y las instrucciones..." required></textarea>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label><i class="fas fa-folder"></i> Categoria</label>
+                    <select name="categoria" class="form-control" required>
+                        <option value="">Selecciona una categoria</option>
+                        {% for categoria in categorias %}
+                        <option value="{{ categoria.id }}">{{ categoria.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label><i class="fas fa-chart-line"></i> Dificultad</label>
+                    <select name="dificultad" class="form-control" required>
+                        <option value="PRINCIPIANTE">Principiante</option>
+                        <option value="INTERMEDIO">Intermedio</option>
+                        <option value="AVANZADO">Avanzado</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label><i class="fas fa-star"></i> Puntos</label>
+                    <input type="number" name="puntos" class="form-control" value="100" min="10" step="10" required>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label><i class="fas fa-flag"></i> Bandera (Flag)</label>
+                    <input type="text" name="bandera" class="form-control" placeholder="flag{ejemplo_flag_aqui}" required>
+                    <small>Formato: flag{contenido_de_la_bandera}</small>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label><i class="fas fa-lightbulb"></i> Pista (Opcional)</label>
+                    <textarea name="pista" rows="2" class="form-control" placeholder="Una pista para ayudar a los competidores..."></textarea>
+                </div>
+                
+                <hr>
+                
+                <!-- SUBIR ARCHIVOS -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label><i class="fas fa-paperclip"></i> Archivos del Reto</label>
+                    <input type="file" name="archivos" class="form-control" multiple>
+                    <small>Puedes subir multiples archivos (imagenes, scripts, PDFs, etc.)</small>
+                </div>
+                
+                <hr>
+                
+                <!-- ENTORNO DOCKER -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label><i class="fab fa-docker"></i> Entorno Docker</label>
+                    
+                    <div class="checkbox-group">
+                        <input type="checkbox" name="habilitar_docker" id="habilitar_docker" value="true">
+                        <label for="habilitar_docker">Habilitar entorno Docker para este reto</label>
+                    </div>
+                    
+                    <div id="docker_config" style="display: none;">
+                        <div class="docker-config">
+                            <!-- Pestañas de metodo -->
+                            <div class="method-tabs">
+                                <div class="method-tab active" data-method="subir">Subir Dockerfile</div>
+                                <div class="method-tab" data-method="escribir">Escribir Dockerfile</div>
+                            </div>
+                            
+                            <!-- Metodo 1: Subir Dockerfile -->
+                            <div id="method-subir" class="method-content active">
+                                <div class="file-upload-area" onclick="document.getElementById('dockerfile_input').click()">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <div>Haz clic para subir un Dockerfile</div>
+                                    <small>O arrastra el archivo aqui</small>
+                                </div>
+                                <input type="file" id="dockerfile_input" name="dockerfile_file" accept=".dockerfile,Dockerfile" style="display: none;">
+                                <div id="dockerfile_preview" class="preview-code" style="display: none;">
+                                    <strong>Dockerfile cargado:</strong>
+                                    <pre id="dockerfile_content" style="margin-top: 0.5rem; white-space: pre-wrap;"></pre>
+                                </div>
+                                <small>Sube un archivo Dockerfile para construir la imagen personalizada</small>
+                            </div>
+                            
+                            <!-- Metodo 2: Escribir Dockerfile manualmente -->
+                            <div id="method-escribir" class="method-content">
+                                <div style="margin-bottom: 0.5rem;">
+                                    <label><i class="fas fa-code"></i> Dockerfile</label>
+                                    <textarea name="dockerfile_texto" rows="12" class="code-editor" placeholder="FROM ubuntu:22.04
+
+RUN apt update && apt install -y apache2
+
+COPY ./webapp /var/www/html/
+
+EXPOSE 80
+
+CMD [&quot;apache2ctl&quot;, &quot;-D&quot;, &quot;FOREGROUND&quot;]"></textarea>
+                                    <small>Escribe tu Dockerfile directamente en el editor</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <!-- RECURSOS ADICIONALES -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label><i class="fas fa-link"></i> Enlaces externos (Opcional)</label>
+                    <textarea name="enlaces" rows="3" class="form-control" placeholder="URLs de recursos adicionales (uno por linea)"></textarea>
+                    <small>Enlaces a documentacion, herramientas online, etc.</small>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Crear Reto
+                    </button>
+                    <a href="{% url 'listar_retos' %}" class="btn btn-outline">
+                        <i class="fas fa-times"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script>
+    // Mostrar/ocultar configuracion Docker
+    const checkbox = document.getElementById('habilitar_docker');
+    const dockerConfig = document.getElementById('docker_config');
+    
+    checkbox.addEventListener('change', function() {
+        if (this.checked) {
+            dockerConfig.style.display = 'block';
+        } else {
+            dockerConfig.style.display = 'none';
+        }
+    });
+    
+    // Cambiar entre metodos
+    const tabs = document.querySelectorAll('.method-tab');
+    const contents = document.querySelectorAll('.method-content');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const method = tab.dataset.method;
+            
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            contents.forEach(content => content.classList.remove('active'));
+            document.getElementById(`method-${method}`).classList.add('active');
+        });
+    });
+    
+    // Previsualizar Dockerfile subido
+    const dockerfileInput = document.getElementById('dockerfile_input');
+    const dockerfilePreview = document.getElementById('dockerfile_preview');
+    const dockerfileContent = document.getElementById('dockerfile_content');
+    
+    dockerfileInput.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                dockerfileContent.textContent = event.target.result;
+                dockerfilePreview.style.display = 'block';
+            };
+            reader.readAsText(file);
+        }
+    });
+    
+    // Drag and drop para Dockerfile
+    const dropArea = document.querySelector('#method-subir .file-upload-area');
+    if (dropArea) {
+        dropArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropArea.style.borderColor = 'var(--primary)';
+        });
+        
+        dropArea.addEventListener('dragleave', () => {
+            dropArea.style.borderColor = 'var(--border-dark)';
+        });
+        
+        dropArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const file = e.dataTransfer.files[0];
+            if (file && (file.name === 'Dockerfile' || file.name.endsWith('.dockerfile'))) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    dockerfileContent.textContent = event.target.result;
+                    dockerfilePreview.style.display = 'block';
+                    dockerfileInput.files = e.dataTransfer.files;
+                };
+                reader.readAsText(file);
+            }
+            dropArea.style.borderColor = 'var(--border-dark)';
+        });
+    }
+</script>
+
+</body>
+</html>

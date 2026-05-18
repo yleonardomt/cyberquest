@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - Equipos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'principal.css' %}">
+    <style>
+        .teams-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        .team-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+        }
+        .team-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+        .team-card h3 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        .team-meta {
+            display: flex;
+            justify-content: space-between;
+            margin: 1rem 0;
+            padding: 0.5rem 0;
+            border-top: 1px solid var(--border-dark);
+            border-bottom: 1px solid var(--border-dark);
+        }
+        .team-meta span {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .team-meta i {
+            margin-right: 0.3rem;
+            color: var(--primary);
+        }
+        .mi-equipo-card {
+            background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .invite-code {
+            background: var(--bg-dark);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin: 1rem 0;
+            text-align: center;
+        }
+        .invite-code code {
+            font-size: 1.2rem;
+            background: var(--primary-light);
+            padding: 0.3rem 0.8rem;
+            border-radius: var(--radius-sm);
+            color: var(--primary);
+        }
+        .btn-copy {
+            background: var(--primary-light);
+            border: none;
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            margin-left: 0.5rem;
+        }
+        .btn-sm {
+            padding: 0.4rem 1rem;
+            font-size: 0.7rem;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+        }
+        .actions-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .retos-resueltos {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-dark);
+        }
+        .reto-item {
+            font-size: 0.75rem;
+            padding: 0.2rem 0;
+            color: var(--text-secondary);
+        }
+        .reto-item i {
+            color: #00ff00;
+            margin-right: 0.3rem;
+        }
+        .btn-retos-equipo {
+            background: #6c5ce7;
+            color: white;
+        }
+        .btn-retos-equipo:hover {
+            background: #5b4bc4;
+            transform: translateY(-2px);
+        }
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        .btn-outline:hover {
+            background: var(--primary-light);
+        }
+        .btn-danger {
+            background: #aa0000;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #cc0000;
+        }
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    {% include 'nav.html' %}
+
+    <main class="main-content">
+        <div class="top-header">
+            <h1 class="page-title">
+                <i class="fas fa-users"></i> Equipos
+            </h1>
+            <a href="{% url 'crear_equipo' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Crear Equipo
+            </a>
+        </div>
+
+        <div class="actions-bar">
+            <a href="{% url 'unirse_equipo' %}" class="btn btn-outline">
+                <i class="fas fa-sign-in-alt"></i> Unirse con código
+            </a>
+        </div>
+
+        <!-- MI EQUIPO -->
+        {% if mi_equipo %}
+        <div class="mi-equipo-card">
+            <h2><i class="fas fa-users"></i> Mi Equipo: {{ mi_equipo.nombre }}</h2>
+            <p>{{ mi_equipo.descripcion|default:"Sin descripción" }}</p>
+            
+            <div class="team-meta">
+                <span><i class="fas fa-user-tie"></i> Líder: {{ mi_equipo.lider.username }}</span>
+                <span><i class="fas fa-users"></i> Miembros: {{ mi_equipo.cantidad_miembros }}</span>
+                <span><i class="fas fa-trophy"></i> Puntos: {{ mi_equipo.puntos }}</span>
+            </div>
+
+            <!-- Código de invitación - solo visible para el líder -->
+            {% if request.user == mi_equipo.lider %}
+            <div class="invite-code">
+                <strong><i class="fas fa-key"></i> Código de invitación:</strong><br>
+                <code>{{ mi_equipo.codigo_invitacion }}</code>
+                <button class="btn-copy" onclick="copiarCodigo('{{ mi_equipo.codigo_invitacion }}')">
+                    <i class="fas fa-copy"></i> Copiar
+                </button>
+                <p class="text-muted" style="font-size: 0.7rem; margin-top: 0.5rem;">
+                    Comparte este código para que otros se unan al equipo
+                </p>
+            </div>
+            {% endif %}
+
+            <!-- Retos resueltos por el equipo -->
+            {% if retos_equipo %}
+            <div class="retos-resueltos">
+                <strong><i class="fas fa-check-circle"></i> Retos superados por el equipo ({{ retos_equipo|length }}):</strong>
+                {% for reto in retos_equipo|slice:":5" %}
+                <div class="reto-item">
+                    <i class="fas fa-flag-checkered"></i> {{ reto.titulo }} ({{ reto.puntos }} pts)
+                </div>
+                {% endfor %}
+                {% if retos_equipo|length > 5 %}
+                <div class="reto-item" style="color: var(--primary);">
+                    <i class="fas fa-ellipsis-h"></i> y {{ retos_equipo|length|add:"-5" }} más...
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <div class="btn-group" style="margin-top: 1rem;">
+                <a href="{% url 'ver_equipo' mi_equipo.id %}" class="btn btn-primary">
+                    <i class="fas fa-eye"></i> Ver equipo
+                </a>
+                <a href="{% url 'equipo_retos' mi_equipo.id %}" class="btn btn-retos-equipo">
+                    <i class="fas fa-flag-checkered"></i> Ver Retos del Equipo
+                </a>
+                <a href="{% url 'salir_equipo' mi_equipo.id %}" class="btn btn-danger" onclick="return confirm('¿Seguro que quieres salir del equipo?')">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-users-slash" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+            <h3>No estás en ningún equipo</h3>
+            <p>Crea un equipo o únete a uno existente usando un código de invitación</p>
+            <div class="btn-group" style="justify-content: center; margin-top: 1rem;">
+                <a href="{% url 'crear_equipo' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Crear Equipo
+                </a>
+                <a href="{% url 'unirse_equipo' %}" class="btn btn-outline">
+                    <i class="fas fa-sign-in-alt"></i> Unirse con código
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- OTROS EQUIPOS -->
+        <h2 style="margin: 2rem 0 1rem 0;"><i class="fas fa-globe"></i> Otros Equipos</h2>
+        
+        {% if otros_equipos %}
+        <div class="teams-container">
+            {% for equipo in otros_equipos %}
+            <div class="team-card">
+                <h3>{{ equipo.nombre }}</h3>
+                <p>{{ equipo.descripcion|truncatewords:20|default:"Sin descripción" }}</p>
+                <div class="team-meta">
+                    <span><i class="fas fa-user-tie"></i> {{ equipo.lider.username }}</span>
+                    <span><i class="fas fa-users"></i> {{ equipo.cantidad_miembros }}</span>
+                    <span><i class="fas fa-trophy"></i> {{ equipo.puntos }} pts</span>
+                </div>
+                {% if request.user != equipo.lider and request.user not in equipo.miembros.all %}
+                    <a href="{% url 'unirse_equipo' %}" class="btn btn-primary btn-sm" style="width: 100%; text-align: center;">
+                        <i class="fas fa-sign-in-alt"></i> Solicitar unirse
+                    </a>
+                {% else %}
+                    <a href="{% url 'ver_equipo' equipo.id %}" class="btn btn-outline btn-sm" style="width: 100%; text-align: center;">
+                        <i class="fas fa-eye"></i> Ver Equipo
+                    </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-users" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+            <p>No hay otros equipos registrados</p>
+        </div>
+        {% endif %}
+    </main>
+</div>
+
+<script>
+    function copiarCodigo(codigo) {
+        navigator.clipboard.writeText(codigo);
+        alert('Código copiado: ' + codigo);
+    }
+</script>
+
+</body>
+</html>

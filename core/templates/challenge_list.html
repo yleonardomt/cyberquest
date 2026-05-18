@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberQuest - Gestión de Retos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    {% load static %}
+    <style>
+        :root {
+            --primary: #E10600;
+            --primary-hover: #FF2A2A;
+            --primary-light: rgba(225, 6, 0, 0.15);
+            --primary-dark: #8B0000;
+            --bg-primary: #0F0F12;
+            --bg-secondary: #16161C;
+            --bg-card: #1a1a24;
+            --bg-dark: #0a0a0f;
+            --text-primary: #F5F5F5;
+            --text-secondary: #B3B3B3;
+            --text-muted: #6c6c7a;
+            --border-dark: #8B0000;
+            --radius-sm: 4px;
+            --radius: 8px;
+            --radius-lg: 16px;
+            --shadow: 0 0 10px rgba(225, 6, 0, 0.3);
+            --shadow-green: 0 0 10px rgba(0, 170, 0, 0.3);
+            --shadow-red: 0 0 10px rgba(225, 6, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
+        /* ========== HEADER ========== */
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .page-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.6rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .page-title i {
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+
+        /* ========== BOTONES ========== */
+        .btn {
+            padding: 0.6rem 1.3rem;
+            border-radius: 40px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #E10600, #FF2A2A);
+            color: white;
+            box-shadow: var(--shadow-red);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(225, 6, 0, 0.6);
+            background: linear-gradient(135deg, #FF2A2A, #E10600);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #E10600;
+            color: #E10600;
+        }
+
+        .btn-outline:hover {
+            background: rgba(225, 6, 0, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(225, 6, 0, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #8B0000, #cc0000);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(139, 0, 0, 0.5);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #00aa00, #00cc00);
+            color: white;
+            cursor: default;
+        }
+
+        .btn-sm {
+            padding: 0.35rem 0.9rem;
+            font-size: 0.7rem;
+        }
+
+        /* ========== RESUMEN ========== */
+        .stats-resumen {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .resumen-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 1.2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .resumen-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), transparent);
+        }
+
+        .resumen-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+
+        .resumen-number {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .resumen-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ========== FILTROS ========== */
+        .filtros-section {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .form-control {
+            padding: 0.6rem 1rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-dark);
+            border-radius: 40px;
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .form-control:hover {
+            border-color: var(--primary);
+        }
+
+        /* ========== GRID DE RETOS ========== */
+        .challenges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .challenge-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 1.3rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .challenge-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), transparent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .challenge-card:hover::after {
+            transform: scaleX(1);
+        }
+
+        .challenge-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Reto resuelto */
+        .challenge-card.resuelto {
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(0, 170, 0, 0.08) 100%);
+            border-color: #00aa00;
+        }
+
+        .challenge-card.resuelto::after {
+            background: linear-gradient(90deg, #00aa00, transparent);
+        }
+
+        .challenge-card.oculto {
+            opacity: 0.6;
+        }
+
+        /* Badges */
+        .badge-oculto {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(108, 108, 122, 0.2);
+            color: var(--text-muted);
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.6rem;
+            backdrop-filter: blur(5px);
+        }
+
+        .badge-resuelto {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: linear-gradient(135deg, #00aa00, #00cc00);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.6rem;
+            font-weight: bold;
+            box-shadow: var(--shadow-green);
+        }
+
+        /* Icono */
+        .challenge-icon {
+            font-size: 2.2rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .challenge-icon.resuelto-icon {
+            color: #00aa00;
+        }
+
+        .challenge-icon.no-resuelto {
+            color: var(--primary);
+        }
+
+        /* Título */
+        .challenge-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+
+        /* Categoría */
+        .challenge-category {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Dificultad y puntos */
+        .challenge-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0.8rem 0;
+            padding: 0.5rem 0;
+            border-top: 1px solid rgba(225, 6, 0, 0.15);
+            border-bottom: 1px solid rgba(225, 6, 0, 0.15);
+        }
+
+        .difficulty {
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .difficulty-easy { color: #00ff00; }
+        .difficulty-medium { color: #ffaa00; }
+        .difficulty-hard { color: #ff0000; }
+
+        .points {
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* Acciones */
+        .challenge-actions {
+            display: flex;
+            gap: 0.6rem;
+            margin-top: 1rem;
+            justify-content: flex-end;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-dark);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 1024px) {
+            .stats-resumen {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 80px;
+                padding: 1rem;
+            }
+            
+            .stats-resumen {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.8rem;
+            }
+            
+            .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-controls {
+                flex-wrap: wrap;
+            }
+            
+            .challenges-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    {% include 'nav.html' %}
+
+    <main class="main-content">
+        <!-- Header -->
+        <div class="top-header">
+            <h1 class="page-title">
+                <i class="fas fa-flag-checkered"></i> Gestión de Retos
+            </h1>
+            {% if rol == 'INSTRUCTOR' or rol == 'ADMIN' %}
+            <a href="{% url 'crear_reto' %}" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i> Crear Nuevo Reto
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- Resumen de progreso -->
+        <div class="stats-resumen">
+            <div class="resumen-card">
+                <div class="resumen-number">{{ retos|length }}</div>
+                <div class="resumen-label">Total Retos</div>
+            </div>
+            <div class="resumen-card">
+                <div class="resumen-number" style="color: #00aa00;">{{ retos_resueltos_count|default:"0" }}</div>
+                <div class="resumen-label">Retos Resueltos</div>
+            </div>
+            <div class="resumen-card">
+                <div class="resumen-number" style="color: #ffaa00;">{{ retos_pendientes_count|default:"0" }}</div>
+                <div class="resumen-label">Retos Pendientes</div>
+            </div>
+            <div class="resumen-card">
+                <div class="resumen-number">{{ porcentaje_completado|default:"0" }}%</div>
+                <div class="resumen-label">Progreso</div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filtros-section">
+            <form method="GET">
+                <div class="filter-group">
+                    <div class="filter-controls">
+                        <select name="categoria" class="form-control">
+                            <option value="">📂 Todas las categorías</option>
+                            {% for categoria in categorias %}
+                            <option value="{{ categoria.id }}" {% if request.GET.categoria == categoria.id|stringformat:"s" %}selected{% endif %}>
+                                {{ categoria.nombre }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        
+                        <select name="dificultad" class="form-control">
+                            <option value="">🎯 Todas las dificultades</option>
+                            <option value="PRINCIPIANTE" {% if request.GET.dificultad == 'PRINCIPIANTE' %}selected{% endif %}>🌱 Principiante</option>
+                            <option value="INTERMEDIO" {% if request.GET.dificultad == 'INTERMEDIO' %}selected{% endif %}>⚡ Intermedio</option>
+                            <option value="AVANZADO" {% if request.GET.dificultad == 'AVANZADO' %}selected{% endif %}>🔥 Avanzado</option>
+                        </select>
+                        
+                        <select name="estado" class="form-control">
+                            <option value="">📋 Todos los estados</option>
+                            <option value="resuelto" {% if request.GET.estado == 'resuelto' %}selected{% endif %}>✅ Resueltos</option>
+                            <option value="pendiente" {% if request.GET.estado == 'pendiente' %}selected{% endif %}>⏳ Pendientes</option>
+                        </select>
+                    </div>
+                    
+                    <div class="filter-controls">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Filtrar
+                        </button>
+                        
+                        {% if request.GET.categoria or request.GET.dificultad or request.GET.estado %}
+                        <a href="{% url 'listar_retos' %}" class="btn btn-outline">
+                            <i class="fas fa-times"></i> Limpiar filtros
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Lista de retos -->
+        <div class="challenges-grid">
+            {% for reto in retos %}
+            <div class="challenge-card 
+                        {% if reto.esta_oculto %}oculto{% endif %}
+                        {% if reto.id in retos_resueltos_ids %}resuelto{% endif %}">
+                
+                {% if reto.esta_oculto %}
+                <span class="badge-oculto"><i class="fas fa-eye-slash"></i> Oculto</span>
+                {% endif %}
+                
+                {% if reto.id in retos_resueltos_ids %}
+                <span class="badge-resuelto">
+                    <i class="fas fa-check-circle"></i> Resuelto
+                </span>
+                {% endif %}
+                
+                <div class="challenge-icon {% if reto.id in retos_resueltos_ids %}resuelto-icon{% else %}no-resuelto{% endif %}">
+                    {% if 'Web' in reto.categoria.nombre %}
+                        <i class="fas fa-globe"></i>
+                    {% elif 'Criptografía' in reto.categoria.nombre %}
+                        <i class="fas fa-lock"></i>
+                    {% elif 'Forense' in reto.categoria.nombre %}
+                        <i class="fas fa-search"></i>
+                    {% elif 'Pwn' in reto.categoria.nombre %}
+                        <i class="fas fa-bomb"></i>
+                    {% elif 'Reverse' in reto.categoria.nombre %}
+                        <i class="fas fa-code-branch"></i>
+                    {% elif 'OSINT' in reto.categoria.nombre %}
+                        <i class="fas fa-eye"></i>
+                    {% elif 'Esteganografía' in reto.categoria.nombre %}
+                        <i class="fas fa-image"></i>
+                    {% else %}
+                        <i class="fas fa-flag"></i>
+                    {% endif %}
+                </div>
+                
+                <div class="challenge-title">{{ reto.titulo }}</div>
+                <div class="challenge-category">{{ reto.categoria.nombre }}</div>
+                
+                <div class="challenge-meta">
+                    <span class="difficulty 
+                        {% if reto.dificultad == 'PRINCIPIANTE' %}difficulty-easy
+                        {% elif reto.dificultad == 'INTERMEDIO' %}difficulty-medium
+                        {% else %}difficulty-hard{% endif %}">
+                        {% if reto.dificultad == 'PRINCIPIANTE' %}🌱 Principiante
+                        {% elif reto.dificultad == 'INTERMEDIO' %}⚡ Intermedio
+                        {% else %}🔥 Avanzado{% endif %}
+                    </span>
+                    <span class="points"><i class="fas fa-star"></i> {{ reto.puntos }} pts</span>
+                </div>
+                
+                <div class="challenge-actions">
+                    <a href="{% url 'detalle_reto' reto.id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-eye"></i> Ver detalles
+                    </a>
+                    
+                    {% if reto.id in retos_resueltos_ids %}
+                    <span class="btn btn-success btn-sm" style="cursor: default;">
+                        <i class="fas fa-check"></i> Completado
+                    </span>
+                    {% endif %}
+                    
+                    {% if rol == 'INSTRUCTOR' or rol == 'ADMIN' %}
+                    <a href="{% url 'editar_reto' reto.id %}" class="btn btn-outline btn-sm">
+                        <i class="fas fa-edit"></i> Editar
+                    </a>
+                    <a href="{% url 'eliminar_reto' reto.id %}" class="btn btn-danger btn-sm" 
+                       onclick="return confirm('¿Eliminar el reto "{{ reto.titulo }}" permanentemente?')">
+                        <i class="fas fa-trash-alt"></i>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h3>No hay retos disponibles</h3>
+                <p>No se encontraron retos con los filtros seleccionados.</p>
+                {% if rol == 'INSTRUCTOR' or rol == 'ADMIN' %}
+                <a href="{% url 'crear_reto' %}" class="btn btn-primary" style="margin-top: 1rem;">
+                    <i class="fas fa-plus-circle"></i> Crear el primer reto
+                </a>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</div>
+
+</body>
+</html>
