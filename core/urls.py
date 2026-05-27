@@ -124,6 +124,33 @@ urlpatterns = [
     path("auditoria/", views.auditoria, name="auditoria"),
     path("configuracion-ia/", views.configuracion_ia, name="configuracion_ia"),
     path("certificado/<int:modulo_id>/", views.certificado, name="certificado"),
+    # En la sección de EQUIPOS (M2), reemplaza con:
+    path("teams/create/", views.crear_equipo, name="crear_equipo"),
+    path("teams/join/", views.unirse_equipo, name="unirse_equipo"),
+    path("teams/<int:equipo_id>/", views.ver_equipo, name="ver_equipo"),
+    path("teams/", views.listar_equipos, name="listar_equipos"),
+    path("teams/<int:equipo_id>/edit/", views.editar_equipo, name="editar_equipo"),
+    path(
+        "teams/<int:equipo_id>/delete/", views.eliminar_equipo, name="eliminar_equipo"
+    ),
+    path(
+        "teams/<int:equipo_id>/kick/<int:user_id>/",
+        views.expulsar_miembro,
+        name="expulsar_miembro",
+    ),
+    path("salir-equipo/<int:equipo_id>/", views.salir_equipo, name="salir_equipo"),
+    # Añadir estas URLs:
+    path("equipo/<int:equipo_id>/retos/", views.equipo_retos, name="equipo_retos"),
+    path(
+        "equipo/reto/<int:reto_id>/",
+        views.equipo_reto_detalle,
+        name="equipo_reto_detalle",
+    ),
+    path("auditoria/", views.auditoria, name="auditoria"),
+    path("auditoria/exportar-pdf/", views.exportar_logs_pdf, name="exportar_logs_pdf"),
+    path("sesiones-activas/", views.sesiones_activas, name="sesiones_activas"),
+    path("sesiones/limpiar/", views.limpiar_sesiones, name="limpiar_sesiones"),
+    path("sesiones/eliminar/<str:session_key>/", views.eliminar_sesion, name="eliminar_sesion"),
 ]
 
 # Para servir archivos multimedia en desarrollo

@@ -114,7 +114,11 @@
             <i class="fas fa-user-shield"></i>
             <span>Gestionar Usuarios</span>
         </a>
-        
+         <!-- GESTION DE EQUIPOS - ADMIN puede gestionar todos los equipos -->
+        <a href="{% url 'listar_equipos' %}" class="nav-item">
+            <i class="fas fa-users-cog"></i>
+            <span>Gestionar Equipos</span>
+        </a>
         <a href="{% url 'auditoria' %}" class="nav-item {% if request.resolver_match.url_name == 'auditoria' %}active{% endif %}">
             <i class="fas fa-chart-simple"></i>
             <span>Auditoria</span>

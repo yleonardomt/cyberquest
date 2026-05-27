@@ -7,39 +7,103 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     {% load static %}
-    <link rel="stylesheet" href="{% static 'principal.css' %}">
+    <link rel="stylesheet" href="{% static 'css/principal.css' %}">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #E10600;
+            --primary-hover: #FF2A2A;
+            --primary-light: rgba(225, 6, 0, 0.15);
+            --bg-primary: #0F0F12;
+            --bg-secondary: #16161C;
+            --bg-card: #1a1a24;
+            --bg-dark: #0a0a0f;
+            --text-primary: #F5F5F5;
+            --text-secondary: #B3B3B3;
+            --text-muted: #6c6c7a;
+            --border-dark: #8B0000;
+            --radius-sm: 4px;
+            --radius: 8px;
+            --radius-lg: 16px;
+            --shadow: 0 0 10px rgba(225, 6, 0, 0.3);
+        }
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 1.5rem;
             margin-top: 1.5rem;
         }
+
         .modulo-card {
             background: var(--bg-card);
             border: 1px solid var(--border-dark);
             border-radius: var(--radius-lg);
             padding: 1.5rem;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             position: relative;
+            overflow: hidden;
         }
-        /* Módulo completado - pinta de verde */
+
+        .modulo-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), transparent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .modulo-card:hover::after {
+            transform: scaleX(1);
+        }
+
         .modulo-card.completado {
             background: linear-gradient(135deg, var(--bg-card) 0%, rgba(0, 170, 0, 0.15) 100%);
             border-color: #00aa00;
         }
+
         .modulo-card.completado:hover {
             border-color: #00ff00;
-            box-shadow: 0 0 15px rgba(0, 170, 0, 0.3);
+            box-shadow: 0 0 20px rgba(0, 170, 0, 0.3);
         }
+
         .modulo-card.en-progreso {
             border-left: 4px solid var(--primary);
         }
+
         .modulo-card:hover {
             border-color: var(--primary);
-            transform: translateY(-3px);
+            transform: translateY(-4px);
             box-shadow: var(--shadow);
         }
+
         .modulo-titulo {
             font-family: 'Orbitron', monospace;
             font-size: 1.1rem;
@@ -47,56 +111,65 @@
             margin-bottom: 0.5rem;
             padding-right: 80px;
         }
+
         .modulo-descripcion {
             color: var(--text-secondary);
             font-size: 0.85rem;
             margin-bottom: 1rem;
-            line-height: 1.4;
+            line-height: 1.5;
         }
+
         .modulo-meta {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 1rem;
+            margin-top: 0.8rem;
             padding-top: 0.5rem;
-            border-top: 1px solid var(--border-dark);
-            font-size: 0.75rem;
+            border-top: 1px solid rgba(225, 6, 0, 0.2);
+            font-size: 0.7rem;
             color: var(--text-muted);
             flex-wrap: wrap;
             gap: 0.5rem;
         }
+
         .lecciones-count {
             background: var(--primary-light);
-            padding: 0.25rem 0.5rem;
-            border-radius: var(--radius-sm);
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
             color: var(--primary);
         }
+
         .progreso-usuario {
             background: rgba(0, 255, 0, 0.1);
-            padding: 0.25rem 0.5rem;
-            border-radius: var(--radius-sm);
+            padding: 0.2rem 0.5rem;
+            border-radius: 20px;
             color: #00ff00;
         }
+
         .progreso-barra {
             margin-top: 0.8rem;
             height: 6px;
             background: var(--bg-dark);
-            border-radius: 3px;
+            border-radius: 10px;
             overflow: hidden;
         }
+
         .progreso-barra-fill {
             height: 100%;
-            background: var(--primary);
-            border-radius: 3px;
-            transition: width 0.3s ease;
+            background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+            border-radius: 10px;
+            transition: width 0.5s ease;
         }
+
         .progreso-barra-fill.completado {
-            background: #00aa00;
+            background: linear-gradient(90deg, #00aa00, #00cc00);
         }
+
         .btn-sm {
-            padding: 0.3rem 0.8rem;
+            padding: 0.35rem 0.9rem;
             font-size: 0.7rem;
         }
+
         .empty-state {
             text-align: center;
             padding: 3rem;
@@ -104,11 +177,13 @@
             border-radius: var(--radius-lg);
             border: 1px solid var(--border-dark);
         }
+
         .empty-state i {
             font-size: 3rem;
             color: var(--text-muted);
             margin-bottom: 1rem;
         }
+
         .btn-group {
             display: flex;
             gap: 1rem;
@@ -117,57 +192,64 @@
             align-items: center;
             justify-content: space-between;
         }
+
         .btn {
-            padding: 0.6rem 1.2rem;
-            border-radius: var(--radius);
-            font-weight: 600;
+            padding: 0.6rem 1.3rem;
+            border-radius: 40px;
+            font-weight: 700;
             text-decoration: none;
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.6rem;
             font-family: 'Orbitron', monospace;
             font-size: 0.75rem;
             cursor: pointer;
             border: none;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
         }
+
         .btn-primary {
-            background: var(--primary);
+            background: linear-gradient(135deg, #E10600, #FF2A2A);
             color: white;
+            box-shadow: 0 0 10px rgba(225, 6, 0, 0.4);
         }
+
         .btn-primary:hover {
-            background: var(--primary-hover);
             transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(225, 6, 0, 0.6);
         }
+
         .btn-outline {
             background: transparent;
-            border: 1px solid var(--primary);
-            color: var(--primary);
+            border: 2px solid #E10600;
+            color: #E10600;
         }
+
         .btn-outline:hover {
-            background: var(--primary-light);
+            background: rgba(225, 6, 0, 0.15);
+            transform: translateY(-2px);
         }
+
         .btn-danger {
-            background: #aa0000;
+            background: linear-gradient(135deg, #8B0000, #cc0000);
             color: white;
         }
+
         .btn-danger:hover {
-            background: #cc0000;
+            transform: translateY(-2px);
+            box-shadow: 0 0 15px rgba(139, 0, 0, 0.5);
         }
+
         .btn-warning {
-            background: #aa8800;
+            background: linear-gradient(135deg, #aa8800, #ccaa00);
             color: white;
         }
+
         .btn-warning:hover {
-            background: #ccaa00;
+            transform: translateY(-2px);
         }
-        .btn-success {
-            background: #00aa00;
-            color: white;
-        }
-        .btn-success:hover {
-            background: #00cc00;
-        }
+
         .action-buttons {
             display: flex;
             gap: 0.5rem;
@@ -175,103 +257,178 @@
             justify-content: flex-end;
             flex-wrap: wrap;
         }
+
         .filter-group {
             display: flex;
             gap: 1rem;
             flex-wrap: wrap;
             align-items: center;
         }
+
         .form-control {
-            padding: 0.5rem 0.8rem;
+            padding: 0.6rem 1rem;
             background: var(--bg-secondary);
             border: 1px solid var(--border-dark);
-            border-radius: var(--radius);
+            border-radius: 40px;
             color: var(--text-primary);
             font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
+            transition: all 0.2s ease;
         }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
         .top-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             flex-wrap: wrap;
             gap: 1rem;
         }
+
         .page-title {
             font-family: 'Orbitron', monospace;
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
         }
+
+        .page-title i {
+            color: var(--primary);
+        }
+
         .search-input {
             min-width: 250px;
         }
+
         .alert {
-            padding: 0.75rem;
+            padding: 0.8rem 1rem;
             border-radius: var(--radius);
             margin-bottom: 1rem;
+            font-size: 0.85rem;
         }
+
         .alert-success {
             background: rgba(0, 255, 0, 0.1);
-            border: 1px solid #00ff00;
+            border-left: 4px solid #00ff00;
             color: #00ff00;
         }
+
         .alert-error {
             background: rgba(255, 0, 0, 0.1);
-            border: 1px solid #ff0000;
+            border-left: 4px solid #ff0000;
             color: #ff6666;
         }
+
         .alert-info {
             background: rgba(0, 255, 255, 0.1);
-            border: 1px solid #00ffff;
+            border-left: 4px solid #00ffff;
             color: #00ffff;
         }
+
         .badge-completado {
-            background: #00aa00;
+            background: linear-gradient(135deg, #00aa00, #00cc00);
             color: white;
-            padding: 0.2rem 0.5rem;
+            padding: 0.2rem 0.6rem;
             border-radius: 20px;
             font-size: 0.65rem;
             position: absolute;
             top: 1rem;
             right: 1rem;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(0, 170, 0, 0.3);
         }
+
         .badge-progreso {
-            background: var(--primary);
+            background: linear-gradient(135deg, #E10600, #FF2A2A);
             color: white;
-            padding: 0.2rem 0.5rem;
+            padding: 0.2rem 0.6rem;
             border-radius: 20px;
             font-size: 0.65rem;
             position: absolute;
             top: 1rem;
             right: 1rem;
+            font-weight: bold;
         }
+
         .stats-resumen {
             display: flex;
             gap: 1rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             flex-wrap: wrap;
         }
+
         .resumen-card {
             background: var(--bg-card);
             border: 1px solid var(--border-dark);
-            border-radius: var(--radius);
-            padding: 0.8rem 1.2rem;
+            border-radius: var(--radius-lg);
+            padding: 1rem 1.2rem;
             text-align: center;
             flex: 1;
             min-width: 120px;
+            transition: all 0.3s ease;
         }
+
+        .resumen-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-3px);
+        }
+
         .resumen-number {
             font-family: 'Orbitron', monospace;
-            font-size: 1.2rem;
-            font-weight: 700;
+            font-size: 1.5rem;
+            font-weight: 800;
             color: var(--primary);
         }
+
         .resumen-label {
             font-size: 0.65rem;
             color: var(--text-muted);
+            margin-top: 0.3rem;
+            letter-spacing: 1px;
         }
-        .filtro-estado {
-            margin-left: 1rem;
+
+        @media (max-width: 1024px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 80px;
+                padding: 1rem;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-resumen {
+                flex-direction: column;
+            }
+            .filter-group {
+                flex-direction: column;
+                width: 100%;
+            }
+            .search-input {
+                width: 100%;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -297,7 +454,7 @@
         {% if messages %}
             {% for message in messages %}
             <div class="alert alert-{{ message.tags }}">
-                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}times-circle{% else %}info-circle{% endif %}"></i>
+                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
                 {{ message }}
             </div>
             {% endfor %}
@@ -327,27 +484,27 @@
 
         <!-- Búsqueda y filtros -->
         <div class="btn-group">
-            <form method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%;">
+            <form method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%; align-items: center;">
                 <div class="filter-group">
                     <input type="text" name="buscar" class="form-control search-input" 
-                           placeholder="Buscar módulo..." value="{{ request.GET.buscar|default:'' }}">
+                           placeholder=" Buscar módulo..." value="{{ request.GET.buscar|default:'' }}">
                     
                     {% if rol == 'ESTUDIANTE' %}
                     <select name="estado" class="form-control filtro-estado">
-                        <option value="">Todos los módulos</option>
-                        <option value="completado" {% if request.GET.estado == 'completado' %}selected{% endif %}>✓ Completados</option>
-                        <option value="progreso" {% if request.GET.estado == 'progreso' %}selected{% endif %}>⏳ En progreso</option>
-                        <option value="pendiente" {% if request.GET.estado == 'pendiente' %}selected{% endif %}>📖 No iniciados</option>
+                        <option value=""> Todos los módulos</option>
+                        <option value="completado" {% if request.GET.estado == 'completado' %}selected{% endif %}> Completados</option>
+                        <option value="progreso" {% if request.GET.estado == 'progreso' %}selected{% endif %}> En progreso</option>
+                        <option value="pendiente" {% if request.GET.estado == 'pendiente' %}selected{% endif %}> No iniciados</option>
                     </select>
                     {% endif %}
                     
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-search"></i> Buscar
+                        <i class="fas fa-search"></i> Filtrar
                     </button>
                     
                     {% if request.GET.buscar or request.GET.estado %}
                     <a href="{% url 'listar_modulos' %}" class="btn btn-outline">
-                        <i class="fas fa-times"></i> Limpiar
+                        <i class="fas fa-times"></i> Limpiar filtros
                     </a>
                     {% endif %}
                 </div>
@@ -444,14 +601,18 @@
                     </a>
                     {% endif %}
                     
-                    <!-- Editar y eliminar - solo para instructores -->
-                    {% if rol == 'INSTRUCTOR' %}
+                    <!-- Editar - solo para instructores y admin -->
+                    {% if rol == 'INSTRUCTOR' or rol == 'ADMIN' %}
                     <a href="{% url 'editar_modulo' modulo.id %}" class="btn btn-warning btn-sm">
                         <i class="fas fa-edit"></i> Editar
                     </a>
+                    {% endif %}
+
+                    <!-- Eliminar - solo para administrador -->
+                    {% if rol == 'ADMIN' %}
                     <a href="{% url 'eliminar_modulo' modulo.id %}" class="btn btn-danger btn-sm" 
-                       onclick="return confirm('¿Eliminar el módulo "{{ modulo.titulo }}"? Todas las lecciones, preguntas y recursos serán eliminados.')">
-                        <i class="fas fa-trash"></i>
+                       onclick="return confirm('¿Eliminar el módulo \"{{ modulo.titulo }}\"? Todas las lecciones, preguntas y recursos serán eliminados.')">
+                        <i class="fas fa-trash"></i> Eliminar
                     </a>
                     {% endif %}
                 </div>
@@ -472,6 +633,24 @@
         {% endif %}
     </main>
 </div>
+
+<script>
+    // Auto-remover mensajes después de 3 segundos
+    document.addEventListener('DOMContentLoaded', function() {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(function(alert) {
+            setTimeout(function() {
+                if (alert && alert.remove) {
+                    alert.style.opacity = '0';
+                    alert.style.transition = 'opacity 0.5s ease';
+                    setTimeout(function() {
+                        if (alert && alert.remove) alert.remove();
+                    }, 500);
+                }
+            }, 3000);
+        });
+    });
+</script>
 
 </body>
 </html>

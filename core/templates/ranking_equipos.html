@@ -119,7 +119,71 @@
 <body>
 
 <div class="app-container">
-    {% include 'nav.html' %}
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <h2><span>CYBER</span>QUEST</h2>
+            <p>Security Training Platform</p>
+        </div>
+        <div class="sidebar-profile">
+            <div class="profile-avatar">
+                {% if perfil.avatar %}
+                <img src="{{ perfil.avatar.url }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                <i class="fas fa-user"></i>
+                {% endif %}
+            </div>
+            <div class="profile-info">
+                <h4>{{ perfil.usuario.username }}</h4>
+                <span class="role-badge">
+                    {% if rol == 'ADMIN' %}
+                        <i class="fas fa-crown"></i> Admin
+                    {% elif rol == 'INSTRUCTOR' %}
+                        <i class="fas fa-chalkboard-user"></i> Instructor
+                    {% else %}
+                        <i class="fas fa-user-graduate"></i> Competidor
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-title">PRINCIPAL</div>
+            <a href="{% url 'dashboard' %}" class="nav-item"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+            <a href="{% url 'listar_retos' %}" class="nav-item"><i class="fas fa-flag"></i><span>Retos</span></a>
+            <a href="{% url 'ranking_individual' %}" class="nav-item"><i class="fas fa-chart-line"></i><span>Rankings</span></a>
+            <a href="{% url 'listar_equipos' %}" class="nav-item"><i class="fas fa-users"></i><span>Equipos</span></a>
+            <a href="{% url 'consultar_asistente' %}" class="nav-item"><i class="fas fa-robot"></i><span>Asistente IA</span></a>
+            
+            {% if rol == 'ESTUDIANTE' or rol == 'INSTRUCTOR' %}
+            <div class="nav-title">APRENDIZAJE</div>
+            <a href="{% url 'listar_modulos' %}" class="nav-item"><i class="fas fa-book"></i><span>Mis Cursos</span></a>
+            <div class="nav-title">COMPETENCIAS</div>
+            <a href="{% url 'listar_eventos' %}" class="nav-item"><i class="fas fa-calendar-alt"></i><span>Eventos CTF</span></a>
+            {% endif %}
+            
+            {% if rol == 'INSTRUCTOR' or rol == 'ADMIN' %}
+            <div class="nav-title">GESTION</div>
+            <a href="{% url 'listar_retos' %}" class="nav-item"><i class="fas fa-edit"></i><span>Gestionar Retos</span></a>
+            <a href="{% url 'listar_modulos' %}" class="nav-item"><i class="fas fa-book-open"></i><span>Gestionar Cursos</span></a>
+            <a href="{% url 'listar_eventos' %}" class="nav-item"><i class="fas fa-calendar-plus"></i><span>Gestionar Eventos</span></a>
+            {% endif %}
+            
+            {% if rol == 'ADMIN' %}
+            <div class="nav-title">ADMINISTRACION</div>
+            <a href="{% url 'listar_usuarios' %}" class="nav-item"><i class="fas fa-user-shield"></i><span>Gestionar Usuarios</span></a>
+            <a href="{% url 'listar_equipos' %}" class="nav-item"><i class="fas fa-users-cog"></i><span>Gestionar Equipos</span></a>
+            <a href="{% url 'auditoria' %}" class="nav-item"><i class="fas fa-chart-simple"></i><span>Auditoria</span></a>
+            <a href="{% url 'configuracion_ia' %}" class="nav-item"><i class="fas fa-robot"></i><span>Asistente IA</span></a>
+            <a href="{% url 'sesiones_activas' %}" class="nav-item"><i class="fas fa-clock"></i><span>Sesiones Activas</span></a>
+            {% endif %}
+            
+            <div class="nav-title">PERFIL</div>
+            <a href="{% url 'perfil_detalle' %}" class="nav-item"><i class="fas fa-user-circle"></i><span>Mi Perfil</span></a>
+        </div>
+        <div class="sidebar-footer">
+            <a href="{% url 'logout' %}" class="logout-btn"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesion</span></a>
+        </div>
+    </aside>
 
     <main class="main-content">
         <div class="top-header">
@@ -136,7 +200,7 @@
             </div>
         </div>
 
-        <!-- Stats Cards -->
+        <!-- RF-36: Tabla de Ranking de Equipos -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-users"></i></div>
@@ -156,14 +220,14 @@
             <div class="stat-card">
                 <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
                 <div class="stat-value">#{{ mi_equipo_posicion|default:"-" }}</div>
-                <div class="stat-label">Posición de tu equipo</div>
+                <div class="stat-label">Posicion de mi equipo</div>
             </div>
         </div>
 
-        <!-- 4 Gráficas -->
+        <!-- RF-39: Estadisticas Generales (Graficas) -->
         <div class="charts-grid">
             <div class="chart-card">
-                <div class="chart-title"><i class="fas fa-chart-pie"></i> Distribución por Tamaño</div>
+                <div class="chart-title"><i class="fas fa-chart-pie"></i> Distribucion por Tamano</div>
                 <canvas id="tamanoChart"></canvas>
             </div>
             <div class="chart-card">
@@ -171,7 +235,7 @@
                 <canvas id="top10EquiposChart"></canvas>
             </div>
             <div class="chart-card">
-                <div class="chart-title"><i class="fas fa-chart-line"></i> Evolución de Puntos (Top 5)</div>
+                <div class="chart-title"><i class="fas fa-chart-line"></i> Evolucion de Puntos (Top 5)</div>
                 <canvas id="evolucionEquiposChart"></canvas>
             </div>
             <div class="chart-card">
@@ -198,7 +262,7 @@
                         </div>
                         <div class="podium-name">{{ equipo.nombre }}</div>
                         <div class="podium-points">{{ equipo.puntos }} pts</div>
-                        <div class="podium-number">{{ forloop.counter }}º Lugar</div>
+                        <div class="podium-number">{{ forloop.counter }}° Lugar</div>
                     </div>
                     {% endfor %}
                 {% endwith %}
@@ -212,7 +276,7 @@
                     <tr>
                         <th>#</th>
                         <th>Equipo</th>
-                        <th>Líder</th>
+                        <th>Lider</th>
                         <th>Miembros</th>
                         <th>Retos</th>
                         <th>Puntos</th>
@@ -225,18 +289,18 @@
                     <tr class="{% if mi_equipo and mi_equipo.id == equipo.id %}current-team{% endif %}">
                         <td>
                             <strong>
-                                {% if forloop.counter == 1 %}🥇
-                                {% elif forloop.counter == 2 %}🥈
-                                {% elif forloop.counter == 3 %}🥉
-                                {% else %}#{{ forloop.counter }}{% endif %}
+                                {% if forloop.counter == 1 %}1°
+                                {% elif forloop.counter == 2 %}2°
+                                {% elif forloop.counter == 3 %}3°
+                                {% else %}{{ forloop.counter }}°{% endif %}
                             </strong>
-                        </td>
+                        </a>
                         <td>
                             <div style="display: flex; align-items: center;">
                                 <div class="avatar-sm"><i class="fas fa-users"></i></div>
                                 {{ equipo.nombre }}
                                 {% if mi_equipo and mi_equipo.id == equipo.id %}
-                                    <span class="badge" style="background: var(--primary); margin-left: 0.5rem; color: white;">Tu Equipo</span>
+                                    <span class="badge" style="background: var(--primary); margin-left: 0.5rem; color: white;">Mi Equipo</span>
                                 {% endif %}
                             </div>
                         </a>
@@ -255,6 +319,7 @@
                             <div class="progress-bar-container">
                                 <div class="progress-bar-fill" style="width: {{ equipo.progreso_porcentaje }}%"></div>
                             </div>
+                            <small style="font-size: 0.6rem;">{{ equipo.progreso_porcentaje|floatformat:0 }}%</small>
                         </a>
                     </tr>
                     {% empty %}
@@ -272,13 +337,13 @@
 </div>
 
 <script>
-    // Datos para las gráficas
+    // Datos para las graficas
     const tamanoData = {{ tamano_data|safe }};
     const top10Data = {{ top10_equipos_data|safe }};
     const evolucionData = {{ evolucion_equipos_data|safe }};
     const dificultadData = {{ dificultad_equipos_data|safe }};
 
-    // Gráfico 1: Distribución por Tamaño
+    // Grafico 1: Distribucion por Tamano
     new Chart(document.getElementById('tamanoChart'), {
         type: 'pie',
         data: {
@@ -297,7 +362,7 @@
         }
     });
 
-    // Gráfico 2: Top 10 Equipos
+    // Grafico 2: Top 10 Equipos
     new Chart(document.getElementById('top10EquiposChart'), {
         type: 'bar',
         data: {
@@ -321,7 +386,7 @@
         }
     });
 
-    // Gráfico 3: Evolución de Puntos
+    // Grafico 3: Evolucion de Puntos
     if (evolucionData && evolucionData.datasets) {
         new Chart(document.getElementById('evolucionEquiposChart'), {
             type: 'line',
@@ -340,7 +405,7 @@
         });
     }
 
-    // Gráfico 4: Retos por Dificultad
+    // Grafico 4: Retos por Dificultad
     if (dificultadData && dificultadData.values) {
         new Chart(document.getElementById('dificultadEquiposChart'), {
             type: 'doughnut',

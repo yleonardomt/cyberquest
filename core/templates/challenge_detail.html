@@ -15,81 +15,295 @@
             letter-spacing: 1px;
         }
         .docker-info {
-            background: var(--bg-dark);
-            border-radius: var(--radius);
-            padding: 1rem;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-secondary) 100%);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
             margin-top: 1rem;
-        }
-        .docker-info pre {
-            background: #0a0a0f;
-            padding: 0.75rem;
-            border-radius: var(--radius);
-            overflow-x: auto;
-            font-size: 0.7rem;
-            margin-top: 0.5rem;
+            border: 1px solid var(--border-dark);
         }
         .recurso-item {
             background: var(--bg-secondary);
             border-radius: var(--radius);
-            padding: 0.5rem 1rem;
+            padding: 0.75rem 1rem;
             margin-bottom: 0.5rem;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            transition: all 0.2s ease;
+        }
+        .recurso-item:hover {
+            background: var(--primary-light);
+            transform: translateX(5px);
         }
         .recurso-item a {
             color: var(--primary);
+            text-decoration: none;
+        }
+        .recurso-item a:hover {
+            text-decoration: underline;
         }
         .entorno-activo {
-            background: rgba(0, 255, 0, 0.1);
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.1) 0%, rgba(0, 170, 0, 0.05) 100%);
             border: 1px solid #00ff00;
-            border-radius: var(--radius);
-            padding: 1rem;
+            border-radius: var(--radius-lg);
+            padding: 1.2rem;
+            margin-top: 1rem;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+        }
+        .entorno-detener {
+            background: linear-gradient(135deg, rgba(255, 0, 0, 0.1) 0%, rgba(170, 0, 0, 0.05) 100%);
+            border: 1px solid #ff0000;
+            border-radius: var(--radius-lg);
+            padding: 1.2rem;
             margin-top: 1rem;
         }
         .entorno-url {
-            font-size: 1.2rem;
+            font-size: 1rem;
             font-family: monospace;
             background: var(--bg-primary);
-            padding: 0.5rem;
+            padding: 0.75rem;
             border-radius: var(--radius);
-            margin-top: 0.5rem;
+            margin-top: 0.75rem;
+            word-break: break-all;
         }
         .entorno-url a {
             color: #00ff00;
+            text-decoration: none;
+        }
+        .entorno-url a:hover {
             text-decoration: underline;
         }
-        .alert-error {
-            background: rgba(255, 0, 0, 0.2);
-            border: 1px solid #ff0000;
-            color: #ff6666;
-            padding: 0.75rem;
-            border-radius: var(--radius);
-            margin-bottom: 1rem;
+        .badge-docker {
+            background: #2496ed;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
         }
-        .alert-success {
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #00aa00;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease, fadeOut 3s ease 2.7s forwards;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border-left: 4px solid white;
+        }
+        .toast-message.error {
+            background: #cc0000;
+        }
+        .toast-message.warning {
+            background: #ff8800;
+        }
+        .toast-message i {
+            font-size: 1.2rem;
+        }
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        .status-running {
             background: rgba(0, 255, 0, 0.2);
-            border: 1px solid #00ff00;
             color: #00ff00;
-            padding: 0.75rem;
-            border-radius: var(--radius);
-            margin-bottom: 1rem;
+            border: 1px solid #00ff00;
         }
-        .alert-warning {
+        .status-stopped {
             background: rgba(255, 255, 0, 0.2);
-            border: 1px solid #ffff00;
-            color: #ffff00;
-            padding: 0.75rem;
-            border-radius: var(--radius);
+            color: #ffaa00;
+            border: 1px solid #ffaa00;
+        }
+        .status-error {
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6666;
+            border: 1px solid #ff0000;
+        }
+        .modal-confirm {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-confirm.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            max-width: 400px;
+            text-align: center;
+        }
+        .modal-content i {
+            font-size: 3rem;
+            color: var(--primary);
             margin-bottom: 1rem;
         }
-        .alert-info {
-            background: rgba(0, 255, 255, 0.2);
-            border: 1px solid #00ffff;
-            color: #00ffff;
-            padding: 0.75rem;
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+        .btn-secondary {
+            background: #6c6c7a;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #8a8a9a;
+            transform: translateY(-2px);
+        }
+        .reto-completado {
+            background: linear-gradient(135deg, rgba(0, 255, 0, 0.1) 0%, rgba(0, 170, 0, 0.05) 100%);
+            border: 1px solid #00ff00;
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .reto-completado i {
+            font-size: 2.5rem;
+            color: #00ff00;
+            margin-bottom: 0.5rem;
+        }
+        .activity-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+        }
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .page-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.3rem;
+            color: var(--text-primary);
+        }
+        .badge-puntos {
+            background: var(--primary);
+            padding: 0.25rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: white;
+        }
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+        .btn {
+            padding: 0.6rem 1.2rem;
             border-radius: var(--radius);
-            margin-bottom: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.7rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-primary {
+            background: #E10600;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #FF2A2A;
+            transform: translateY(-2px);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #E10600;
+            color: #E10600;
+        }
+        .btn-outline:hover {
+            background: rgba(225, 6, 0, 0.15);
+            color: #E10600;
+            transform: translateY(-2px);
+        }
+        .btn-danger {
+            background: #8B0000;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #aa0000;
+            transform: translateY(-2px);
+        }
+        .btn-warning {
+            background: #e68a00;
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #ff8800;
+            transform: translateY(-2px);
+        }
+        .btn-success {
+            background: #006600;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #008800;
+            transform: translateY(-2px);
+        }
+        .form-control {
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+        }
+        hr {
+            border-color: var(--border-dark);
+            margin: 1.5rem 0;
         }
     </style>
 </head>
@@ -100,51 +314,54 @@
     {% include 'nav.html' %}
 
     <main class="main-content">
-        <div class="top-header">
-            <h1 class="page-title">{{ reto.titulo }}</h1>
-            <span class="badge" style="background: var(--primary); padding: 0.25rem 1rem; border-radius: 20px;">
-                {{ reto.puntos }} pts
-            </span>
-        </div>
-
-        <!-- Mostrar mensajes -->
+        
         {% if messages %}
-        <div style="margin-bottom: 1.5rem;">
             {% for message in messages %}
-            <div class="alert-{{ message.tags }}">
-                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% elif message.tags == 'warning' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
-                {{ message }}
+            <div class="toast-message {% if message.tags %}{{ message.tags }}{% endif %}">
+                <i class="fas {% if message.tags == 'error' %}fa-exclamation-triangle{% elif message.tags == 'success' %}fa-check-circle{% elif message.tags == 'warning' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+                <span>{{ message }}</span>
             </div>
             {% endfor %}
-        </div>
         {% endif %}
+
+        <div class="top-header">
+            <h1 class="page-title">
+                <i class="fas fa-flag"></i> {{ reto.titulo }}
+            </h1>
+            <div class="badge-puntos">
+                <i class="fas fa-star"></i> {{ reto.puntos }} pts
+            </div>
+        </div>
 
         <div class="activity-card">
             <!-- Informacion del reto -->
-            <div style="margin-bottom: 1.5rem;">
+            <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem; flex-wrap: wrap;">
                 <p><strong><i class="fas fa-folder"></i> Categoria:</strong> {{ reto.categoria.nombre }}</p>
                 <p><strong><i class="fas fa-chart-line"></i> Dificultad:</strong> 
                     {% if reto.dificultad == 'PRINCIPIANTE' %}
-                        <span style="color: #00ff00;">Principiante</span>
+                        <span style="color: #00ff00;">🌱 Principiante</span>
                     {% elif reto.dificultad == 'INTERMEDIO' %}
-                        <span style="color: #ffaa00;">Intermedio</span>
+                        <span style="color: #ffaa00;">⚡ Intermedio</span>
                     {% else %}
-                        <span style="color: #ff0000;">Avanzado</span>
+                        <span style="color: #ff0000;">🔥 Avanzado</span>
                     {% endif %}
                 </p>
+                {% if reto.tiene_docker %}
+                <p><span class="badge-docker"><i class="fab fa-docker"></i> Docker disponible</span></p>
+                {% endif %}
             </div>
             
             <!-- Descripcion -->
             <div style="margin-bottom: 1.5rem;">
                 <h3><i class="fas fa-align-left"></i> Descripcion</h3>
-                <p style="white-space: pre-line;">{{ reto.descripcion|linebreaks }}</p>
+                <p style="white-space: pre-line; line-height: 1.6;">{{ reto.descripcion|linebreaks }}</p>
             </div>
             
             <!-- Pista -->
             {% if reto.pista %}
-            <div style="margin-bottom: 1.5rem; background: var(--primary-light); padding: 1rem; border-radius: var(--radius);">
+            <div style="margin-bottom: 1.5rem; background: var(--primary-light); padding: 1rem; border-radius: var(--radius); border-left: 4px solid var(--primary);">
                 <h3><i class="fas fa-lightbulb"></i> Pista</h3>
-                <p>{{ reto.pista }}</p>
+                <p style="margin: 0;">{{ reto.pista }}</p>
             </div>
             {% endif %}
             
@@ -156,72 +373,105 @@
                 <div class="recurso-item">
                     <i class="fas fa-file"></i>
                     <a href="{{ recurso.archivo.url }}" target="_blank">{{ recurso.titulo }}</a>
-                    <small style="margin-left: auto;">Click para descargar</small>
+                    <small style="margin-left: auto;"><i class="fas fa-download"></i> Descargar</small>
                 </div>
                 {% endfor %}
             </div>
             {% endif %}
             
             <!-- Entorno Docker -->
-            {% if reto.tiene_docker and reto.dockerfile %}
+            {% if reto.tiene_docker %}
             <div class="docker-info">
                 <h3><i class="fab fa-docker"></i> Entorno Docker</h3>
                 
-                <!-- Mostrar entorno activo si existe -->
-                {% if entorno and entorno.estado == 'EJECUTANDO' %}
-                <div class="entorno-activo">
-                    <h4><i class="fas fa-play-circle" style="color: #00ff00;"></i> Entorno Activo</h4>
-                    <p>Tu entorno de laboratorio está corriendo:</p>
-                    <div class="entorno-url">
-                        <i class="fas fa-link"></i> 
-                        <a href="{{ entorno.configuracion_vpn }}" target="_blank">
-                            {{ entorno.configuracion_vpn }}
-                        </a>
+                {% if entorno %}
+                    {% if entorno.estado == 'EJECUTANDO' %}
+                    <div class="entorno-activo">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                            <h4 style="margin: 0;"><i class="fas fa-play-circle" style="color: #00ff00;"></i> Entorno Activo</h4>
+                            <span class="status-badge status-running"><i class="fas fa-circle"></i> En ejecucion</span>
+                        </div>
+                        <p style="margin-top: 0.5rem;">Tu entorno de laboratorio esta corriendo:</p>
+                        <div class="entorno-url">
+                            <i class="fas fa-link"></i> 
+                            <a href="{{ entorno.configuracion_vpn }}" target="_blank">
+                                {{ entorno.configuracion_vpn }}
+                            </a>
+                        </div>
+                        <div class="btn-group" style="margin-top: 1rem; margin-bottom: 0;">
+                            <button class="btn btn-danger" onclick="mostrarModalDetener('{{ entorno.id }}')">
+                                <i class="fas fa-stop"></i> Detener entorno
+                            </button>
+                        </div>
                     </div>
-                    <div class="btn-group" style="margin-top: 1rem;">
-                        <a href="{% url 'detener_entorno' entorno.id %}" class="btn btn-danger">
-                            <i class="fas fa-stop"></i> Detener entorno
-                        </a>
+                    {% elif entorno.estado == 'ERROR' %}
+                    <div class="entorno-detener">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                            <h4 style="margin: 0;"><i class="fas fa-exclamation-triangle" style="color: #ff0000;"></i> Error en el entorno</h4>
+                            <span class="status-badge status-error"><i class="fas fa-exclamation-circle"></i> Error</span>
+                        </div>
+                        <p>Hubo un problema al iniciar el entorno. Intenta nuevamente.</p>
+                        <div class="btn-group" style="margin-top: 1rem; margin-bottom: 0;">
+                            <a href="{% url 'iniciar_entorno' reto.id %}" class="btn btn-primary">
+                                <i class="fas fa-sync"></i> Reintentar
+                            </a>
+                        </div>
                     </div>
-                </div>
+                    {% else %}
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                            <h4 style="margin: 0;"><i class="fas fa-stop-circle" style="color: #ffaa00;"></i> Entorno Detenido</h4>
+                            <span class="status-badge status-stopped"><i class="fas fa-circle"></i> Detenido</span>
+                        </div>
+                        <p>Inicia el entorno Docker para acceder al laboratorio.</p>
+                        <div class="btn-group" style="margin-top: 1rem; margin-bottom: 0;">
+                            <a href="{% url 'iniciar_entorno' reto.id %}" class="btn btn-primary">
+                                <i class="fas fa-play"></i> Iniciar entorno Docker
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
                 {% else %}
-                <div class="btn-group" style="margin-top: 1rem;">
-                    <a href="{% url 'iniciar_entorno' reto.id %}" class="btn btn-primary">
-                        <i class="fas fa-play"></i> Iniciar entorno Docker
-                    </a>
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                        <h4 style="margin: 0;"><i class="fas fa-stop-circle" style="color: #ffaa00;"></i> Entorno Detenido</h4>
+                        <span class="status-badge status-stopped"><i class="fas fa-circle"></i> Detenido</span>
+                    </div>
+                    <p>Inicia el entorno Docker para acceder al laboratorio.</p>
+                    <div class="btn-group" style="margin-top: 1rem; margin-bottom: 0;">
+                        <a href="{% url 'iniciar_entorno' reto.id %}" class="btn btn-primary">
+                            <i class="fas fa-play"></i> Iniciar entorno Docker
+                        </a>
+                    </div>
                 </div>
                 {% endif %}
-                
-                <details style="margin-top: 1rem;">
-                    <summary style="cursor: pointer; color: var(--primary);">Ver Dockerfile</summary>
-                    <pre>{{ reto.dockerfile }}</pre>
-                </details>
             </div>
             {% endif %}
             
             <hr>
             
             <!-- Enviar flag -->
+            {% if intento and intento.es_correcto %}
+            <div class="reto-completado">
+                <i class="fas fa-trophy"></i>
+                <h3 style="color: #00ff00; margin: 0;">¡Reto completado!</h3>
+                <p style="margin-top: 0.5rem;">Ya resolviste este reto anteriormente. ¡Felicidades!</p>
+            </div>
+            {% else %}
             <div style="margin-top: 1.5rem;">
                 <h3><i class="fas fa-flag"></i> Enviar Flag</h3>
-                <form method="POST">
+                <form method="POST" id="flagForm">
                     {% csrf_token %}
                     <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                        <input type="text" name="bandera" class="form-control flag-input" 
+                        <input type="text" name="bandera" id="banderaInput" class="form-control flag-input" 
                                placeholder="flag{...}" style="flex: 1;" required>
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
                             <i class="fas fa-paper-plane"></i> Validar Flag
                         </button>
                     </div>
                 </form>
-                
-                {% if intento and intento.es_correcto %}
-                <div style="margin-top: 1rem; background: rgba(0,255,0,0.1); border: 1px solid #00ff00; border-radius: var(--radius); padding: 1rem;">
-                    <i class="fas fa-check-circle" style="color: #00ff00;"></i>
-                    <strong>¡Reto completado!</strong> Ya resolviste este reto anteriormente.
-                </div>
-                {% endif %}
             </div>
+            {% endif %}
             
             <!-- Botones de accion -->
             <div class="btn-group" style="margin-top: 1.5rem;">
@@ -232,15 +482,74 @@
                 <a href="{% url 'editar_reto' reto.id %}" class="btn btn-secondary">
                     <i class="fas fa-edit"></i> Editar reto
                 </a>
-                <a href="{% url 'eliminar_reto' reto.id %}" class="btn btn-danger" 
-                   onclick="return confirm('¿Eliminar este reto?')">
+                <button class="btn btn-danger" onclick="mostrarModalEliminar('{{ reto.id }}', '{{ reto.titulo|escapejs }}')">
                     <i class="fas fa-trash"></i> Eliminar
-                </a>
+                </button>
                 {% endif %}
             </div>
         </div>
     </main>
 </div>
+
+<!-- Modal de confirmacion -->
+<div id="modalConfirm" class="modal-confirm">
+    <div class="modal-content">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3 id="modalTitulo">Confirmar accion</h3>
+        <p id="modalMensaje">¿Estas seguro de realizar esta accion?</p>
+        <div class="modal-buttons">
+            <button class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+            <a id="modalConfirmarBtn" href="#" class="btn btn-danger">Confirmar</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function mostrarModalDetener(entornoId) {
+        document.getElementById('modalTitulo').innerText = 'Detener entorno';
+        document.getElementById('modalMensaje').innerHTML = '¿Detener el entorno Docker?<br>Perderas acceso al laboratorio.';
+        document.getElementById('modalConfirmarBtn').href = '/environment/' + entornoId + '/stop/';
+        document.getElementById('modalConfirmarBtn').className = 'btn btn-warning';
+        document.getElementById('modalConfirm').classList.add('active');
+    }
+    
+    function mostrarModalEliminar(retoId, retoTitulo) {
+        document.getElementById('modalTitulo').innerText = 'Eliminar reto';
+        document.getElementById('modalMensaje').innerHTML = 'Eliminar el reto <strong>' + retoTitulo + '</strong> permanentemente?<br>Esta accion no se puede deshacer.';
+        document.getElementById('modalConfirmarBtn').href = '/challenge/' + retoId + '/delete/';
+        document.getElementById('modalConfirmarBtn').className = 'btn btn-danger';
+        document.getElementById('modalConfirm').classList.add('active');
+    }
+    
+    function cerrarModal() {
+        document.getElementById('modalConfirm').classList.remove('active');
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        var messages = document.querySelectorAll('.toast-message');
+        messages.forEach(function(msg) {
+            setTimeout(function() {
+                if (msg && msg.remove) msg.remove();
+            }, 3000);
+        });
+        
+        document.getElementById('modalConfirm').addEventListener('click', function(e) {
+            if (e.target === this) {
+                cerrarModal();
+            }
+        });
+        
+        // Animacion para el envio de flag
+        const form = document.getElementById('flagForm');
+        if (form) {
+            form.addEventListener('submit', function() {
+                const btn = document.getElementById('submitBtn');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Validando...';
+                btn.disabled = true;
+            });
+        }
+    });
+</script>
 
 </body>
 </html>

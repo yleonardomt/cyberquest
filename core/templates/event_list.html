@@ -23,7 +23,6 @@
             transition: all 0.2s ease;
             position: relative;
         }
-        /* Evento donde estás inscrito - pinta de verde */
         .evento-card.inscrito {
             background: linear-gradient(135deg, var(--bg-card) 0%, rgba(0, 170, 0, 0.15) 100%);
             border-color: #00aa00;
@@ -163,6 +162,14 @@
         .btn-outline:hover {
             background: var(--primary-light);
         }
+        .btn-danger {
+            background: #aa0000;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #cc0000;
+            transform: translateY(-2px);
+        }
         .btn-success {
             background: #00aa00;
             color: white;
@@ -203,6 +210,12 @@
             justify-content: flex-end;
             flex-wrap: wrap;
         }
+        .admin-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            justify-content: flex-end;
+        }
         .stats-resumen {
             display: flex;
             gap: 1rem;
@@ -234,43 +247,64 @@
             margin-bottom: 1rem;
             flex-wrap: wrap;
             align-items: center;
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: var(--radius-lg);
         }
         .form-control {
             padding: 0.5rem 0.8rem;
-            background: var(--bg-secondary);
+            background: var(--bg-dark);
             border: 1px solid var(--border-dark);
             border-radius: var(--radius);
             color: var(--text-primary);
             font-family: 'Share Tech Mono', monospace;
         }
-        .mensaje-flotante {
+        .search-input {
+            min-width: 250px;
+            flex: 1;
+        }
+        .toast-message {
             position: fixed;
-            bottom: 20px;
-            right: 20px;
+            bottom: 30px;
+            right: 30px;
             background: #00aa00;
             color: white;
-            padding: 1rem;
-            border-radius: var(--radius);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
             z-index: 1000;
-            animation: fadeOut 3s ease forwards;
+            animation: slideInRight 0.3s ease, fadeOut 3s ease 2.7s forwards;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border-left: 4px solid white;
         }
-        .mensaje-flotante.error {
-            background: #ff0000;
+        .toast-message.error {
+            background: #cc0000;
+        }
+        .toast-message.warning {
+            background: #ff8800;
+        }
+        .toast-message i {
+            font-size: 1.2rem;
+        }
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
         @keyframes fadeOut {
-            0% { opacity: 1; transform: translateY(0); }
-            70% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-20px); visibility: hidden; }
-        }
-        .alert {
-            padding: 0.75rem;
-            border-radius: var(--radius);
-            margin-bottom: 1rem;
-        }
-        .alert-success {
-            background: rgba(0, 255, 0, 0.1);
-            border: 1px solid #00ff00;
-            color: #00ff00;
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
         }
         .btn-unirse {
             background: #00aa00;
@@ -286,6 +320,40 @@
             cursor: default;
             opacity: 0.7;
         }
+        .modal-confirm {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-confirm.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            max-width: 400px;
+            text-align: center;
+        }
+        .modal-content i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
     </style>
 </head>
 <body>
@@ -295,175 +363,213 @@
     {% include 'nav.html' %}
 
     <main class="main-content">
-        <div class="top-header">
-            <h1 class="page-title">
-                <i class="fas fa-calendar-alt"></i> Eventos CTF
-            </h1>
-            <div class="btn-group" style="margin: 0;">
-                {% if rol == 'INSTRUCTOR' %}
-                <a href="{% url 'crear_evento' %}" class="btn btn-primary">
-                    <i class="fas fa-plus-circle"></i> Crear Evento
-                </a>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Mensajes -->
-        {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}info-circle{% endif %}"></i>
-                {{ message }}
-            </div>
-            {% endfor %}
-        {% endif %}
-
-        <!-- Resumen de participación para estudiantes -->
-        {% if rol == 'ESTUDIANTE' %}
-        <div class="stats-resumen">
-            <div class="resumen-card">
-                <div class="resumen-number">{{ total_eventos }}</div>
-                <div class="resumen-label">Total Eventos</div>
-            </div>
-            <div class="resumen-card">
-                <div class="resumen-number" style="color: #00aa00;">{{ eventos_inscritos }}</div>
-                <div class="resumen-label">Mis Inscripciones</div>
-            </div>
-            <div class="resumen-card">
-                <div class="resumen-number" style="color: #ff8800;">{{ eventos_participando }}</div>
-                <div class="resumen-label">Participando Ahora</div>
-            </div>
-            <div class="resumen-card">
-                <div class="resumen-number" style="color: #2496ed;">{{ eventos_finalizados }}</div>
-                <div class="resumen-label">Finalizados</div>
-            </div>
-        </div>
-
-        <!-- Filtros -->
-        <div class="filtros-bar">
-            <form method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%;">
-                <select name="estado" class="form-control" style="min-width: 150px;">
-                    <option value="">Todos los eventos</option>
-                    <option value="inscrito" {% if request.GET.estado == 'inscrito' %}selected{% endif %}>✓ Mis inscripciones</option>
-                    <option value="activo" {% if request.GET.estado == 'activo' %}selected{% endif %}>🎯 Activos ahora</option>
-                    <option value="proximos" {% if request.GET.estado == 'proximos' %}selected{% endif %}>⏰ Próximos</option>
-                    <option value="finalizados" {% if request.GET.estado == 'finalizados' %}selected{% endif %}>🏁 Finalizados</option>
-                </select>
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-filter"></i> Filtrar
-                </button>
-                {% if request.GET.estado %}
-                <a href="{% url 'listar_eventos' %}" class="btn btn-outline">
-                    <i class="fas fa-times"></i> Limpiar
-                </a>
-                {% endif %}
-            </form>
-        </div>
-        {% endif %}
-
-        {% if eventos %}
-        <div class="stats-grid">
-            {% for evento in eventos %}
-            <div class="evento-card {% if evento.esta_inscrito %}inscrito{% endif %}">
-                
-                <!-- Badges de estado -->
-                {% if evento.esta_inscrito %}
-                <span class="badge-inscrito">
-                    <i class="fas fa-check-circle"></i> ¡Inscrito!
-                </span>
-                {% elif evento.fecha_inicio > now %}
-                <span class="badge-proximamente">
-                    <i class="fas fa-clock"></i> Próximamente
-                </span>
-                {% endif %}
-                
-                <div class="evento-titulo">
-                    <i class="fas fa-trophy" style="margin-right: 0.5rem;"></i>
-                    {{ evento.nombre }}
-                </div>
-                <div class="evento-descripcion">
-                    {{ evento.descripcion|truncatechars:120 }}
-                </div>
-                
-                <div class="evento-meta">
-                    <span class="retos-count">
-                        <i class="fas fa-flag"></i> {{ evento.retos.count }} retos
-                    </span>
-                    <span>
-                        <i class="fas fa-users"></i> {{ evento.participantes.count }} participantes
-                    </span>
-                </div>
-                <div class="evento-meta">
-                    <span>
-                        <i class="fas fa-calendar"></i> {{ evento.fecha_inicio|date:"d/m/Y H:i" }}
-                    </span>
-                    <span>
-                        <i class="fas fa-calendar-check"></i> {{ evento.fecha_fin|date:"d/m/Y H:i" }}
-                    </span>
-                </div>
-                <div class="evento-meta">
-                    <span>
-                        {% if evento.fecha_fin < now %}
-                        <span class="badge-finalizado"><i class="fas fa-check-circle"></i> Finalizado</span>
-                        {% elif evento.fecha_inicio <= now and evento.fecha_fin >= now %}
-                        <span class="badge-activo"><i class="fas fa-play"></i> En curso</span>
-                        {% else %}
-                        <span class="badge-inactivo"><i class="fas fa-clock"></i> Próximamente</span>
-                        {% endif %}
-                    </span>
-                    {% if evento.esta_inscrito and evento.fecha_fin >= now %}
-                    <span>
-                        <i class="fas fa-trophy"></i> Mi puntuación: {{ evento.puntuacion_usuario|default:0 }} pts
-                    </span>
-                    {% endif %}
-                </div>
-                
-                <div class="action-buttons">
-                    <a href="{% url 'detalle_evento' evento.id %}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-eye"></i> Ver detalles
-                    </a>
-                    
-                    {% if not evento.esta_inscrito and rol == 'ESTUDIANTE' %}
-                        {% if evento.fecha_inicio > now %}
-                        <button onclick="unirseEvento({{ evento.id }}, '{{ evento.nombre|escapejs }}')" class="btn btn-success btn-sm btn-unirse">
-                            <i class="fas fa-user-plus"></i> Unirse al Evento
-                        </button>
-                        {% elif evento.fecha_inicio <= now and evento.fecha_fin >= now %}
-                        <button onclick="unirseEvento({{ evento.id }}, '{{ evento.nombre|escapejs }}')" class="btn btn-warning btn-sm">
-                            <i class="fas fa-play"></i> Unirse ahora
-                        </button>
-                        {% endif %}
-                    {% elif evento.esta_inscrito and evento.fecha_inicio <= now and evento.fecha_fin >= now %}
-                    <a href="{% url 'listar_retos' %}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-flag-checkered"></i> Comenzar a Jugar
-                    </a>
-                    {% elif evento.esta_inscrito %}
-                    <span class="btn btn-inscrito btn-sm">
-                        <i class="fas fa-check"></i> Ya estás inscrito
-                    </span>
-                    {% endif %}
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="empty-state">
-            <i class="fas fa-calendar-times"></i>
-            <h3>No hay eventos disponibles</h3>
-            <p>No se encontraron eventos con los filtros seleccionados.</p>
+    <div class="top-header">
+        <h1 class="page-title">
+            <i class="fas fa-calendar-alt"></i> Eventos CTF
+        </h1>
+        <div class="btn-group" style="margin: 0;">
             {% if rol == 'INSTRUCTOR' %}
-            <a href="{% url 'crear_evento' %}" class="btn btn-primary" style="margin-top: 1rem;">
-                <i class="fas fa-plus-circle"></i> Crear el primer evento
+            <a href="{% url 'crear_evento' %}" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i> Crear Evento
             </a>
             {% endif %}
         </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="toast-message {% if message.tags %}{{ message.tags }}{% endif %}">
+            <i class="fas {% if message.tags == 'error' %}fa-exclamation-triangle{% elif message.tags == 'success' %}fa-check-circle{% elif message.tags == 'warning' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+            <span>{{ message }}</span>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Resumen para ESTUDIANTE -->
+    {% if rol == 'ESTUDIANTE' %}
+    <div class="stats-resumen">
+        <div class="resumen-card">
+            <div class="resumen-number">{{ total_eventos }}</div>
+            <div class="resumen-label">Total Eventos</div>
+        </div>
+        <div class="resumen-card">
+            <div class="resumen-number" style="color: #00aa00;">{{ eventos_inscritos }}</div>
+            <div class="resumen-label">Mis Inscripciones</div>
+        </div>
+        <div class="resumen-card">
+            <div class="resumen-number" style="color: #ff8800;">{{ eventos_participando }}</div>
+            <div class="resumen-label">Participando Ahora</div>
+        </div>
+        <div class="resumen-card">
+            <div class="resumen-number" style="color: #2496ed;">{{ eventos_finalizados }}</div>
+            <div class="resumen-label">Finalizados</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- FILTROS UNIFICADOS PARA TODOS LOS ROLES (con buscador por nombre) -->
+    <div class="filtros-bar">
+        <form method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%;">
+            <input type="text" name="buscar" class="form-control search-input" 
+                   placeholder="Buscar evento por nombre..." 
+                   value="{{ request.GET.buscar|default:'' }}" 
+                   style="min-width: 250px; flex: 1;">
+            
+            {% if rol == 'ESTUDIANTE' %}
+            <select name="estado" class="form-control" style="min-width: 180px;">
+                <option value="">Todos los eventos</option>
+                <option value="inscrito" {% if request.GET.estado == 'inscrito' %}selected{% endif %}>Mis inscripciones</option>
+                <option value="activo" {% if request.GET.estado == 'activo' %}selected{% endif %}>Activos ahora</option>
+                <option value="proximos" {% if request.GET.estado == 'proximos' %}selected{% endif %}>Proximos</option>
+                <option value="finalizados" {% if request.GET.estado == 'finalizados' %}selected{% endif %}>Finalizados</option>
+            </select>
+            {% else %}
+            <select name="estado" class="form-control" style="min-width: 180px;">
+                <option value="">Todos los estados</option>
+                <option value="activo" {% if request.GET.estado == 'activo' %}selected{% endif %}>Eventos activos</option>
+                <option value="inactivo" {% if request.GET.estado == 'inactivo' %}selected{% endif %}>Eventos inactivos</option>
+                <option value="finalizado" {% if request.GET.estado == 'finalizado' %}selected{% endif %}>Finalizados</option>
+            </select>
+            {% endif %}
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-search"></i> Filtrar
+            </button>
+            
+            {% if request.GET.buscar or request.GET.estado %}
+            <a href="{% url 'listar_eventos' %}" class="btn btn-outline">
+                <i class="fas fa-times"></i> Limpiar
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    {% if eventos %}
+    <div class="stats-grid">
+        {% for evento in eventos %}
+        <div class="evento-card {% if evento.esta_inscrito %}inscrito{% endif %}">
+            
+            {% if evento.esta_inscrito %}
+            <span class="badge-inscrito">
+                <i class="fas fa-check-circle"></i> Inscrito
+            </span>
+            {% elif evento.fecha_inicio > now %}
+            <span class="badge-proximamente">
+                <i class="fas fa-clock"></i> Proximamente
+            </span>
+            {% endif %}
+            
+            <div class="evento-titulo">
+                <i class="fas fa-trophy" style="margin-right: 0.5rem;"></i>
+                {{ evento.nombre }}
+            </div>
+            <div class="evento-descripcion">
+                {{ evento.descripcion|truncatechars:120 }}
+            </div>
+            
+            <div class="evento-meta">
+                <span class="retos-count">
+                    <i class="fas fa-flag"></i> {{ evento.retos.count }} retos
+                </span>
+                <span>
+                    <i class="fas fa-users"></i> {{ evento.participantes.count }} participantes
+                </span>
+            </div>
+            <div class="evento-meta">
+                <span>
+                    <i class="fas fa-calendar"></i> {{ evento.fecha_inicio|date:"d/m/Y H:i" }}
+                </span>
+                <span>
+                    <i class="fas fa-calendar-check"></i> {{ evento.fecha_fin|date:"d/m/Y H:i" }}
+                </span>
+            </div>
+            <div class="evento-meta">
+                <span>
+                    {% if evento.fecha_fin < now %}
+                    <span class="badge-finalizado"><i class="fas fa-check-circle"></i> Finalizado</span>
+                    {% elif evento.fecha_inicio <= now and evento.fecha_fin >= now %}
+                    <span class="badge-activo"><i class="fas fa-play"></i> En curso</span>
+                    {% else %}
+                    <span class="badge-inactivo"><i class="fas fa-clock"></i> Proximamente</span>
+                    {% endif %}
+                </span>
+                {% if evento.esta_inscrito and evento.fecha_fin >= now %}
+                <span>
+                    <i class="fas fa-trophy"></i> Mi puntuacion: {{ evento.puntuacion_usuario|default:0 }} pts
+                </span>
+                {% endif %}
+            </div>
+            
+            <div class="action-buttons">
+                <a href="{% url 'detalle_evento' evento.id %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-eye"></i> Ver detalles
+                </a>
+                
+                {% if not evento.esta_inscrito and rol == 'ESTUDIANTE' %}
+                    {% if evento.fecha_inicio > now %}
+                    <button onclick="unirseEvento({{ evento.id }}, '{{ evento.nombre|escapejs }}')" class="btn btn-success btn-sm btn-unirse">
+                        <i class="fas fa-user-plus"></i> Unirse al Evento
+                    </button>
+                    {% elif evento.fecha_inicio <= now and evento.fecha_fin >= now %}
+                    <button onclick="unirseEvento({{ evento.id }}, '{{ evento.nombre|escapejs }}')" class="btn btn-warning btn-sm">
+                        <i class="fas fa-play"></i> Unirse ahora
+                    </button>
+                    {% endif %}
+                {% elif evento.esta_inscrito and evento.fecha_inicio <= now and evento.fecha_fin >= now %}
+                <a href="{% url 'listar_retos' %}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-flag-checkered"></i> Comenzar a Jugar
+                </a>
+                {% elif evento.esta_inscrito %}
+                <span class="btn btn-inscrito btn-sm">
+                    <i class="fas fa-check"></i> Ya estas inscrito
+                </span>
+                {% endif %}
+            </div>
+            
+            <!-- Botones de Editar/Eliminar: INSTRUCTOR y ADMIN pueden -->
+            {% if rol == 'INSTRUCTOR' or rol == 'ADMIN' %}
+            <div class="admin-buttons">
+                <a href="{% url 'editar_evento' evento.id %}" class="btn btn-outline btn-sm">
+                    <i class="fas fa-edit"></i> Editar
+                </a>
+                <button class="btn btn-danger btn-sm" onclick="mostrarModalEliminar('{{ evento.id }}', '{{ evento.nombre|escapejs }}')">
+                    <i class="fas fa-trash"></i> Eliminar
+                </button>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-calendar-times"></i>
+        <h3>No hay eventos disponibles</h3>
+        <p>No se encontraron eventos con los filtros seleccionados.</p>
+        {% if rol == 'INSTRUCTOR' %}
+        <a href="{% url 'crear_evento' %}" class="btn btn-primary" style="margin-top: 1rem;">
+            <i class="fas fa-plus-circle"></i> Crear el primer evento
+        </a>
         {% endif %}
-    </main>
+    </div>
+    {% endif %}
+</main>
+</div>
+
+<!-- Modal de confirmacion -->
+<div id="modalConfirm" class="modal-confirm">
+    <div class="modal-content">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3 id="modalTitulo">Confirmar accion</h3>
+        <p id="modalMensaje">¿Estas seguro de realizar esta accion?</p>
+        <div class="modal-buttons">
+            <button class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+            <a id="modalConfirmarBtn" href="#" class="btn btn-danger">Confirmar</a>
+        </div>
+    </div>
 </div>
 
 <script>
     function unirseEvento(eventoId, eventoNombre) {
-        // Mostrar mensaje de carga
         const btn = event.target;
         const originalText = btn.innerHTML;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uniendo...';
@@ -479,39 +585,53 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                mostrarMensaje(data.message, 'success');
+                mostrarToast(data.message, 'success');
                 setTimeout(() => {
                     location.reload();
                 }, 1500);
             } else {
-                mostrarMensaje(data.message, 'error');
+                mostrarToast(data.message, 'error');
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            mostrarMensaje('Error al unirse al evento', 'error');
+            mostrarToast('Error al unirse al evento', 'error');
             btn.innerHTML = originalText;
             btn.disabled = false;
         });
     }
     
-    function mostrarMensaje(mensaje, tipo) {
-        // Eliminar mensajes anteriores
-        const existingMessages = document.querySelectorAll('.mensaje-flotante');
+    function mostrarToast(mensaje, tipo) {
+        const existingMessages = document.querySelectorAll('.toast-message');
         existingMessages.forEach(msg => msg.remove());
         
         const div = document.createElement('div');
-        div.className = `mensaje-flotante ${tipo === 'error' ? 'error' : ''}`;
-        div.innerHTML = `<i class="fas ${tipo === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${mensaje}`;
+        div.className = `toast-message ${tipo === 'error' ? 'error' : ''}`;
+        
+        let icono = '';
+        if (tipo === 'success') icono = '<i class="fas fa-check-circle"></i>';
+        else if (tipo === 'error') icono = '<i class="fas fa-exclamation-triangle"></i>';
+        else if (tipo === 'warning') icono = '<i class="fas fa-exclamation-circle"></i>';
+        else icono = '<i class="fas fa-info-circle"></i>';
+        
+        div.innerHTML = icono + '<span>' + mensaje + '</span>';
         document.body.appendChild(div);
         
         setTimeout(() => {
-            if (div && div.remove) {
-                div.remove();
-            }
+            if (div && div.remove) div.remove();
         }, 3000);
+    }
+    
+    function mostrarModalEliminar(eventoId, eventoNombre) {
+        document.getElementById('modalTitulo').innerText = 'Eliminar evento';
+        document.getElementById('modalMensaje').innerHTML = 'Eliminar el evento <strong>' + eventoNombre + '</strong> permanentemente?<br>Esta accion no se puede deshacer.';
+        document.getElementById('modalConfirmarBtn').href = '/event/' + eventoId + '/eliminar/';
+        document.getElementById('modalConfirm').classList.add('active');
+    }
+    
+    function cerrarModal() {
+        document.getElementById('modalConfirm').classList.remove('active');
     }
     
     function getCookie(name) {
@@ -528,6 +648,21 @@
         }
         return cookieValue;
     }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const messages = document.querySelectorAll('.toast-message');
+        messages.forEach(msg => {
+            setTimeout(() => {
+                if (msg && msg.remove) msg.remove();
+            }, 3000);
+        });
+        
+        document.getElementById('modalConfirm').addEventListener('click', function(e) {
+            if (e.target === this) {
+                cerrarModal();
+            }
+        });
+    });
 </script>
 
 </body>

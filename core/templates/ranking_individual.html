@@ -45,6 +45,17 @@
             color: var(--text-primary);
         }
 
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+        }
+
         /* Stats Cards */
         .stats-grid {
             display: grid;
@@ -294,26 +305,201 @@
             color: var(--text-primary);
         }
 
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: #0a0a0f;
+            border-right: 1px solid #E10600;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar-logo {
+            padding: 1.8rem;
+            border-bottom: 1px solid #E10600;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .sidebar-logo h2 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #F5F5F5;
+            letter-spacing: 2px;
+        }
+
+        .sidebar-logo h2 span { color: #E10600; }
+        .sidebar-logo p {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.65rem;
+            color: #6c6c7a;
+            margin-top: 0.5rem;
+        }
+
+        .sidebar-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0 1.5rem 1.5rem 1.5rem;
+            border-bottom: 1px solid rgba(225, 6, 0, 0.2);
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #E10600, #8B0000);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            overflow: hidden;
+        }
+
+        .profile-info h4 {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+            color: #F5F5F5;
+        }
+
+        .role-badge {
+            background: rgba(225, 6, 0, 0.15);
+            color: #E10600;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: 600;
+        }
+
+        .nav-menu { flex: 1; padding: 0 1rem; }
+        .nav-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #6c6c7a;
+            padding: 1rem 1rem 0.5rem 1rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.7rem 1rem;
+            margin-bottom: 0.35rem;
+            border-radius: 8px;
+            color: #B3B3B3;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+        }
+
+        .nav-item i { width: 24px; font-size: 1rem; }
+        .nav-item:hover {
+            background: rgba(225, 6, 0, 0.15);
+            color: #E10600;
+        }
+        .nav-item.active {
+            background: #E10600;
+            color: white;
+        }
+
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(225, 6, 0, 0.2);
+            margin-top: auto;
+        }
+
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #ff0000;
+            text-decoration: none;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff4444;
+        }
+
+        /* RF-39 Header */
+        .rf39-header {
+            background: var(--primary-light);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            border-left: 3px solid var(--primary);
+        }
+
+        .rf39-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .rf39-badge {
+            background: var(--primary);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.6rem;
+            font-weight: 600;
+        }
+
         @media (max-width: 1024px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
-
             .charts-grid {
                 grid-template-columns: 1fr;
             }
         }
 
         @media (max-width: 768px) {
+            .main-content {
+                margin-left: 80px;
+                padding: 1rem;
+            }
+            .sidebar {
+                width: 80px;
+            }
+            .sidebar-logo h2, .sidebar-logo p, .profile-info, .nav-item span, .nav-title, .sidebar-footer span {
+                display: none;
+            }
+            .nav-item {
+                justify-content: center;
+            }
             .stats-grid {
                 grid-template-columns: 1fr;
             }
-
             .podium {
                 flex-direction: column;
                 align-items: center;
             }
-
             .podium-item.first,
             .podium-item.second,
             .podium-item.third {
@@ -325,11 +511,9 @@
         ::-webkit-scrollbar {
             width: 6px;
         }
-
         ::-webkit-scrollbar-track {
             background: var(--bg-dark);
         }
-
         ::-webkit-scrollbar-thumb {
             background: var(--primary);
             border-radius: 4px;
@@ -341,7 +525,71 @@
 
     <div class="app-container">
 
-        {% include 'nav.html' %}
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <h2><span>CYBER</span>QUEST</h2>
+                <p>Security Training Platform</p>
+            </div>
+            <div class="sidebar-profile">
+                <div class="profile-avatar">
+                    {% if perfil.avatar %}
+                    <img src="{{ perfil.avatar.url }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                    {% else %}
+                    <i class="fas fa-user"></i>
+                    {% endif %}
+                </div>
+                <div class="profile-info">
+                    <h4>{{ perfil.usuario.username }}</h4>
+                    <span class="role-badge">
+                        {% if rol == 'ADMIN' %}
+                            <i class="fas fa-crown"></i> Admin
+                        {% elif rol == 'INSTRUCTOR' %}
+                            <i class="fas fa-chalkboard-user"></i> Instructor
+                        {% else %}
+                            <i class="fas fa-user-graduate"></i> Competidor
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="nav-menu">
+                <div class="nav-title">PRINCIPAL</div>
+                <a href="{% url 'dashboard' %}" class="nav-item"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+                <a href="{% url 'listar_retos' %}" class="nav-item"><i class="fas fa-flag"></i><span>Retos</span></a>
+                <a href="{% url 'ranking_individual' %}" class="nav-item active"><i class="fas fa-chart-line"></i><span>Rankings</span></a>
+                <a href="{% url 'listar_equipos' %}" class="nav-item"><i class="fas fa-users"></i><span>Equipos</span></a>
+                <a href="{% url 'consultar_asistente' %}" class="nav-item"><i class="fas fa-robot"></i><span>Asistente IA</span></a>
+                
+                {% if rol == 'ESTUDIANTE' or rol == 'INSTRUCTOR' %}
+                <div class="nav-title">APRENDIZAJE</div>
+                <a href="{% url 'listar_modulos' %}" class="nav-item"><i class="fas fa-book"></i><span>Mis Cursos</span></a>
+                <div class="nav-title">COMPETENCIAS</div>
+                <a href="{% url 'listar_eventos' %}" class="nav-item"><i class="fas fa-calendar-alt"></i><span>Eventos CTF</span></a>
+                {% endif %}
+                
+                {% if rol == 'INSTRUCTOR' or rol == 'ADMIN' %}
+                <div class="nav-title">GESTION</div>
+                <a href="{% url 'listar_retos' %}" class="nav-item"><i class="fas fa-edit"></i><span>Gestionar Retos</span></a>
+                <a href="{% url 'listar_modulos' %}" class="nav-item"><i class="fas fa-book-open"></i><span>Gestionar Cursos</span></a>
+                <a href="{% url 'listar_eventos' %}" class="nav-item"><i class="fas fa-calendar-plus"></i><span>Gestionar Eventos</span></a>
+                {% endif %}
+                
+                {% if rol == 'ADMIN' %}
+                <div class="nav-title">ADMINISTRACION</div>
+                <a href="{% url 'listar_usuarios' %}" class="nav-item"><i class="fas fa-user-shield"></i><span>Gestionar Usuarios</span></a>
+                <a href="{% url 'listar_equipos' %}" class="nav-item"><i class="fas fa-users-cog"></i><span>Gestionar Equipos</span></a>
+                <a href="{% url 'auditoria' %}" class="nav-item"><i class="fas fa-chart-simple"></i><span>Auditoria</span></a>
+                <a href="{% url 'configuracion_ia' %}" class="nav-item"><i class="fas fa-robot"></i><span>Asistente IA</span></a>
+                <a href="{% url 'sesiones_activas' %}" class="nav-item"><i class="fas fa-clock"></i><span>Sesiones Activas</span></a>
+                {% endif %}
+                
+                <div class="nav-title">PERFIL</div>
+                <a href="{% url 'perfil_detalle' %}" class="nav-item"><i class="fas fa-user-circle"></i><span>Mi Perfil</span></a>
+            </div>
+            <div class="sidebar-footer">
+                <a href="{% url 'logout' %}" class="logout-btn"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesion</span></a>
+            </div>
+        </aside>
 
         <!-- Main Content -->
         <main class="main-content">
@@ -359,7 +607,17 @@
                 </div>
             </div>
 
-            <!-- Stats Cards -->
+            <!-- ============================================================ -->
+            <!-- RF-39: ESTADISTICAS GENERALES -->
+            <!-- ============================================================ -->
+            <div class="rf39-header">
+                <div class="rf39-title">
+                    <i class="fas fa-chart-line"></i> ESTADISTICAS GENERALES
+                </div>
+               
+            </div>
+
+            <!-- Tarjetas de estadisticas generales -->
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-users"></i></div>
@@ -379,15 +637,15 @@
                 <div class="stat-card">
                     <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
                     <div class="stat-value">#{{ mi_posicion }}</div>
-                    <div class="stat-label">Tu Posición</div>
+                    <div class="stat-label">Mi Posicion</div>
                 </div>
             </div>
 
-            <!-- Gráficas -->
+            <!-- Graficas -->
             <div class="charts-grid">
                 <div class="chart-card">
                     <div class="chart-title">
-                        <i class="fas fa-chart-pie"></i> Distribución por Nivel
+                        <i class="fas fa-chart-pie"></i> Distribucion por Nivel
                     </div>
                     <canvas id="nivelChart"></canvas>
                 </div>
@@ -397,11 +655,12 @@
                     </div>
                     <canvas id="top10Chart"></canvas>
                 </div>
+                <!-- RF-38: Evolucion de Puntos del Usuario (Individual) -->
                 <div class="chart-card">
                     <div class="chart-title">
-                        <i class="fas fa-chart-line"></i> Evolución de Puntos
+                        <i class="fas fa-chart-line"></i> Mi Progreso por Fechas
                     </div>
-                    <canvas id="evolutionChart"></canvas>
+                    <canvas id="miEvolucionChart"></canvas>
                 </div>
                 <div class="chart-card">
                     <div class="chart-title">
@@ -416,8 +675,7 @@
                 <div class="podium">
                     {% with top3=competencias|slice:":3" %}
                     {% for competidor in top3 %}
-                    <div
-                        class="podium-item {% if forloop.counter == 1 %}first{% elif forloop.counter == 2 %}second{% else %}third{% endif %}">
+                    <div class="podium-item {% if forloop.counter == 1 %}first{% elif forloop.counter == 2 %}second{% else %}third{% endif %}">
                         <div class="podium-icon">
                             {% if forloop.counter == 1 %}
                             <i class="fas fa-crown gold"></i>
@@ -425,20 +683,19 @@
                             <i class="fas fa-user-circle"></i>
                             {% endif %}
                         </div>
-                        <div
-                            class="podium-medal {% if forloop.counter == 1 %}gold{% elif forloop.counter == 2 %}silver{% else %}bronze{% endif %}">
+                        <div class="podium-medal {% if forloop.counter == 1 %}gold{% elif forloop.counter == 2 %}silver{% else %}bronze{% endif %}">
                             <i class="fas fa-medal"></i>
                         </div>
                         <div class="podium-name">{{ competidor.usuario.username }}</div>
                         <div class="podium-points">{{ competidor.puntos }} pts</div>
-                        <div class="podium-number">{{ forloop.counter }}º Lugar</div>
+                        <div class="podium-number">{{ forloop.counter }} Lugar</div>
                     </div>
                     {% endfor %}
                     {% endwith %}
                 </div>
             </div>
 
-            <!-- Tabla de Ranking -->
+            <!-- RF-35: Tabla de Ranking Individual -->
             <div class="ranking-table-container">
                 <table class="ranking-table">
                     <thead>
@@ -456,11 +713,11 @@
                         {% for competidor in competencias %}
                         <tr class="{% if competidor.usuario == request.user %}current-user{% endif %}">
                             <td>
-                                {% if forloop.counter == 1 %}🥇
-                                {% elif forloop.counter == 2 %}🥈
-                                {% elif forloop.counter == 3 %}🥉
-                                {% else %}#{{ forloop.counter }}{% endif %}
-                                </a>
+                                {% if forloop.counter == 1 %}1
+                                {% elif forloop.counter == 2 %}2
+                                {% elif forloop.counter == 3 %}3
+                                {% else %}{{ forloop.counter }}{% endif %}
+                            </a>
                             <td>
                                 <div style="display: flex; align-items: center;">
                                     <div class="avatar-sm">
@@ -468,11 +725,12 @@
                                     </div>
                                     {{ competidor.usuario.username }}
                                     {% if competidor.usuario == request.user %}
-                                    <span class="badge"
-                                        style="background: var(--primary); margin-left: 0.5rem;">Tú</span>
+                                    <span class="badge" style="background: var(--primary); margin-left: 0.5rem; color: white;">
+                                        <i class="fas fa-user-check"></i> Mi perfil
+                                    </span>
                                     {% endif %}
                                 </div>
-                                </a>
+                            </a>
                             <td>{{ competidor.retos_completados }}</a>
                             <td><strong style="color: var(--primary);">{{ competidor.puntos }}</strong></a>
                             <td>
@@ -483,7 +741,7 @@
                                 {% else %}
                                 <span style="color: var(--text-muted);">Sin equipo</span>
                                 {% endif %}
-                                </a>
+                            </a>
                             <td>
                                 {% if competidor.puntos >= 2000 %}
                                 <span class="badge" style="background: #dc3545;">Experto</span>
@@ -494,20 +752,20 @@
                                 {% else %}
                                 <span class="badge badge-competidor">Principiante</span>
                                 {% endif %}
-                                </a>
+                            </a>
                             <td>
                                 <div class="progress-bar-container">
-                                    <div class="progress-bar-fill" style="width: {{ competidor.progreso_porcentaje }}%">
-                                    </div>
+                                    <div class="progress-bar-fill" style="width: {{ competidor.progreso_porcentaje }}%"></div>
                                 </div>
-                                </a>
+                                <small style="font-size: 0.6rem;">{{ competidor.progreso_porcentaje|floatformat:0 }}%</small>
+                            </a>
                         </tr>
                         {% empty %}
                         <tr>
                             <td colspan="7" style="text-align: center; padding: 3rem;">
                                 <i class="fas fa-users fa-3x" style="color: var(--text-muted);"></i>
                                 <p>No hay competidores registrados</p>
-                                </a>
+                            </a>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -519,27 +777,56 @@
     <script>
         const nivelData = {{ nivel_data| safe }};
         const top10Data = {{ top10_data| safe }};
-        const evolutionData = {{ evolution_data| safe }};
         const difficultyData = {{ difficulty_data| safe }};
+        
+        // RF-38: Datos del progreso individual del usuario
+        const miEvolucionData = {{ mi_evolution_data| safe }};
 
+        // Grafica 1: Distribucion por Nivel
         new Chart(document.getElementById('nivelChart'), {
             type: 'doughnut',
             data: { labels: nivelData.labels, datasets: [{ data: nivelData.values, backgroundColor: ['#E10600', '#FF6B6B', '#FFA07A', '#FFD700'], borderWidth: 0 }] },
             options: { responsive: true, plugins: { legend: { labels: { color: '#F5F5F5' } } } }
         });
 
+        // Grafica 2: Top 10 Competidores
         new Chart(document.getElementById('top10Chart'), {
             type: 'bar',
             data: { labels: top10Data.labels, datasets: [{ label: 'Puntos', data: top10Data.values, backgroundColor: '#E10600', borderRadius: 8 }] },
             options: { responsive: true, plugins: { legend: { labels: { color: '#F5F5F5' } } }, scales: { y: { ticks: { color: '#F5F5F5' }, grid: { color: 'rgba(225, 6, 0, 0.1)' } }, x: { ticks: { color: '#F5F5F5', rotation: 45 }, grid: { display: false } } } }
         });
 
-        new Chart(document.getElementById('evolutionChart'), {
+        // RF-38: Grafica de Progreso Individual del Usuario
+        new Chart(document.getElementById('miEvolucionChart'), {
             type: 'line',
-            data: { labels: evolutionData.labels, datasets: evolutionData.datasets },
-            options: { responsive: true, plugins: { legend: { labels: { color: '#F5F5F5' } } }, scales: { y: { ticks: { color: '#F5F5F5' }, grid: { color: 'rgba(225, 6, 0, 0.1)' } }, x: { ticks: { color: '#F5F5F5' }, grid: { display: false } } } }
+            data: {
+                labels: miEvolucionData.labels,
+                datasets: [{
+                    label: 'Mis Puntos',
+                    data: miEvolucionData.values,
+                    borderColor: '#E10600',
+                    backgroundColor: 'rgba(225, 6, 0, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointBackgroundColor: '#E10600'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { 
+                    legend: { labels: { color: '#F5F5F5' } },
+                    tooltip: { callbacks: { label: function(context) { return context.raw + ' puntos'; } } }
+                },
+                scales: { 
+                    y: { ticks: { color: '#F5F5F5' }, grid: { color: 'rgba(225, 6, 0, 0.1)' }, title: { display: true, text: 'Puntos', color: '#F5F5F5' } }, 
+                    x: { ticks: { color: '#F5F5F5' }, grid: { display: false }, title: { display: true, text: 'Semana', color: '#F5F5F5' } } 
+                }
+            }
         });
 
+        // Grafica 4: Retos por Dificultad
         new Chart(document.getElementById('difficultyChart'), {
             type: 'pie',
             data: { labels: difficultyData.labels, datasets: [{ data: difficultyData.values, backgroundColor: ['#E10600', '#FF6B6B', '#FFA07A'], borderWidth: 0 }] },

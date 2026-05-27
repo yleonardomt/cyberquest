@@ -202,37 +202,6 @@
             color: white;
             transform: scale(1.05);
         }
-        .access-denied {
-            text-align: center;
-            padding: 3rem;
-            background: var(--bg-card);
-            border-radius: var(--radius-lg);
-            border: 1px solid var(--danger);
-        }
-        .access-denied i {
-            font-size: 4rem;
-            color: var(--danger);
-            margin-bottom: 1rem;
-        }
-        .mensaje-flotante {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #00aa00;
-            color: white;
-            padding: 1rem;
-            border-radius: var(--radius);
-            z-index: 1000;
-            animation: fadeOut 3s ease forwards;
-        }
-        .mensaje-flotante.error {
-            background: #ff0000;
-        }
-        @keyframes fadeOut {
-            0% { opacity: 1; transform: translateY(0); }
-            70% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-20px); visibility: hidden; }
-        }
         .btn-sm {
             padding: 0.3rem 0.8rem;
             font-size: 0.6rem;
@@ -241,6 +210,85 @@
             text-align: center;
             padding: 2rem;
             color: var(--text-muted);
+        }
+        
+        .toast-notification {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #00aa00;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease, fadeOut 3s ease 2.7s forwards;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border-left: 4px solid white;
+        }
+        .toast-notification.error {
+            background: #cc0000;
+        }
+        .toast-notification.warning {
+            background: #ff8800;
+        }
+        .toast-notification i {
+            font-size: 1.2rem;
+        }
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        .modal-confirm {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-confirm.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            max-width: 400px;
+            text-align: center;
+        }
+        .modal-content i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
         }
     </style>
 </head>
@@ -251,17 +299,26 @@
     {% include 'nav.html' %}
 
     <main class="main-content">
-        <!-- VERIFICACIÓN DE ACCESO -->
-        {% if request.user == equipo.lider or request.user in equipo.miembros.all %}
         
+        {% if messages %}
+            {% for message in messages %}
+            <div class="toast-notification {% if message.tags %}{{ message.tags }}{% endif %}">
+                <i class="fas {% if message.tags == 'error' %}fa-exclamation-triangle{% elif message.tags == 'success' %}fa-check-circle{% elif message.tags == 'warning' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+        {% endif %}
+
         <div class="top-header">
             <h1 class="page-title">
                 <i class="fas fa-users"></i> Detalle del Equipo
             </h1>
             <div class="btn-group">
+                {% if es_miembro %}
                 <a href="{% url 'equipo_retos' equipo.id %}" class="btn btn-success">
                     <i class="fas fa-flag-checkered"></i> Ver Retos del Equipo
                 </a>
+                {% endif %}
                 <a href="{% url 'listar_equipos' %}" class="btn btn-outline">
                     <i class="fas fa-arrow-left"></i> Volver
                 </a>
@@ -272,17 +329,17 @@
             <div class="team-nombre">
                 <i class="fas fa-users"></i> {{ equipo.nombre }}
             </div>
-            <p>{{ equipo.descripcion|default:"Sin descripción" }}</p>
+            <p>{{ equipo.descripcion|default:"Sin descripcion" }}</p>
             
-            {% if request.user == equipo.lider %}
+            {% if es_miembro and request.user == equipo.lider %}
             <div class="team-codigo">
-                <i class="fas fa-key"></i> Código de invitación: 
+                <i class="fas fa-key"></i> Codigo de invitacion: 
                 <strong>{{ equipo.codigo_invitacion }}</strong>
                 <button class="copy-btn" onclick="copiarCodigo('{{ equipo.codigo_invitacion }}')">
                     <i class="fas fa-copy"></i> Copiar
                 </button>
                 <p style="font-size: 0.7rem; margin-top: 0.5rem; color: var(--text-muted);">
-                    Comparte este código con personas de confianza para que se unan al equipo
+                    Comparte este codigo para que otros se unan al equipo
                 </p>
             </div>
             {% endif %}
@@ -290,11 +347,11 @@
 
         <div class="team-stats">
             <div class="stat-card">
-                <div class="stat-number">{{ equipo.cantidad_miembros }}</div>
+                <div class="stat-number">{{ total_miembros }}</div>
                 <div class="stat-label">Miembros</div>
             </div>
             <div class="stat-card">
-                <div class="stat-number">{{ equipo.puntos }}</div>
+                <div class="stat-number">{{ equipo.puntos|default:"0" }}</div>
                 <div class="stat-label">Puntos</div>
             </div>
             <div class="stat-card">
@@ -306,7 +363,6 @@
         <div class="miembros-lista">
             <h3><i class="fas fa-user-friends"></i> Miembros del Equipo</h3>
             
-            <!-- Líder -->
             <div class="miembro-item">
                 <div class="miembro-info">
                     <div class="miembro-avatar">
@@ -314,20 +370,19 @@
                     </div>
                     <div>
                         <strong>{{ equipo.lider.username }}</strong>
-                        <span class="miembro-lider">Líder</span>
+                        <span class="miembro-lider">Lider</span>
                         {% if request.user == equipo.lider %}
-                        <span class="miembro-actual">(Tú)</span>
+                        <span class="miembro-actual">(Tu)</span>
                         {% endif %}
                     </div>
                 </div>
-                {% if request.user == equipo.lider %}
+                {% if es_miembro and request.user == equipo.lider %}
                 <span class="text-muted" style="font-size: 0.7rem;">
-                    <i class="fas fa-star"></i> Eres el líder
+                    <i class="fas fa-star"></i> Eres el lider
                 </span>
                 {% endif %}
             </div>
             
-            <!-- Miembros -->
             {% for miembro in equipo.miembros.all %}
             <div class="miembro-item">
                 <div class="miembro-info">
@@ -337,87 +392,133 @@
                     <div>
                         <strong>{{ miembro.username }}</strong>
                         {% if request.user == miembro %}
-                        <span class="miembro-actual">(Tú)</span>
+                        <span class="miembro-actual">(Tu)</span>
                         {% endif %}
                     </div>
                 </div>
-                {% if request.user == equipo.lider %}
-                <a href="#" class="btn btn-danger btn-sm" onclick="return confirm('¿Expulsar a {{ miembro.username }} del equipo?')">
+                {% if es_miembro and request.user == equipo.lider or rol == 'ADMIN' %}
+                <button class="btn btn-danger btn-sm" onclick="mostrarModalExpulsar('{{ equipo.id }}', '{{ miembro.id }}', '{{ miembro.username }}')">
                     <i class="fas fa-user-minus"></i> Expulsar
-                </a>
+                </button>
                 {% endif %}
             </div>
             {% empty %}
             <div class="empty-members">
                 <i class="fas fa-user-plus"></i>
                 <p>No hay miembros adicionales en el equipo</p>
-                <p class="text-muted" style="font-size: 0.7rem;">Comparte el código de invitación para agregar más miembros</p>
+                <p class="text-muted" style="font-size: 0.7rem;">Comparte el codigo de invitacion para agregar mas miembros</p>
             </div>
             {% endfor %}
         </div>
 
         <div class="btn-group">
-            {% if request.user == equipo.lider %}
-            <a href="#" class="btn btn-outline" onclick="return confirm('Funcionalidad en desarrollo')">
+            {% if es_miembro and request.user == equipo.lider or rol == 'ADMIN' %}
+            <a href="{% url 'editar_equipo' equipo.id %}" class="btn btn-outline">
                 <i class="fas fa-edit"></i> Editar Equipo
             </a>
-            <a href="#" class="btn btn-danger" onclick="return confirm('¿Eliminar el equipo permanentemente? Esta acción no se puede deshacer.')">
+            <button class="btn btn-danger" onclick="mostrarModalEliminar('{{ equipo.id }}', '{{ equipo.nombre }}')">
                 <i class="fas fa-trash"></i> Eliminar Equipo
-            </a>
+            </button>
             {% endif %}
             
-            {% if request.user != equipo.lider %}
-            <a href="{% url 'salir_equipo' equipo.id %}" class="btn btn-warning" onclick="return confirm('¿Seguro que quieres salir del equipo? Perderás acceso a los retos del equipo.')">
+            {% if es_miembro and request.user != equipo.lider %}
+            <button class="btn btn-warning" onclick="mostrarModalSalir('{{ equipo.id }}', '{{ equipo.nombre }}')">
                 <i class="fas fa-sign-out-alt"></i> Salir del Equipo
+            </button>
+            {% endif %}
+            
+            <!-- SOLO ESTUDIANTES pueden unirse, NI INSTRUCTOR NI ADMIN -->
+            {% if not es_miembro and rol == 'ESTUDIANTE' %}
+            <a href="{% url 'unirse_equipo' %}" class="btn btn-primary">
+                <i class="fas fa-sign-in-alt"></i> Unirse con codigo
             </a>
             {% endif %}
         </div>
         
-        {% else %}
-        <!-- ACCESO DENEGADO -->
-        <div class="access-denied">
-            <i class="fas fa-lock"></i>
-            <h2>Acceso Restringido</h2>
-            <p>No tienes permiso para ver este equipo.</p>
-            <p>Este equipo es privado y solo visible para sus miembros.</p>
-            <div class="btn-group" style="margin-top: 1rem; justify-content: center;">
-                <a href="{% url 'listar_equipos' %}" class="btn btn-primary">
-                    <i class="fas fa-arrow-left"></i> Volver a Equipos
-                </a>
-                <a href="{% url 'unirse_equipo' %}" class="btn btn-outline">
-                    <i class="fas fa-sign-in-alt"></i> Unirse con código
-                </a>
-            </div>
-        </div>
-        {% endif %}
     </main>
+</div>
+
+<div id="modalConfirm" class="modal-confirm">
+    <div class="modal-content">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3 id="modalTitulo">Confirmar accion</h3>
+        <p id="modalMensaje">¿Estas seguro de realizar esta accion?</p>
+        <div class="modal-buttons">
+            <button class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+            <a id="modalConfirmarBtn" href="#" class="btn btn-danger">Confirmar</a>
+        </div>
+    </div>
 </div>
 
 <script>
     function copiarCodigo(codigo) {
         navigator.clipboard.writeText(codigo).then(function() {
-            mostrarMensaje('Código copiado: ' + codigo, 'success');
+            mostrarToast('Codigo copiado: ' + codigo, 'success');
         }).catch(function() {
-            alert('Código: ' + codigo);
+            mostrarToast('Error al copiar el codigo', 'error');
         });
     }
     
-    function mostrarMensaje(mensaje, tipo) {
-        // Eliminar mensajes anteriores
-        const existingMessages = document.querySelectorAll('.mensaje-flotante');
-        existingMessages.forEach(msg => msg.remove());
+    function mostrarToast(mensaje, tipo) {
+        var toast = document.createElement('div');
+        toast.className = 'toast-notification ' + tipo;
         
-        const div = document.createElement('div');
-        div.className = `mensaje-flotante ${tipo === 'error' ? 'error' : ''}`;
-        div.innerHTML = `<i class="fas ${tipo === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${mensaje}`;
-        document.body.appendChild(div);
+        var icono = '';
+        if (tipo === 'success') icono = '<i class="fas fa-check-circle"></i>';
+        else if (tipo === 'error') icono = '<i class="fas fa-exclamation-triangle"></i>';
+        else if (tipo === 'warning') icono = '<i class="fas fa-exclamation-circle"></i>';
+        else icono = '<i class="fas fa-info-circle"></i>';
         
-        setTimeout(() => {
-            if (div && div.remove) {
-                div.remove();
-            }
+        toast.innerHTML = icono + '<span>' + mensaje + '</span>';
+        document.body.appendChild(toast);
+        
+        setTimeout(function() {
+            if (toast && toast.remove) toast.remove();
         }, 3000);
     }
+    
+    function mostrarModalExpulsar(equipoId, usuarioId, username) {
+        document.getElementById('modalTitulo').innerText = 'Expulsar miembro';
+        document.getElementById('modalMensaje').innerHTML = 'Expulsar a <strong>' + username + '</strong> del equipo?<br>Esta accion no se puede deshacer.';
+        document.getElementById('modalConfirmarBtn').href = '/teams/' + equipoId + '/kick/' + usuarioId + '/';
+        document.getElementById('modalConfirmarBtn').className = 'btn btn-danger';
+        document.getElementById('modalConfirm').classList.add('active');
+    }
+    
+    function mostrarModalEliminar(equipoId, equipoNombre) {
+        document.getElementById('modalTitulo').innerText = 'Eliminar equipo';
+        document.getElementById('modalMensaje').innerHTML = 'Eliminar el equipo <strong>' + equipoNombre + '</strong> permanentemente?<br>Esta accion no se puede deshacer.';
+        document.getElementById('modalConfirmarBtn').href = '/teams/' + equipoId + '/delete/';
+        document.getElementById('modalConfirmarBtn').className = 'btn btn-danger';
+        document.getElementById('modalConfirm').classList.add('active');
+    }
+    
+    function mostrarModalSalir(equipoId, equipoNombre) {
+        document.getElementById('modalTitulo').innerText = 'Salir del equipo';
+        document.getElementById('modalMensaje').innerHTML = 'Seguro que quieres salir del equipo <strong>' + equipoNombre + '</strong>?<br>Perderas acceso a los retos del equipo.';
+        document.getElementById('modalConfirmarBtn').href = '/teams/' + equipoId + '/salir/';
+        document.getElementById('modalConfirmarBtn').className = 'btn btn-warning';
+        document.getElementById('modalConfirm').classList.add('active');
+    }
+    
+    function cerrarModal() {
+        document.getElementById('modalConfirm').classList.remove('active');
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        var messages = document.querySelectorAll('.toast-notification');
+        messages.forEach(function(msg) {
+            setTimeout(function() {
+                if (msg && msg.remove) msg.remove();
+            }, 3000);
+        });
+        
+        document.getElementById('modalConfirm').addEventListener('click', function(e) {
+            if (e.target === this) {
+                cerrarModal();
+            }
+        });
+    });
 </script>
 
 </body>

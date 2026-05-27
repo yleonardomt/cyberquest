@@ -21,6 +21,7 @@
             border-radius: var(--radius-lg);
             padding: 1.5rem;
             transition: all 0.2s ease;
+            position: relative;
         }
         .team-card:hover {
             transform: translateY(-5px);
@@ -78,6 +79,13 @@
             border-radius: var(--radius-sm);
             cursor: pointer;
             margin-left: 0.5rem;
+            font-family: 'Share Tech Mono', monospace;
+            transition: all 0.2s ease;
+        }
+        .btn-copy:hover {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.05);
         }
         .btn-sm {
             padding: 0.4rem 1rem;
@@ -105,7 +113,7 @@
             padding: 0.2rem 0;
             color: var(--text-secondary);
         }
-        .reto-item i {
+        .reto-item i.fa-check-circle {
             color: #00ff00;
             margin-right: 0.3rem;
         }
@@ -132,32 +140,51 @@
             gap: 0.5rem;
             font-family: 'Orbitron', monospace;
             font-size: 0.7rem;
-            transition: all 0.2s;
+            transition: all 0.2s ease;
             cursor: pointer;
             border: none;
         }
         .btn-primary {
-            background: var(--primary);
+            background: #E10600;
             color: white;
         }
         .btn-primary:hover {
-            background: var(--primary-hover);
+            background: #FF2A2A;
             transform: translateY(-2px);
         }
         .btn-outline {
             background: transparent;
-            border: 1px solid var(--primary);
-            color: var(--primary);
+            border: 1px solid #E10600;
+            color: #E10600;
         }
         .btn-outline:hover {
-            background: var(--primary-light);
+            background: rgba(225, 6, 0, 0.15);
+            color: #E10600;
+            transform: translateY(-2px);
         }
         .btn-danger {
-            background: #aa0000;
+            background: #8B0000;
             color: white;
         }
         .btn-danger:hover {
-            background: #cc0000;
+            background: #aa0000;
+            transform: translateY(-2px);
+        }
+        .btn-warning {
+            background: #e68a00;
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #ff8800;
+            transform: translateY(-2px);
+        }
+        .btn-success {
+            background: #006600;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #008800;
+            transform: translateY(-2px);
         }
         .top-header {
             display: flex;
@@ -172,6 +199,135 @@
             font-size: 1.3rem;
             color: var(--text-primary);
         }
+        .admin-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            justify-content: flex-end;
+        }
+        .text-muted {
+            color: var(--text-muted);
+        }
+        
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #00aa00;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease, fadeOut 3s ease 2.7s forwards;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border-left: 4px solid white;
+        }
+        .toast-message.error {
+            background: #cc0000;
+        }
+        .toast-message.warning {
+            background: #ff8800;
+        }
+        .toast-message i {
+            font-size: 1.2rem;
+        }
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        .modal-confirm {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-confirm.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            max-width: 400px;
+            text-align: center;
+        }
+        .modal-content i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        /* Estilos para filtros */
+        .filtros-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            align-items: center;
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-radius: var(--radius-lg);
+        }
+        .search-input {
+            min-width: 250px;
+            flex: 1;
+        }
+        .form-control {
+            padding: 0.5rem 0.8rem;
+            background: var(--bg-dark);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius);
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+        }
+        .sort-btn {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-dark);
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+        .sort-btn:hover {
+            background: rgba(225, 6, 0, 0.15);
+            border-color: #E10600;
+            color: #E10600;
+            transform: translateY(-2px);
+        }
+        .sort-btn.active {
+            background: #E10600;
+            color: white;
+            border-color: #E10600;
+        }
     </style>
 </head>
 <body>
@@ -181,48 +337,78 @@
     {% include 'nav.html' %}
 
     <main class="main-content">
+        {% if messages %}
+            {% for message in messages %}
+            <div class="toast-message {% if message.tags %}{{ message.tags }}{% endif %}">
+                <i class="fas {% if message.tags == 'error' %}fa-exclamation-triangle{% elif message.tags == 'success' %}fa-check-circle{% elif message.tags == 'warning' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+        {% endif %}
+
         <div class="top-header">
             <h1 class="page-title">
                 <i class="fas fa-users"></i> Equipos
             </h1>
+            <!-- SOLO ESTUDIANTES pueden CREAR equipo -->
+            {% if not mi_equipo and rol == 'ESTUDIANTE' %}
             <a href="{% url 'crear_equipo' %}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Crear Equipo
             </a>
+            {% endif %}
         </div>
 
+        <!-- SOLO ESTUDIANTES pueden UNIRSE -->
+        {% if not mi_equipo and rol == 'ESTUDIANTE' %}
         <div class="actions-bar">
             <a href="{% url 'unirse_equipo' %}" class="btn btn-outline">
-                <i class="fas fa-sign-in-alt"></i> Unirse con código
+                <i class="fas fa-sign-in-alt"></i> Unirse con codigo
             </a>
+        </div>
+        {% endif %}
+
+        <!-- FILTROS para todos -->
+        <div class="filtros-bar">
+            <input type="text" id="buscarEquipo" class="form-control search-input" 
+                   placeholder="Buscar equipo por nombre..." 
+                   onkeyup="filtrarEquipos()">
+            
+            <button id="sortPuntosBtn" class="btn sort-btn" onclick="ordenarPorPuntos()">
+                <i class="fas fa-sort-amount-down"></i> Ordenar por Puntos
+            </button>
+            <button id="sortNombreBtn" class="btn sort-btn" onclick="ordenarPorNombre()">
+                <i class="fas fa-sort-alpha-down"></i> Ordenar por Nombre
+            </button>
+            <button id="resetFiltrosBtn" class="btn btn-outline btn-sm" onclick="resetFiltros()">
+                <i class="fas fa-times"></i> Resetear
+            </button>
         </div>
 
         <!-- MI EQUIPO -->
         {% if mi_equipo %}
         <div class="mi-equipo-card">
             <h2><i class="fas fa-users"></i> Mi Equipo: {{ mi_equipo.nombre }}</h2>
-            <p>{{ mi_equipo.descripcion|default:"Sin descripción" }}</p>
+            <p>{{ mi_equipo.descripcion|default:"Sin descripcion" }}</p>
             
             <div class="team-meta">
-                <span><i class="fas fa-user-tie"></i> Líder: {{ mi_equipo.lider.username }}</span>
+                <span><i class="fas fa-user-tie"></i> Lider: {{ mi_equipo.lider.username }}</span>
                 <span><i class="fas fa-users"></i> Miembros: {{ mi_equipo.cantidad_miembros }}</span>
-                <span><i class="fas fa-trophy"></i> Puntos: {{ mi_equipo.puntos }}</span>
+                <span><i class="fas fa-trophy"></i> Puntos: {{ mi_equipo.puntos|default:"0" }}</span>
             </div>
 
-            <!-- Código de invitación - solo visible para el líder -->
             {% if request.user == mi_equipo.lider %}
             <div class="invite-code">
-                <strong><i class="fas fa-key"></i> Código de invitación:</strong><br>
+                <strong><i class="fas fa-key"></i> Codigo de invitacion:</strong><br>
                 <code>{{ mi_equipo.codigo_invitacion }}</code>
                 <button class="btn-copy" onclick="copiarCodigo('{{ mi_equipo.codigo_invitacion }}')">
                     <i class="fas fa-copy"></i> Copiar
                 </button>
                 <p class="text-muted" style="font-size: 0.7rem; margin-top: 0.5rem;">
-                    Comparte este código para que otros se unan al equipo
+                    Comparte este codigo para que otros se unan al equipo
                 </p>
             </div>
             {% endif %}
 
-            <!-- Retos resueltos por el equipo -->
             {% if retos_equipo %}
             <div class="retos-resueltos">
                 <strong><i class="fas fa-check-circle"></i> Retos superados por el equipo ({{ retos_equipo|length }}):</strong>
@@ -233,7 +419,7 @@
                 {% endfor %}
                 {% if retos_equipo|length > 5 %}
                 <div class="reto-item" style="color: var(--primary);">
-                    <i class="fas fa-ellipsis-h"></i> y {{ retos_equipo|length|add:"-5" }} más...
+                    <i class="fas fa-ellipsis-h"></i> y {{ retos_equipo|length|add:"-5" }} mas...
                 </div>
                 {% endif %}
             </div>
@@ -246,67 +432,243 @@
                 <a href="{% url 'equipo_retos' mi_equipo.id %}" class="btn btn-retos-equipo">
                     <i class="fas fa-flag-checkered"></i> Ver Retos del Equipo
                 </a>
-                <a href="{% url 'salir_equipo' mi_equipo.id %}" class="btn btn-danger" onclick="return confirm('¿Seguro que quieres salir del equipo?')">
-                    <i class="fas fa-sign-out-alt"></i> Salir
+                
+                {% if request.user == mi_equipo.lider %}
+                <a href="{% url 'editar_equipo' mi_equipo.id %}" class="btn btn-outline">
+                    <i class="fas fa-edit"></i> Editar
                 </a>
-            </div>
-        </div>
-        {% else %}
-        <div class="empty-state">
-            <i class="fas fa-users-slash" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
-            <h3>No estás en ningún equipo</h3>
-            <p>Crea un equipo o únete a uno existente usando un código de invitación</p>
-            <div class="btn-group" style="justify-content: center; margin-top: 1rem;">
-                <a href="{% url 'crear_equipo' %}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Crear Equipo
-                </a>
-                <a href="{% url 'unirse_equipo' %}" class="btn btn-outline">
-                    <i class="fas fa-sign-in-alt"></i> Unirse con código
-                </a>
+                <button class="btn btn-danger" onclick="mostrarModalEliminar('{{ mi_equipo.id }}', '{{ mi_equipo.nombre }}')">
+                    <i class="fas fa-trash"></i> Eliminar
+                </button>
+                {% else %}
+                <button class="btn btn-warning" onclick="mostrarModalSalir('{{ mi_equipo.id }}', '{{ mi_equipo.nombre }}')">
+                    <i class="fas fa-sign-out-alt"></i> Salir del Equipo
+                </button>
+                {% endif %}
             </div>
         </div>
         {% endif %}
 
-        <!-- OTROS EQUIPOS -->
-        <h2 style="margin: 2rem 0 1rem 0;"><i class="fas fa-globe"></i> Otros Equipos</h2>
+        <h2 style="margin: 2rem 0 1rem 0;">
+            <i class="fas fa-globe"></i> Todos los Equipos 
+            <span style="font-size: 0.8rem; color: var(--text-muted);" id="totalEquipos">({{ todos_equipos|length }} equipos)</span>
+        </h2>
         
-        {% if otros_equipos %}
-        <div class="teams-container">
-            {% for equipo in otros_equipos %}
-            <div class="team-card">
+        <div id="equiposContainer" class="teams-container">
+            {% for equipo in todos_equipos %}
+            <div class="team-card" data-nombre="{{ equipo.nombre|lower }}" data-puntos="{{ equipo.puntos }}">
                 <h3>{{ equipo.nombre }}</h3>
-                <p>{{ equipo.descripcion|truncatewords:20|default:"Sin descripción" }}</p>
+                <p>{{ equipo.descripcion|truncatewords:20|default:"Sin descripcion" }}</p>
                 <div class="team-meta">
                     <span><i class="fas fa-user-tie"></i> {{ equipo.lider.username }}</span>
                     <span><i class="fas fa-users"></i> {{ equipo.cantidad_miembros }}</span>
-                    <span><i class="fas fa-trophy"></i> {{ equipo.puntos }} pts</span>
+                    <span><i class="fas fa-trophy"></i> {{ equipo.puntos|default:"0" }} pts</span>
                 </div>
-                {% if request.user != equipo.lider and request.user not in equipo.miembros.all %}
-                    <a href="{% url 'unirse_equipo' %}" class="btn btn-primary btn-sm" style="width: 100%; text-align: center;">
-                        <i class="fas fa-sign-in-alt"></i> Solicitar unirse
+                
+                <div class="admin-actions">
+                    <a href="{% url 'ver_equipo' equipo.id %}" class="btn btn-outline btn-sm">
+                        <i class="fas fa-eye"></i> Ver
                     </a>
-                {% else %}
-                    <a href="{% url 'ver_equipo' equipo.id %}" class="btn btn-outline btn-sm" style="width: 100%; text-align: center;">
-                        <i class="fas fa-eye"></i> Ver Equipo
+                    
+                    <!-- ADMIN puede EDITAR y ELIMINAR cualquier equipo -->
+                    {% if rol == 'ADMIN' %}
+                    <a href="{% url 'editar_equipo' equipo.id %}" class="btn btn-outline btn-sm">
+                        <i class="fas fa-edit"></i>
                     </a>
-                {% endif %}
+                    <button class="btn btn-danger btn-sm" onclick="mostrarModalEliminarAdmin('{{ equipo.id }}', '{{ equipo.nombre }}')">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    {% endif %}
+                </div>
             </div>
             {% endfor %}
         </div>
-        {% else %}
+
+        {% if not todos_equipos %}
         <div class="empty-state">
             <i class="fas fa-users" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
-            <p>No hay otros equipos registrados</p>
+            <p>No hay equipos registrados</p>
+            {% if not mi_equipo and rol == 'ESTUDIANTE' %}
+            <a href="{% url 'crear_equipo' %}" class="btn btn-primary" style="margin-top: 1rem;">
+                <i class="fas fa-plus"></i> Crear el primer equipo
+            </a>
+            {% endif %}
         </div>
         {% endif %}
     </main>
 </div>
 
+<div id="modalConfirm" class="modal-confirm">
+    <div class="modal-content">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3 id="modalTitulo">Confirmar accion</h3>
+        <p id="modalMensaje">¿Estas seguro de realizar esta accion?</p>
+        <div class="modal-buttons">
+            <button class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+            <a id="modalConfirmarBtn" href="#" class="btn btn-danger">Confirmar</a>
+        </div>
+    </div>
+</div>
+
 <script>
+    let ordenActual = 'puntos';
+    let ordenAscendente = false;
+    
     function copiarCodigo(codigo) {
-        navigator.clipboard.writeText(codigo);
-        alert('Código copiado: ' + codigo);
+        navigator.clipboard.writeText(codigo).then(function() {
+            mostrarToast('Codigo copiado: ' + codigo, 'success');
+        }).catch(function() {
+            mostrarToast('Error al copiar el codigo', 'error');
+        });
     }
+    
+    function mostrarToast(mensaje, tipo) {
+        var toast = document.createElement('div');
+        toast.className = 'toast-message ' + tipo;
+        
+        var icono = '';
+        if (tipo === 'success') icono = '<i class="fas fa-check-circle"></i>';
+        else if (tipo === 'error') icono = '<i class="fas fa-exclamation-triangle"></i>';
+        else if (tipo === 'warning') icono = '<i class="fas fa-exclamation-circle"></i>';
+        else icono = '<i class="fas fa-info-circle"></i>';
+        
+        toast.innerHTML = icono + '<span>' + mensaje + '</span>';
+        document.body.appendChild(toast);
+        
+        setTimeout(function() {
+            if (toast && toast.remove) toast.remove();
+        }, 3000);
+    }
+    
+    function mostrarModalEliminar(equipoId, equipoNombre) {
+        document.getElementById('modalTitulo').innerText = 'Eliminar equipo';
+        document.getElementById('modalMensaje').innerHTML = 'Eliminar el equipo <strong>' + equipoNombre + '</strong> permanentemente?<br>Esta accion no se puede deshacer.';
+        document.getElementById('modalConfirmarBtn').href = '/teams/' + equipoId + '/delete/';
+        document.getElementById('modalConfirmarBtn').className = 'btn btn-danger';
+        document.getElementById('modalConfirm').classList.add('active');
+    }
+    
+    function mostrarModalSalir(equipoId, equipoNombre) {
+        document.getElementById('modalTitulo').innerText = 'Salir del equipo';
+        document.getElementById('modalMensaje').innerHTML = 'Seguro que quieres salir del equipo <strong>' + equipoNombre + '</strong>?<br>Perderas acceso a los retos del equipo.';
+        document.getElementById('modalConfirmarBtn').href = '/teams/' + equipoId + '/salir/';
+        document.getElementById('modalConfirmarBtn').className = 'btn btn-warning';
+        document.getElementById('modalConfirm').classList.add('active');
+    }
+    
+    function mostrarModalEliminarAdmin(equipoId, equipoNombre) {
+        document.getElementById('modalTitulo').innerText = 'Eliminar equipo (Admin)';
+        document.getElementById('modalMensaje').innerHTML = 'Eliminar el equipo <strong>' + equipoNombre + '</strong>?<br>Esta accion eliminara todos los datos del equipo.';
+        document.getElementById('modalConfirmarBtn').href = '/teams/' + equipoId + '/delete/';
+        document.getElementById('modalConfirmarBtn').className = 'btn btn-danger';
+        document.getElementById('modalConfirm').classList.add('active');
+    }
+    
+    function cerrarModal() {
+        document.getElementById('modalConfirm').classList.remove('active');
+    }
+    
+    function filtrarEquipos() {
+        const busqueda = document.getElementById('buscarEquipo').value.toLowerCase();
+        const equipos = document.querySelectorAll('#equiposContainer .team-card');
+        let visibles = 0;
+        
+        equipos.forEach(equipo => {
+            const nombre = equipo.getAttribute('data-nombre');
+            if (nombre.includes(busqueda)) {
+                equipo.style.display = 'block';
+                visibles++;
+            } else {
+                equipo.style.display = 'none';
+            }
+        });
+        
+        document.getElementById('totalEquipos').innerText = `(${visibles} equipos)`;
+    }
+    
+    function ordenarPorPuntos() {
+        const container = document.getElementById('equiposContainer');
+        const equipos = Array.from(container.querySelectorAll('.team-card'));
+        
+        if (ordenActual === 'puntos') {
+            ordenAscendente = !ordenAscendente;
+        } else {
+            ordenActual = 'puntos';
+            ordenAscendente = true;
+        }
+        
+        equipos.sort((a, b) => {
+            let puntosA = parseInt(a.getAttribute('data-puntos')) || 0;
+            let puntosB = parseInt(b.getAttribute('data-puntos')) || 0;
+            return ordenAscendente ? puntosA - puntosB : puntosB - puntosA;
+        });
+        
+        equipos.forEach(equipo => container.appendChild(equipo));
+        
+        const btn = document.getElementById('sortPuntosBtn');
+        btn.innerHTML = ordenAscendente ? '<i class="fas fa-sort-amount-up"></i> Puntos (menor a mayor)' : '<i class="fas fa-sort-amount-down"></i> Puntos (mayor a menor)';
+        
+        const btnNombre = document.getElementById('sortNombreBtn');
+        btnNombre.innerHTML = '<i class="fas fa-sort-alpha-down"></i> Ordenar por Nombre';
+        btnNombre.classList.remove('active');
+        btn.classList.add('active');
+    }
+    
+    function ordenarPorNombre() {
+        const container = document.getElementById('equiposContainer');
+        const equipos = Array.from(container.querySelectorAll('.team-card'));
+        
+        equipos.sort((a, b) => {
+            let nombreA = a.getAttribute('data-nombre');
+            let nombreB = b.getAttribute('data-nombre');
+            return nombreA.localeCompare(nombreB);
+        });
+        
+        equipos.forEach(equipo => container.appendChild(equipo));
+        
+        const btn = document.getElementById('sortNombreBtn');
+        btn.innerHTML = '<i class="fas fa-sort-alpha-up"></i> Nombre (A-Z)';
+        
+        const btnPuntos = document.getElementById('sortPuntosBtn');
+        btnPuntos.innerHTML = '<i class="fas fa-sort-amount-down"></i> Ordenar por Puntos';
+        btnPuntos.classList.remove('active');
+        btn.classList.add('active');
+        
+        ordenActual = 'nombre';
+    }
+    
+    function resetFiltros() {
+        document.getElementById('buscarEquipo').value = '';
+        const equipos = document.querySelectorAll('#equiposContainer .team-card');
+        equipos.forEach(equipo => {
+            equipo.style.display = 'block';
+        });
+        document.getElementById('totalEquipos').innerText = `(${equipos.length} equipos)`;
+        
+        ordenActual = 'puntos';
+        ordenAscendente = false;
+        const btnPuntos = document.getElementById('sortPuntosBtn');
+        btnPuntos.innerHTML = '<i class="fas fa-sort-amount-down"></i> Ordenar por Puntos';
+        const btnNombre = document.getElementById('sortNombreBtn');
+        btnNombre.innerHTML = '<i class="fas fa-sort-alpha-down"></i> Ordenar por Nombre';
+    }
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        var messages = document.querySelectorAll('.toast-message');
+        messages.forEach(function(msg) {
+            setTimeout(function() {
+                if (msg && msg.remove) msg.remove();
+            }, 3000);
+        });
+        
+        document.getElementById('modalConfirm').addEventListener('click', function(e) {
+            if (e.target === this) {
+                cerrarModal();
+            }
+        });
+        
+        filtrarEquipos();
+    });
 </script>
 
 </body>

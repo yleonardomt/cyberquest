@@ -50,8 +50,9 @@ class Equipo(models.Model):
     def __str__(self):
         return self.nombre
     
+    @property  # <-- IMPORTANTE: esto hace que funcione como campo en templates
     def cantidad_miembros(self):
-        return self.miembros.count() + 1  # +1 por el líder
+        return self.miembros.count() + 1
 
 
 class InvitacionEquipo(models.Model):
@@ -200,17 +201,7 @@ class IntentoReto(models.Model):
         return f"{self.usuario.username} - {self.reto.titulo} - {'Correcto' if self.es_correcto else 'Incorrecto'}"
 
 
-class CalificacionReto(models.Model):
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    reto = models.ForeignKey(Reto, on_delete=models.CASCADE)
-    calificacion = models.IntegerField(choices=[(1,1),(2,2),(3,3),(4,4),(5,5)])
-    creado_en = models.DateTimeField(auto_now_add=True)
-    
-    class Meta:
-        unique_together = ['usuario', 'reto']
-    
-    def __str__(self):
-        return f"{self.usuario.username} - {self.reto.titulo} - {self.calificacion}★"
+
 
 
 # ============================================================
@@ -249,22 +240,7 @@ class EnvioBandera(models.Model):
         return f"{self.usuario.username} - {self.reto.titulo} - {'Correcto' if self.es_correcto else 'Incorrecto'}"
 
 
-class InformeTecnico(models.Model):
-    ESTADOS = [
-        ('PENDIENTE', 'Pendiente'),
-        ('APROBADO', 'Aprobado'),
-        ('RECHAZADO', 'Rechazado')
-    ]
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    reto = models.ForeignKey(Reto, on_delete=models.CASCADE)
-    contenido = models.TextField()
-    estado = models.CharField(max_length=20, default='PENDIENTE')
-    puntaje = models.IntegerField(null=True, blank=True)
-    retroalimentacion = models.TextField(blank=True)
-    creado_en = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return f"{self.usuario.username} - {self.reto.titulo} - {self.estado}"
+
 
 
 # ============================================================
@@ -301,16 +277,6 @@ class ConsultaIA(models.Model):
         return f"{self.usuario.username} - {self.pregunta[:50]}"
 
 
-class DocumentoIA(models.Model):
-    titulo = models.CharField(max_length=200)
-    contenido = models.TextField()
-    archivo = models.FileField(upload_to='documentos_ia/', blank=True, null=True)
-    subido_por = models.ForeignKey(User, on_delete=models.CASCADE)
-    subido_en = models.DateTimeField(auto_now_add=True)
-    esta_indexado = models.BooleanField(default=False)
-    
-    def __str__(self):
-        return self.titulo
 
 
 class ConfiguracionIA(models.Model):
@@ -344,20 +310,4 @@ class Evento(models.Model):
         return self.participantes.filter(id=usuario.id).exists()
 
 
-class Ticket(models.Model):
-    ESTADOS = [
-        ('ABIERTO', 'Abierto'),
-        ('EN_PROCESO', 'En proceso'),
-        ('CERRADO', 'Cerrado')
-    ]
-    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    asunto = models.CharField(max_length=200)
-    mensaje = models.TextField()
-    respuesta = models.TextField(blank=True)
-    estado = models.CharField(max_length=20, choices=ESTADOS, default='ABIERTO')
-    creado_en = models.DateTimeField(auto_now_add=True)
-    actualizado_en = models.DateTimeField(auto_now=True)
-    
-    def __str__(self):
-        return f"{self.usuario.username} - {self.asunto} - {self.estado}"
-    
+

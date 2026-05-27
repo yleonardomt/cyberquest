@@ -42,7 +42,15 @@ from .models import (
 from django.http import JsonResponse
 from django.conf import settings
 from django.core.mail import send_mail
-
+# Agrega estas importaciones al principio de tu views.py
+from django.contrib.sessions.models import Session
+from reportlab.lib.pagesizes import letter, landscape
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Spacer, Paragraph
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+import io
+from django.http import HttpResponse
 # ============================================================
 # VISTAS PÚBLICAS
 # ============================================================
@@ -105,14 +113,25 @@ def login_view(request):
 
 def logout_view(request):
     if request.user.is_authenticated:
+        # Registrar el cierre de sesión en auditoría
         RegistroAuditoria.objects.create(
             usuario=request.user,
             accion="CERRAR_SESION",
             direccion_ip=request.META.get("REMOTE_ADDR"),
         )
+        
+        # Eliminar la sesión de la base de datos manualmente
+        from django.contrib.sessions.models import Session
+        if request.session.session_key:
+            try:
+                Session.objects.filter(session_key=request.session.session_key).delete()
+            except:
+                pass
+    
+    # Cerrar sesión de Django
     logout(request)
+    
     return redirect("home")
-
 
 
 
@@ -430,6 +449,11 @@ def bloquear_usuario(request, user_id):
 
 @login_required
 def crear_equipo(request):
+    # Verificar si ya pertenece a un equipo
+    if request.user.equipos.exists() or request.user.equipos_liderados.exists():
+        messages.error(request, "Ya perteneces a un equipo. No puedes crear otro.")
+        return redirect("listar_equipos")
+
     if request.method == "POST":
         nombre = request.POST.get("nombre")
         descripcion = request.POST.get("descripcion", "")
@@ -459,26 +483,41 @@ def crear_equipo(request):
 
 @login_required
 def unirse_equipo(request):
+    # Verificar si ya pertenece a un equipo
+    if request.user.equipos.exists() or request.user.equipos_liderados.exists():
+        messages.error(request, "Ya perteneces a un equipo. No puedes unirte a otro.")
+        return redirect("listar_equipos")
+
     if request.method == "POST":
         codigo = request.POST.get("codigo")
 
         try:
             equipo = Equipo.objects.get(codigo_invitacion=codigo)
-            if request.user in equipo.miembros.all() or request.user == equipo.lider:
-                messages.warning(request, "Ya eres miembro de este equipo")
-            else:
-                equipo.miembros.add(request.user)
 
-                RegistroAuditoria.objects.create(
-                    usuario=request.user,
-                    accion=f"UNIRSE_EQUIPO: {equipo.nombre}",
-                    direccion_ip=request.META.get("REMOTE_ADDR"),
-                )
-
-                messages.success(request, f'Te has unido al equipo "{equipo.nombre}"')
+            # Verificar si ya es miembro o lider
+            if request.user == equipo.lider:
+                messages.warning(request, f'Ya eres el lider del equipo "{equipo.nombre}"')
                 return redirect("ver_equipo", equipo_id=equipo.id)
+
+            if request.user in equipo.miembros.all():
+                messages.warning(request, f'Ya eres miembro del equipo "{equipo.nombre}"')
+                return redirect("ver_equipo", equipo_id=equipo.id)
+
+            # Unirse al equipo
+            equipo.miembros.add(request.user)
+
+            RegistroAuditoria.objects.create(
+                usuario=request.user,
+                accion=f"UNIRSE_EQUIPO: {equipo.nombre}",
+                direccion_ip=request.META.get("REMOTE_ADDR"),
+            )
+
+            messages.success(request, f'Te has unido al equipo "{equipo.nombre}" exitosamente')
+            return redirect("ver_equipo", equipo_id=equipo.id)
+
         except Equipo.DoesNotExist:
-            messages.error(request, "Código de invitación inválido")
+            messages.error(request, "Codigo de invitacion invalido. Verifica el codigo e intenta nuevamente.")
+            return redirect("unirse_equipo")
 
     return render(request, "team_join.html")
 
@@ -487,56 +526,61 @@ def unirse_equipo(request):
 def ver_equipo(request, equipo_id):
     equipo = get_object_or_404(Equipo, id=equipo_id)
 
+    # Forzar recarga de la instancia para obtener los puntos actualizados
+    equipo = Equipo.objects.get(id=equipo_id)
+
+    # Verificar si el usuario es miembro
     es_miembro = request.user == equipo.lider or request.user in equipo.miembros.all()
 
-    if not es_miembro:
-        messages.error(
-            request,
-            "No tienes permiso para ver este equipo. Solo los miembros pueden acceder.",
-        )
-        return redirect("listar_equipos")
+    # Calcular total de miembros
+    total_miembros = equipo.miembros.count() + 1
 
-    return render(request, "team_detail.html", {"equipo": equipo})
+    context = {
+        'equipo': equipo,
+        'es_miembro': es_miembro,
+        'total_miembros': total_miembros,
+        'perfil': request.user.perfil,
+        'rol': request.user.perfil.rol,
+    }
+    return render(request, 'team_detail.html', context)
 
 
 @login_required
 def listar_equipos(request):
-    mi_equipo = None
+    # Mostrar TODOS los equipos sin restricciones
+    todos_equipos = Equipo.objects.all().order_by('-puntos')
 
+    # Verificar si el usuario pertenece a algun equipo
+    mi_equipo = None
     if request.user.equipos.exists():
         mi_equipo = request.user.equipos.first()
     elif request.user.equipos_liderados.exists():
         mi_equipo = request.user.equipos_liderados.first()
 
-    otros_equipos = Equipo.objects.all()
-    if mi_equipo:
-        otros_equipos = otros_equipos.exclude(id=mi_equipo.id)
-
+    # Retos resueltos por el equipo del usuario (si tiene)
     retos_equipo = []
     if mi_equipo:
-        miembros_ids = [mi_equipo.lider.id] + list(
-            mi_equipo.miembros.values_list("id", flat=True)
-        )
+        miembros_ids = [mi_equipo.lider.id] + list(mi_equipo.miembros.values_list('id', flat=True))
         retos_equipo = Reto.objects.filter(
-            intentoreto__usuario_id__in=miembros_ids, intentoreto__es_correcto=True
+            intentoreto__usuario_id__in=miembros_ids,
+            intentoreto__es_correcto=True
         ).distinct()
 
-    todos_retos = Reto.objects.filter(esta_oculto=False)
     context = {
-        "mi_equipo": mi_equipo,
-        "otros_equipos": otros_equipos,
-        "todos_retos": todos_retos,
-        "retos_equipo": retos_equipo,
-        "perfil": request.user.perfil,
-        "rol": request.user.perfil.rol,
+        'todos_equipos': todos_equipos,  # Todos los equipos visibles
+        'mi_equipo': mi_equipo,
+        'retos_equipo': retos_equipo,
+        'perfil': request.user.perfil,
+        'rol': request.user.perfil.rol,
     }
-    return render(request, "team_list.html", context)
+    return render(request, 'team_list.html', context)
 
 
 @login_required
 def salir_equipo(request, equipo_id):
     equipo = get_object_or_404(Equipo, id=equipo_id)
 
+    # El líder no puede salir, debe eliminar el equipo o transferir liderazgo
     if request.user == equipo.lider:
         messages.error(
             request,
@@ -564,10 +608,7 @@ def enviar_bandera_equipo(request, equipo_id):
         try:
             equipo = get_object_or_404(Equipo, id=equipo_id)
 
-            if (
-                request.user != equipo.lider
-                and request.user not in equipo.miembros.all()
-            ):
+            if request.user != equipo.lider and request.user not in equipo.miembros.all():
                 return JsonResponse(
                     {"success": False, "message": "No eres miembro de este equipo"}
                 )
@@ -607,16 +648,21 @@ def enviar_bandera_equipo(request, equipo_id):
                         es_correcto=True,
                     )
 
+                # Sumar puntos al usuario
                 request.user.perfil.puntos += reto.puntos
                 request.user.perfil.save()
 
+                # Sumar puntos al equipo
                 equipo.puntos += reto.puntos
                 equipo.save()
+
+                # Actualizar la instancia para respuesta
+                equipo = Equipo.objects.get(id=equipo_id)
 
                 return JsonResponse(
                     {
                         "success": True,
-                        "message": f"¡Correcto! Has ganado {reto.puntos} puntos",
+                        "message": f"Correcto! Has ganado {reto.puntos} puntos para tu equipo",
                     }
                 )
             else:
@@ -640,6 +686,7 @@ def enviar_bandera_equipo(request, equipo_id):
     return JsonResponse({"success": False, "message": "Método no permitido"})
 
 
+
 @login_required
 def equipo_retos(request, equipo_id):
     equipo = get_object_or_404(Equipo, id=equipo_id)
@@ -650,9 +697,7 @@ def equipo_retos(request, equipo_id):
 
     retos = Reto.objects.filter(esta_oculto=False)
 
-    miembros_ids = [equipo.lider.id] + list(
-        equipo.miembros.values_list("id", flat=True)
-    )
+    miembros_ids = [equipo.lider.id] + list(equipo.miembros.values_list("id", flat=True))
     retos_resueltos = (
         IntentoReto.objects.filter(usuario_id__in=miembros_ids, es_correcto=True)
         .values_list("reto_id", flat=True)
@@ -675,11 +720,9 @@ def equipo_retos(request, equipo_id):
     }
     return render(request, "team_retos.html", context)
 
-
 # ============================================================
 # MÓDULOS Y APRENDIZAJE
 # ============================================================
-
 
 @login_required
 def listar_modulos(request):
@@ -693,6 +736,9 @@ def listar_modulos(request):
         modulos = modulos.filter(titulo__icontains=buscar)
 
     if request.user.perfil.rol == "ESTUDIANTE":
+        # Lista para almacenar módulos con datos de progreso
+        modulos_con_progreso = []
+        
         for modulo in modulos:
             lecciones = modulo.lecciones.all()
             total_lecciones = lecciones.count()
@@ -709,45 +755,45 @@ def listar_modulos(request):
                     lecciones_completadas += 1
                     puntos_obtenidos += progreso.puntaje
 
+                # Calcular puntos máximos de la lección
                 puntos_leccion = sum(p.puntos for p in leccion.preguntas.all())
                 puntos_totales += puntos_leccion
 
+            # Calcular porcentaje
+            porcentaje = int((lecciones_completadas / total_lecciones * 100)) if total_lecciones > 0 else 0
+            
+            # Agregar atributos dinámicos al módulo
             modulo.lecciones_completadas = lecciones_completadas
-            modulo.porcentaje_progreso = (
-                int((lecciones_completadas / total_lecciones * 100))
-                if total_lecciones > 0
-                else 0
-            )
+            modulo.porcentaje_progreso = porcentaje
             modulo.puntos_obtenidos = puntos_obtenidos
             modulo.puntos_totales = puntos_totales
+            
+            modulos_con_progreso.append(modulo)
 
+        # === FILTRO POR ESTADO (RF-24) ===
         estado = request.GET.get("estado")
         if estado == "completado":
-            modulos = [m for m in modulos if m.porcentaje_progreso == 100]
+            modulos_filtrados = [m for m in modulos_con_progreso if m.porcentaje_progreso == 100]
         elif estado == "progreso":
-            modulos = [m for m in modulos if 0 < m.porcentaje_progreso < 100]
+            modulos_filtrados = [m for m in modulos_con_progreso if 0 < m.porcentaje_progreso < 100]
         elif estado == "pendiente":
-            modulos = [m for m in modulos if m.porcentaje_progreso == 0]
+            modulos_filtrados = [m for m in modulos_con_progreso if m.porcentaje_progreso == 0]
+        else:
+            modulos_filtrados = modulos_con_progreso
 
-        modulos_completados = (
-            len([m for m in modulos if m.porcentaje_progreso == 100])
-            if not buscar
-            else 0
-        )
-        modulos_en_progreso = (
-            len([m for m in modulos if 0 < m.porcentaje_progreso < 100])
-            if not buscar
-            else 0
-        )
-        porcentaje_total = (
-            int(sum(m.porcentaje_progreso for m in modulos) / len(modulos))
-            if modulos
-            else 0
-        )
+        # Estadísticas generales (sin aplicar filtro de búsqueda para los totales)
+        if not buscar:
+            modulos_completados = len([m for m in modulos_con_progreso if m.porcentaje_progreso == 100])
+            modulos_en_progreso = len([m for m in modulos_con_progreso if 0 < m.porcentaje_progreso < 100])
+            porcentaje_total = int(sum(m.porcentaje_progreso for m in modulos_con_progreso) / len(modulos_con_progreso)) if modulos_con_progreso else 0
+        else:
+            modulos_completados = 0
+            modulos_en_progreso = 0
+            porcentaje_total = 0
 
         context = {
-            "modulos": modulos,
-            "total_modulos": len(modulos),
+            "modulos": modulos_filtrados,
+            "total_modulos": len(modulos_con_progreso),
             "modulos_completados": modulos_completados,
             "modulos_en_progreso": modulos_en_progreso,
             "porcentaje_total": porcentaje_total,
@@ -755,6 +801,7 @@ def listar_modulos(request):
             "rol": request.user.perfil.rol,
         }
     else:
+        # Para INSTRUCTOR y ADMIN - sin cálculos de progreso
         context = {
             "modulos": modulos,
             "perfil": request.user.perfil,
@@ -835,7 +882,7 @@ def crear_modulo(request):
 
 
 @login_required
-@user_passes_test(lambda u: u.perfil.rol == "INSTRUCTOR")
+@user_passes_test(lambda u: u.perfil.rol in ["INSTRUCTOR", "ADMIN"])
 def editar_modulo(request, modulo_id):
     modulo = get_object_or_404(Modulo, id=modulo_id)
 
@@ -863,7 +910,7 @@ def editar_modulo(request, modulo_id):
 
 
 @login_required
-@user_passes_test(lambda u: u.perfil.rol == "INSTRUCTOR")
+@user_passes_test(lambda u: u.perfil.rol in ["INSTRUCTOR", "ADMIN"])
 def eliminar_modulo(request, modulo_id):
     modulo = get_object_or_404(Modulo, id=modulo_id)
     titulo = modulo.titulo
@@ -880,7 +927,7 @@ def eliminar_modulo(request, modulo_id):
 
 
 @login_required
-@user_passes_test(lambda u: u.perfil.rol == "INSTRUCTOR")
+@user_passes_test(lambda u: u.perfil.rol in ["INSTRUCTOR", "ADMIN"])
 def agregar_leccion(request, modulo_id):
     modulo = get_object_or_404(Modulo, id=modulo_id)
     if request.method == "POST":
@@ -902,7 +949,7 @@ def agregar_leccion(request, modulo_id):
 
 
 @login_required
-@user_passes_test(lambda u: u.perfil.rol == "INSTRUCTOR")
+@user_passes_test(lambda u: u.perfil.rol in ["INSTRUCTOR", "ADMIN"])
 def editar_leccion(request, leccion_id):
     leccion = get_object_or_404(Leccion, id=leccion_id)
 
@@ -998,7 +1045,7 @@ def ver_leccion(request, leccion_id):
         todas_completadas = True
         puntos_modulo = 0
         puntos_maximos = 0
-        
+
         for l in todas_lecciones:
             p = ProgresoUsuario.objects.filter(usuario=request.user, leccion=l).first()
             if not p or not p.completado:
@@ -1008,12 +1055,12 @@ def ver_leccion(request, leccion_id):
             # Calcular puntos máximos del módulo
             for pg in l.preguntas.all():
                 puntos_maximos += pg.puntos
-        
+
         total_puntos_modulo = puntos_maximos
         puntos_obtenidos = puntos_modulo
         porcentaje_modulo = int((puntos_modulo / puntos_maximos * 100)) if puntos_maximos > 0 else 0
         modulo_completado = todas_completadas
-        
+
         if modulo_completado:
             messages.success(request, f"FELICIDADES! Has completado el módulo {leccion.modulo.titulo}!")
 
@@ -1024,7 +1071,7 @@ def ver_leccion(request, leccion_id):
     todas_completadas = True
     puntos_modulo = 0
     puntos_maximos = 0
-    
+
     for l in todas_lecciones:
         p = ProgresoUsuario.objects.filter(usuario=request.user, leccion=l).first()
         if not p or not p.completado:
@@ -1033,7 +1080,7 @@ def ver_leccion(request, leccion_id):
             puntos_modulo += p.puntaje
         for pg in l.preguntas.all():
             puntos_maximos += pg.puntos
-    
+
     total_puntos_modulo = puntos_maximos
     puntos_obtenidos = puntos_modulo
     porcentaje_modulo = int((puntos_modulo / puntos_maximos * 100)) if puntos_maximos > 0 else 0
@@ -1395,7 +1442,7 @@ def iniciar_entorno(request, reto_id):
             direccion_ip=request.META.get("REMOTE_ADDR"),
         )
 
-        messages.success(request, f"✅ Entorno iniciado! Accede en: {url}")
+        messages.success(request, f"Entorno iniciado! Accede en: {url}")
 
     except Exception as e:
         messages.error(request, f"❌ Error: {str(e)}")
@@ -1425,7 +1472,6 @@ def detener_entorno(request, entorno_id):
 # ============================================================
 # RANKINGS
 # ============================================================
-
 
 @login_required
 def ranking_individual(request):
@@ -1475,8 +1521,26 @@ def ranking_individual(request):
     }
 
     hoy = datetime.now().date()
-    evolution_datasets = []
+    
+    # RF-38: Datos de evolucion del usuario actual (individual)
+    puntos_usuario_semanales = []
+    for semana in range(4):
+        fecha_inicio = hoy - timedelta(days=(3 - semana) * 7)
+        fecha_fin = fecha_inicio + timedelta(days=7)
+        puntos_semana = IntentoReto.objects.filter(
+            usuario=request.user,
+            es_correcto=True,
+            intentado_en__date__range=[fecha_inicio, fecha_fin],
+        ).aggregate(Sum("reto__puntos"))["reto__puntos__sum"] or 0
+        puntos_usuario_semanales.append(puntos_semana)
 
+    mi_evolution_data = {
+        "labels": ["Semana 1", "Semana 2", "Semana 3", "Semana 4"],
+        "values": puntos_usuario_semanales,
+    }
+
+    # Evolucion de los Top 5
+    evolution_datasets = []
     for i, competidor in enumerate(top10[:5]):
         puntos_semanales = []
         for semana in range(4):
@@ -1540,10 +1604,10 @@ def ranking_individual(request):
         "top10_data": json.dumps(top10_data),
         "evolution_data": json.dumps(evolution_data),
         "difficulty_data": json.dumps(difficulty_data),
+        "mi_evolution_data": json.dumps(mi_evolution_data),  # RF-38
     }
 
     return render(request, "ranking_individual.html", context)
-
 
 @login_required
 def ranking_equipos(request):
@@ -1563,7 +1627,8 @@ def ranking_equipos(request):
         )
 
     total_equipos = equipos.count()
-    total_miembros = sum(e.cantidad_miembros() for e in equipos)
+    # CORREGIDO: sin paréntesis porque es una propiedad
+    total_miembros = sum(e.cantidad_miembros for e in equipos)
     total_puntos_equipos = equipos.aggregate(Sum("puntos"))["puntos__sum"] or 0
 
     mi_equipo = request.user.equipos.first() or request.user.equipos_liderados.first()
@@ -1581,9 +1646,9 @@ def ranking_equipos(request):
             "Grandes (7+ miembros)",
         ],
         "values": [
-            sum(1 for e in equipos if e.cantidad_miembros() <= 3),
-            sum(1 for e in equipos if 4 <= e.cantidad_miembros() <= 6),
-            sum(1 for e in equipos if e.cantidad_miembros() >= 7),
+            sum(1 for e in equipos if e.cantidad_miembros <= 3),
+            sum(1 for e in equipos if 4 <= e.cantidad_miembros <= 6),
+            sum(1 for e in equipos if e.cantidad_miembros >= 7),
         ],
     }
 
@@ -1687,7 +1752,6 @@ from .ia_ctf import obtener_respuesta
 
 @login_required
 def consultar_asistente(request):
-    # Verificar si el asistente está habilitado
     config = ConfiguracionIA.objects.first()
     ia_habilitado = config.asistente_activo if config else True
 
@@ -1721,18 +1785,23 @@ def consultar_asistente(request):
         {"consultas": consultas, "ia_habilitado": ia_habilitado},
     )
 
-
 # ============================================================
 # EVENTOS
 # ============================================================
-
-
 @login_required
 def listar_eventos(request):
     eventos = Evento.objects.all().order_by("-fecha_inicio")
     now = timezone.now()
+    rol = request.user.perfil.rol
+    buscar = request.GET.get("buscar", "")
+    estado = request.GET.get("estado", "")
 
-    if request.user.perfil.rol == "ESTUDIANTE":
+    # BUSCADOR POR NOMBRE - PARA TODOS LOS ROLES
+    if buscar:
+        eventos = eventos.filter(nombre__icontains=buscar)
+
+    if rol == "ESTUDIANTE":
+        # Procesar eventos para el estudiante
         for evento in eventos:
             evento.esta_inscrito = evento.participantes.filter(
                 id=request.user.id
@@ -1745,9 +1814,9 @@ def listar_eventos(request):
                 evento.puntuacion_usuario = sum(r.reto.puntos for r in retos_resueltos)
                 evento.retos_resueltos = retos_resueltos.count()
 
-        estado = request.GET.get("estado")
+        # Filtros personales para estudiante
         if estado == "inscrito":
-            eventos = [e for e in eventos if e.esta_inscrito]
+            eventos = [e for e in eventos if hasattr(e, 'esta_inscrito') and e.esta_inscrito]
         elif estado == "activo":
             eventos = [e for e in eventos if e.fecha_inicio <= now <= e.fecha_fin]
         elif estado == "proximos":
@@ -1755,6 +1824,7 @@ def listar_eventos(request):
         elif estado == "finalizados":
             eventos = [e for e in eventos if e.fecha_fin < now]
 
+        # Estadisticas para el estudiante
         eventos_inscritos = len(
             [
                 e
@@ -1786,14 +1856,32 @@ def listar_eventos(request):
             "eventos_participando": eventos_participando,
             "eventos_finalizados": eventos_finalizados,
             "perfil": request.user.perfil,
-            "rol": request.user.perfil.rol,
+            "rol": rol,
+            "buscar": buscar,
         }
+
     else:
+        # INSTRUCTOR o ADMIN - con filtros de gestion
+        if estado == "activo":
+            eventos = eventos.filter(fecha_inicio__lte=now, fecha_fin__gte=now)
+        elif estado == "inactivo":
+            eventos = eventos.filter(fecha_inicio__gt=now)
+        elif estado == "finalizado":
+            eventos = eventos.filter(fecha_fin__lt=now)
+
+        # Para instructor/admin, tambien marcamos si el usuario actual esta inscrito (opcional)
+        for evento in eventos:
+            evento.esta_inscrito = evento.participantes.filter(
+                id=request.user.id
+            ).exists()
+
         context = {
             "eventos": eventos,
             "now": now,
             "perfil": request.user.perfil,
-            "rol": request.user.perfil.rol,
+            "rol": rol,
+            "buscar": buscar,
+            "estado_filtro": estado,
         }
 
     return render(request, "event_list.html", context)
@@ -1866,7 +1954,7 @@ def inscribirse_evento(request, evento_id):
             return JsonResponse(
                 {
                     "success": True,
-                    "message": f'✅ Te has unido al evento "{evento.nombre}"',
+                    "message": f'Te has unido al evento "{evento.nombre}"',
                 }
             )
         else:
@@ -2060,7 +2148,7 @@ def configuracion_ia(request):
 @login_required
 def certificado(request, modulo_id):
     modulo = get_object_or_404(Modulo, id=modulo_id)
-    
+
     # Verificar si el usuario completó el módulo
     lecciones = modulo.lecciones.all()
     completado = True
@@ -2069,18 +2157,18 @@ def certificado(request, modulo_id):
         if not progreso:
             completado = False
             break
-    
+
     if not completado:
         messages.error(request, "Debes completar todas las lecciones del módulo para obtener el certificado.")
         return redirect('progreso_modulo', modulo_id=modulo.id)
-    
+
     # Crear o obtener certificado
     certificado, created = Certificado.objects.get_or_create(
         usuario=request.user,
         modulo=modulo,
         defaults={'codigo': str(uuid.uuid4())}
     )
-    
+
     context = {
         'certificado': certificado,
         'modulo': modulo,
@@ -2090,3 +2178,509 @@ def certificado(request, modulo_id):
         'rol': request.user.perfil.rol,
     }
     return render(request, 'certificado.html', context)
+
+
+
+
+# ============================================================
+# ACCIONES DE EQUIPOS (COMPLETAS)
+# ============================================================
+
+@login_required
+def eliminar_equipo(request, equipo_id):
+    """Eliminar equipo - Puede hacerlo: El líder del equipo o el administrador"""
+    equipo = get_object_or_404(Equipo, id=equipo_id)
+
+    # Verificar permisos
+    es_admin = request.user.perfil.rol == "ADMIN"
+    es_lider = request.user == equipo.lider
+
+    if not (es_admin or es_lider):
+        messages.error(request, "No tienes permiso para eliminar este equipo")
+        return redirect("ver_equipo", equipo_id=equipo.id)
+
+    nombre = equipo.nombre
+
+    # Registrar en auditoría
+    RegistroAuditoria.objects.create(
+        usuario=request.user,
+        accion=f"ELIMINAR_EQUIPO: {nombre} (ID:{equipo.id})",
+        direccion_ip=request.META.get("REMOTE_ADDR"),
+    )
+
+    equipo.delete()
+    messages.success(request, f'Equipo "{nombre}" eliminado correctamente')
+    return redirect("listar_equipos")
+
+
+@login_required
+def editar_equipo(request, equipo_id):
+    """
+    Editar equipo - Puede hacerlo:
+    - El líder del equipo
+    - El administrador
+    """
+    equipo = get_object_or_404(Equipo, id=equipo_id)
+
+    es_admin = request.user.perfil.rol == "ADMIN"
+    es_lider = request.user == equipo.lider
+
+    if not (es_admin or es_lider):
+        messages.error(request, "No tienes permiso para editar este equipo")
+        return redirect("ver_equipo", equipo_id=equipo.id)
+
+    if request.method == "POST":
+        nombre = request.POST.get("nombre")
+        descripcion = request.POST.get("descripcion", "")
+
+        # Verificar que el nombre no exista (excepto el mismo equipo)
+        if Equipo.objects.filter(nombre=nombre).exclude(id=equipo.id).exists():
+            messages.error(request, "Ya existe un equipo con ese nombre")
+        else:
+            equipo.nombre = nombre
+            equipo.descripcion = descripcion
+            equipo.save()
+
+            RegistroAuditoria.objects.create(
+                usuario=request.user,
+                accion=f"EDITAR_EQUIPO: {nombre} (ID:{equipo.id})",
+                direccion_ip=request.META.get("REMOTE_ADDR"),
+            )
+
+            messages.success(request, f'Equipo "{nombre}" actualizado correctamente')
+            return redirect("ver_equipo", equipo_id=equipo.id)
+
+    return render(request, "team_edit.html", {"equipo": equipo})
+
+
+@login_required
+def expulsar_miembro(request, equipo_id, user_id):
+    """
+    Expulsar miembro del equipo - Puede hacerlo:
+    - El líder del equipo
+    - El administrador
+    """
+    equipo = get_object_or_404(Equipo, id=equipo_id)
+    usuario_a_expulsar = get_object_or_404(User, id=user_id)
+
+    es_admin = request.user.perfil.rol == "ADMIN"
+    es_lider = request.user == equipo.lider
+
+    # Verificar permisos
+    if not (es_admin or es_lider):
+        messages.error(request, "No tienes permiso para expulsar miembros")
+        return redirect("ver_equipo", equipo_id=equipo.id)
+
+    # No se puede expulsar al líder
+    if usuario_a_expulsar == equipo.lider:
+        messages.error(request, "No puedes expulsar al líder del equipo")
+        return redirect("ver_equipo", equipo_id=equipo.id)
+
+    # Verificar que sea miembro
+    if usuario_a_expulsar not in equipo.miembros.all():
+        messages.error(request, "El usuario no es miembro del equipo")
+        return redirect("ver_equipo", equipo_id=equipo.id)
+
+    # No te puedes expulsar a ti mismo (usa salir_equipo para eso)
+    if usuario_a_expulsar == request.user and not es_admin:
+        messages.error(request, "Usa 'Salir del equipo' si quieres abandonar el equipo")
+        return redirect("ver_equipo", equipo_id=equipo.id)
+
+    # Realizar expulsión
+    equipo.miembros.remove(usuario_a_expulsar)
+
+    RegistroAuditoria.objects.create(
+        usuario=request.user,
+        accion=f"EXPULSAR_MIEMBRO: {usuario_a_expulsar.username} del equipo {equipo.nombre} (ID:{equipo.id})",
+        direccion_ip=request.META.get("REMOTE_ADDR"),
+    )
+
+    messages.success(request, f'{usuario_a_expulsar.username} ha sido expulsado del equipo "{equipo.nombre}"')
+
+    # Si el admin expulsa a alguien, vuelve a la lista de equipos
+    if es_admin:
+        return redirect("listar_equipos")
+    return redirect("ver_equipo", equipo_id=equipo.id)
+
+
+@login_required
+def salir_equipo(request, equipo_id):
+    """
+    Salir del equipo voluntariamente - Puede hacerlo:
+    - Cualquier miembro (excepto el líder)
+    """
+    equipo = get_object_or_404(Equipo, id=equipo_id)
+
+    # El líder no puede salir, debe eliminar el equipo o transferir liderazgo
+    if request.user == equipo.lider:
+        messages.error(request, "Eres el líder. No puedes salir. Elimina el equipo o transfiere el liderazgo.")
+        return redirect("ver_equipo", equipo_id=equipo.id)
+
+    # Verificar que sea miembro
+    if request.user not in equipo.miembros.all():
+        messages.error(request, "No eres miembro de este equipo")
+        return redirect("listar_equipos")
+
+    # Salir del equipo
+    equipo.miembros.remove(request.user)
+
+    RegistroAuditoria.objects.create(
+        usuario=request.user,
+        accion=f"SALIR_EQUIPO: {equipo.nombre} (ID:{equipo.id})",
+        direccion_ip=request.META.get("REMOTE_ADDR"),
+    )
+
+    messages.success(request, f'Has salido del equipo "{equipo.nombre}"')
+    return redirect("listar_equipos")
+
+
+@login_required
+def transferir_liderazgo(request, equipo_id, user_id):
+    """Transferir liderazgo a otro miembro (solo líder)"""
+    equipo = get_object_or_404(Equipo, id=equipo_id)
+    nuevo_lider = get_object_or_404(User, id=user_id)
+
+    # Solo el líder actual puede transferir
+    if request.user != equipo.lider:
+        messages.error(request, "Solo el líder puede transferir el liderazgo")
+        return redirect("ver_equipo", equipo_id=equipo.id)
+
+    # Verificar que el nuevo líder sea miembro
+    if nuevo_lider not in equipo.miembros.all():
+        messages.error(request, "El usuario no es miembro del equipo")
+        return redirect("ver_equipo", equipo_id=equipo.id)
+
+    # Transferir liderazgo
+    equipo.lider = nuevo_lider
+    equipo.save()
+
+    # El antiguo líder sigue como miembro
+    if request.user not in equipo.miembros.all():
+        equipo.miembros.add(request.user)
+
+    RegistroAuditoria.objects.create(
+        usuario=request.user,
+        accion=f"TRANSFERIR_LIDERAZGO: {nuevo_lider.username} en equipo {equipo.nombre}",
+        direccion_ip=request.META.get("REMOTE_ADDR"),
+    )
+
+    messages.success(request, f'Liderazgo transferido a {nuevo_lider.username}')
+    return redirect("ver_equipo", equipo_id=equipo.id)
+@login_required
+def equipo_reto_detalle(request, reto_id):
+    reto = get_object_or_404(Reto, id=reto_id)
+
+    # Obtener el equipo del usuario
+    equipo = request.user.equipos.first() or request.user.equipos_liderados.first()
+
+    if not equipo:
+        messages.error(request, "No perteneces a ningún equipo")
+        return redirect("listar_retos")
+
+    # Verificar si el usuario ya resolvió el reto
+    ya_resuelto = IntentoReto.objects.filter(usuario=request.user, reto=reto, es_correcto=True).exists()
+
+    entorno = Entorno.objects.filter(usuario=request.user, reto=reto).first()
+
+    if request.method == "POST":
+        bandera_enviada = request.POST.get("bandera")
+        es_correcto = bandera_enviada == reto.bandera
+
+        if es_correcto:
+            if not ya_resuelto:
+                IntentoReto.objects.create(
+                    usuario=request.user,
+                    reto=reto,
+                    bandera_enviada=bandera_enviada,
+                    es_correcto=True,
+                )
+                request.user.perfil.puntos += reto.puntos
+                request.user.perfil.save()
+
+                # Sumar puntos al equipo
+                equipo.puntos += reto.puntos
+                equipo.save()
+
+                messages.success(request, f"Correcto! Has ganado {reto.puntos} puntos para tu equipo")
+            else:
+                messages.info(request, "Ya habias resuelto este reto anteriormente")
+            return redirect("equipo_reto_detalle", reto_id=reto.id)
+        else:
+            messages.error(request, "Bandera incorrecta. Intenta de nuevo")
+
+    context = {
+        "reto": reto,
+        "equipo": equipo,
+        "ya_resuelto": ya_resuelto,
+        "entorno": entorno,
+        "perfil": request.user.perfil,
+        "rol": request.user.perfil.rol,
+    }
+    return render(request, "team_reto_detail.html", context)
+
+
+
+@login_required
+@user_passes_test(lambda u: u.perfil.rol == "ADMIN")
+def exportar_logs_pdf(request):
+    """Exportar logs de auditoría a PDF con diseño profesional (RF-51)"""
+    
+    from reportlab.lib.pagesizes import landscape, letter
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Spacer, Paragraph
+    from reportlab.lib import colors
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.units import inch
+    from reportlab.lib.enums import TA_CENTER, TA_LEFT
+    import io
+    from django.http import HttpResponse
+    
+    # Obtener registros con filtros
+    registros = RegistroAuditoria.objects.all().select_related('usuario').order_by('-timestamp')
+    
+    tipo_accion = request.GET.get('tipo')
+    if tipo_accion:
+        registros = registros.filter(accion__icontains=tipo_accion)
+    
+    usuario_id = request.GET.get('usuario')
+    if usuario_id:
+        registros = registros.filter(usuario_id=usuario_id)
+    
+    # Crear respuesta PDF
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="cyberquest_auditoria.pdf"'
+    
+    # Crear buffer y documento
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(buffer, pagesize=landscape(letter),
+                            rightMargin=0.5*inch, leftMargin=0.5*inch,
+                            topMargin=0.5*inch, bottomMargin=0.5*inch)
+    
+    # Estilos personalizados
+    styles = getSampleStyleSheet()
+    
+    # Estilo para título principal
+    titulo_style = ParagraphStyle(
+        'TituloStyle',
+        parent=styles['Heading1'],
+        fontSize=16,
+        textColor=colors.HexColor('#E10600'),
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold',
+        spaceAfter=5
+    )
+    
+    # Estilo para subtítulo
+    subtitulo_style = ParagraphStyle(
+        'SubtituloStyle',
+        parent=styles['Normal'],
+        fontSize=9,
+        textColor=colors.HexColor('#6c6c7a'),
+        alignment=TA_CENTER,
+        spaceAfter=15
+    )
+    
+    # Estilo para fecha
+    fecha_style = ParagraphStyle(
+        'FechaStyle',
+        parent=styles['Normal'],
+        fontSize=8,
+        textColor=colors.HexColor('#333333'),
+        alignment=TA_CENTER,
+        spaceAfter=10
+    )
+    
+    # Estilo para encabezados de tabla
+    header_style = ParagraphStyle(
+        'HeaderStyle',
+        parent=styles['Normal'],
+        fontSize=8,
+        textColor=colors.white,
+        fontName='Helvetica-Bold',
+        alignment=TA_CENTER
+    )
+    
+    # Estilo para celdas de tabla
+    cell_style = ParagraphStyle(
+        'CellStyle',
+        parent=styles['Normal'],
+        fontSize=7,
+        textColor=colors.black,
+        alignment=TA_LEFT
+    )
+    
+    # Construir contenido
+    story = []
+    
+    # Título
+    story.append(Paragraph("CYBERQUEST", titulo_style))
+    story.append(Paragraph("Security Training Platform - Reporte de Auditoria", subtitulo_style))
+    
+    # Fecha
+    fecha_text = f"Generado: {timezone.now().strftime('%d/%m/%Y %H:%M:%S')}  |  Total registros: {registros.count()}"
+    story.append(Paragraph(fecha_text, fecha_style))
+    story.append(Spacer(1, 0.15 * inch))
+    
+    # Datos de la tabla
+    data = []
+    
+    # Encabezados
+    headers = ['FECHA Y HORA', 'USUARIO', 'ROL', 'ACCION', 'DIRECCION IP']
+    data.append([Paragraph(h, header_style) for h in headers])
+    
+    # Contenido
+    for log in registros[:500]:
+        rol_usuario = log.usuario.perfil.rol if hasattr(log.usuario, 'perfil') else 'DESCONOCIDO'
+        
+        row = [
+            Paragraph(log.timestamp.strftime("%d/%m/%Y %H:%M:%S"), cell_style),
+            Paragraph(log.usuario.username, cell_style),
+            Paragraph(rol_usuario, cell_style),
+            Paragraph(log.accion[:70], cell_style),
+            Paragraph(log.direccion_ip or "No registrada", cell_style),
+        ]
+        data.append(row)
+    
+    # Crear tabla
+    table = Table(data, repeatRows=1)
+    
+    # Estilo de la tabla
+    table.setStyle(TableStyle([
+        # Encabezado
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#E10600')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 8),
+        ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        ('TOPPADDING', (0, 0), (-1, 0), 8),
+        
+        # Filas alternadas
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+        ('ROW BACKGROUND', (0, 2), (-1, -1), colors.HexColor('#f5f5f5')),
+        
+        # Bordes suaves
+        ('GRID', (0, 0), (-1, -1), 0.3, colors.HexColor('#dddddd')),
+        ('BOX', (0, 0), (-1, -1), 0.5, colors.HexColor('#cccccc')),
+        
+        # Alineaciones
+        ('ALIGN', (0, 1), (0, -1), 'CENTER'),
+        ('ALIGN', (4, 1), (4, -1), 'CENTER'),
+        
+        # Padding
+        ('TOPPADDING', (0, 1), (-1, -1), 5),
+        ('BOTTOMPADDING', (0, 1), (-1, -1), 5),
+        ('LEFTPADDING', (0, 0), (-1, -1), 4),
+        ('RIGHTPADDING', (0, 0), (-1, -1), 4),
+    ]))
+    
+    story.append(table)
+    
+    # Pie de página
+    story.append(Spacer(1, 0.25 * inch))
+    footer_text = """
+    <font color="#888888" size="7">CyberQuest Security Training Platform - Reporte generado automaticamente</font>
+    """
+    footer_style = ParagraphStyle('FooterStyle', parent=styles['Normal'], alignment=TA_CENTER)
+    story.append(Paragraph(footer_text, footer_style))
+    
+    # Construir PDF
+    doc.build(story)
+    pdf = buffer.getvalue()
+    buffer.close()
+    response.write(pdf)
+    
+    # Registrar acción
+    RegistroAuditoria.objects.create(
+        usuario=request.user,
+        accion="EXPORTAR_LOGS_PDF",
+        direccion_ip=request.META.get("REMOTE_ADDR")
+    )
+    
+    return response
+
+
+
+
+from django.contrib.sessions.models import Session
+
+def limpiar_sesiones_expiradas():
+    """Elimina sesiones expiradas de la base de datos"""
+    sesiones_expiradas = Session.objects.filter(expire_date__lt=timezone.now())
+    count = sesiones_expiradas.count()
+    sesiones_expiradas.delete()
+    if count > 0:
+        print(f"[LIMPIAR] {count} sesiones expiradas eliminadas")
+    return count
+@login_required
+@user_passes_test(lambda u: u.perfil.rol == "ADMIN")
+def sesiones_activas(request):
+    """Ver sesiones activas de usuarios (RF-52)"""
+    
+    from django.contrib.sessions.models import Session
+    
+    # Limpiar sesiones expiradas primero
+    limpiar_sesiones_expiradas()
+    
+    # Solo sesiones activas (no expiradas)
+    sesiones = Session.objects.filter(expire_date__gt=timezone.now())
+    
+    usuarios_activos = []
+    for sesion in sesiones:
+        data = sesion.get_decoded()
+        user_id = data.get('_auth_user_id')
+        if user_id:
+            try:
+                user = User.objects.get(id=user_id)
+                tiempo_restante = sesion.expire_date - timezone.now()
+                minutos_restantes = int(tiempo_restante.total_seconds() / 60)
+                horas_restantes = int(minutos_restantes / 60)
+                
+                if horas_restantes > 24:
+                    tiempo_str = f"{int(horas_restantes/24)} dias"
+                elif horas_restantes > 0:
+                    tiempo_str = f"{horas_restantes} horas"
+                else:
+                    tiempo_str = f"{minutos_restantes} min"
+                
+                usuarios_activos.append({
+                    'username': user.username,
+                    'rol': user.perfil.rol,
+                    'tiempo_restante': tiempo_str,
+                    'session_key': sesion.session_key,  # <--- ESTO ESTABA FALTANDO
+                })
+            except User.DoesNotExist:
+                sesion.delete()
+                pass
+    
+    total_sesiones = len(usuarios_activos)
+    total_usuarios = Perfil.objects.filter(esta_bloqueado=False).count()
+    
+    context = {
+        'sesiones': usuarios_activos,
+        'total_sesiones': total_sesiones,
+        'total_usuarios': total_usuarios,
+        'perfil': request.user.perfil,
+        'rol': request.user.perfil.rol,
+    }
+    
+    return render(request, 'sesiones_activas.html', context)
+@login_required
+@user_passes_test(lambda u: u.perfil.rol == "ADMIN")
+def limpiar_sesiones(request):
+    from django.contrib.sessions.models import Session
+    count = Session.objects.filter(expire_date__lt=timezone.now()).count()
+    Session.objects.filter(expire_date__lt=timezone.now()).delete()
+    messages.success(request, f"Se eliminaron {count} sesiones expiradas")
+    return redirect('sesiones_activas')
+@login_required
+@user_passes_test(lambda u: u.perfil.rol == "ADMIN")
+def eliminar_sesion(request, session_key):
+    """Eliminar una sesión específica (forzar cierre)"""
+    from django.contrib.sessions.models import Session
+    try:
+        session = Session.objects.get(session_key=session_key)
+        session.delete()
+        messages.success(request, "Sesión eliminada correctamente")
+    except Session.DoesNotExist:
+        messages.error(request, "Sesión no encontrada")
+    return redirect('sesiones_activas')

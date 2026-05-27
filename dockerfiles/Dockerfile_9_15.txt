@@ -1,0 +1,11 @@
+FROM nginx:alpine
+
+RUN echo '<!DOCTYPE html>
+<html>
+<body>
+    <h1>Encuentra la flag escondida</h1>
+    <!-- flag{html_comment_123} -->
+</body>
+</html>' > /usr/share/nginx/html/index.html
+
+EXPOSE 80

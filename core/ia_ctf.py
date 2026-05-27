@@ -3,13 +3,32 @@
 
 from django.utils import timezone
 from django.db.models import Count, Sum
-from .models import Perfil, Reto, IntentoReto, Equipo, Evento, Modulo
+from .models import Perfil, Reto, IntentoReto, Equipo, Evento, Modulo, ConfiguracionIA, ConsultaIA
 
 
 def obtener_respuesta(usuario, pregunta):
     """
-    Función principal que procesa la pregunta y devuelve una respuesta inteligente
+    Funcion principal que procesa la pregunta y devuelve una respuesta inteligente
     """
+    # Obtener configuracion
+    config = ConfiguracionIA.objects.first()
+    
+    # Verificar si el asistente esta habilitado
+    if not config or not config.asistente_activo:
+        return "[X] El asistente IA ha sido deshabilitado por el administrador. Por favor, intenta mas tarde."
+    
+    # Verificar limite de consultas por dia
+    hoy = timezone.now().date()
+    consultas_hoy = ConsultaIA.objects.filter(
+        usuario=usuario,
+        creado_en__date=hoy
+    ).count()
+    
+    limite = config.limite_consultas_por_dia if config else 10
+    
+    if consultas_hoy >= limite:
+        return f"[!] Has alcanzado el limite de {limite} consultas por dia.\n\nEl limite se reinicia manana. Por ahora, revisa tus estadisticas en el Dashboard."
+    
     pregunta_lower = pregunta.lower().strip()
     perfil = usuario.perfil
     
@@ -18,19 +37,19 @@ def obtener_respuesta(usuario, pregunta):
         return saludar(usuario)
     
     # ========== PUNTOS ==========
-    elif any(word in pregunta_lower for word in ['puntos', 'puntuación', 'puntaje']):
+    elif any(word in pregunta_lower for word in ['puntos', 'puntuacion', 'puntaje', 'mis puntos', 'cuantos puntos']):
         return ver_puntos(perfil)
     
-    # ========== POSICIÓN / RANKING ==========
-    elif any(word in pregunta_lower for word in ['posicion', 'posición', 'ranking', 'lugar', 'puesto', 'clasificacion']):
+    # ========== POSICION / RANKING ==========
+    elif any(word in pregunta_lower for word in ['posicion', 'posicion', 'ranking', 'lugar', 'puesto', 'clasificacion', 'en que lugar']):
         return ver_posicion(usuario, perfil)
     
     # ========== RETOS RESUELTOS ==========
     elif any(word in pregunta_lower for word in ['retos he resuelto', 'cuantos retos', 'retos resueltos', 'mis retos', 'retos completados', 'cuantos he resuelto']):
         return ver_retos_resueltos(usuario)
     
-    # ========== QUÉ RETOS HAY ==========
-    elif any(word in pregunta_lower for word in ['que retos', 'qué retos', 'retos hay', 'retos disponibles', 'que retos hay', 'mostrar retos']):
+    # ========== QUE RETOS HAY ==========
+    elif any(word in pregunta_lower for word in ['que retos', 'que retos', 'retos hay', 'retos disponibles', 'que retos hay', 'mostrar retos']):
         return ver_retos_disponibles()
     
     # ========== TOTAL DE RETOS ==========
@@ -46,7 +65,7 @@ def obtener_respuesta(usuario, pregunta):
         return ver_eventos()
     
     # ========== CURSOS ==========
-    elif any(word in pregunta_lower for word in ['cursos', 'mis cursos', 'que cursos', 'qué cursos', 'capacitacion']):
+    elif any(word in pregunta_lower for word in ['cursos', 'mis cursos', 'que cursos', 'que cursos', 'capacitacion']):
         return ver_cursos()
     
     # ========== AYUDA ==========
@@ -63,29 +82,29 @@ def obtener_respuesta(usuario, pregunta):
 # ============================================================
 
 def saludar(usuario):
-    return f"""👋 ¡Hola {usuario.username}! Soy CyberAI, tu asistente virtual.
+    return f"""[Hola] Hola {usuario.username}! Soy CyberAI, tu asistente virtual.
 
-📌 **Pregúntame cosas como:**
-• ¿Cuántos puntos tengo?
-• ¿En qué posición estoy?
-• ¿Cuántos retos he resuelto?
-• ¿Qué retos hay?
-• ¿En qué equipo estoy?
-• ¿Qué eventos hay activos?
+[Info] Preguntame cosas como:
+- Cuantos puntos tengo?
+- En que posicion estoy?
+- Cuantos retos he resuelto?
+- Que retos hay?
+- En que equipo estoy?
+- Que eventos hay activos?
 
-💡 También puedes escribir "ayuda" para ver todos los comandos."""
+[Ayuda] Tambien puedes escribir "ayuda" para ver todos los comandos."""
 
 
 def ver_puntos(perfil):
     puntos = perfil.puntos
     if puntos == 0:
-        return "🏆 Aún no tienes puntos. ¡Comienza resolviendo retos!"
+        return "[Trofeo] Aun no tienes puntos. Comienza resolviendo retos!"
     elif puntos < 100:
-        return f"🏆 Tienes **{puntos} puntos**. ¡Sigue así, cada reto suma!"
+        return f"[Trofeo] Tienes {puntos} puntos. Sigue asi, cada reto suma!"
     elif puntos < 500:
-        return f"🏆 Tienes **{puntos} puntos**. ¡Buen trabajo, vas por buen camino!"
+        return f"[Trofeo] Tienes {puntos} puntos. Buen trabajo, vas por buen camino!"
     else:
-        return f"🏆 Tienes **{puntos} puntos**. ¡Eres un experto! Sigue así."
+        return f"[Trofeo] Tienes {puntos} puntos. Eres un experto! Sigue asi."
 
 
 def ver_posicion(usuario, perfil):
@@ -93,18 +112,18 @@ def ver_posicion(usuario, perfil):
     posicion = Perfil.objects.filter(puntos__gt=perfil.puntos, esta_bloqueado=False, rol='ESTUDIANTE').count() + 1
     
     if total_usuarios == 0:
-        return "🎯 Eres el único competidor por ahora. ¡Invita a más amigos!"
+        return "[Diana] Eres el unico competidor por ahora. Invita a mas amigos!"
     
-    mensaje = f"🎯 Estás en la **posición #{posicion}** de {total_usuarios} competidores."
+    mensaje = f"[Diana] Estas en la posicion #{posicion} de {total_usuarios} competidores."
     
     if posicion == 1:
-        mensaje += "\n\n🏆 ¡Eres el número 1! ¡Impresionante! Sigue dominando."
+        mensaje += "\n\n[Trofeo] Eres el numero 1! Impresionante! Sigue dominando."
     elif posicion <= 10:
-        mensaje += "\n\n🌟 Estás en el top 10. ¡Sigue así para llegar al primer lugar!"
+        mensaje += "\n\n[Estrella] Estas en el top 10. Sigue asi para llegar al primer lugar!"
     elif posicion <= 50:
-        mensaje += "\n\n📈 Buen trabajo. ¡Puedes llegar al top 10 si sigues practicando!"
+        mensaje += "\n\n[Grafico] Buen trabajo. Puedes llegar al top 10 si sigues practicando!"
     else:
-        mensaje += "\n\n💪 No te preocupes, cada reto suma puntos. ¡Sigue practicando!"
+        mensaje += "\n\n[Fuerza] No te preocupes, cada reto suma puntos. Sigue practicando!"
     
     return mensaje
 
@@ -114,22 +133,22 @@ def ver_retos_resueltos(usuario):
     resueltos = IntentoReto.objects.filter(usuario=usuario, es_correcto=True).count()
     
     if total_retos == 0:
-        return "📭 No hay retos disponibles aún. Vuelve más tarde."
+        return "[Carpeta] No hay retos disponibles aun. Vuelve mas tarde."
     
     porcentaje = int(resueltos / total_retos * 100) if total_retos > 0 else 0
     
     if resueltos == 0:
-        return f"📊 Aún no has resuelto ningún reto.\n\n🌱 ¡Comienza con los retos de nivel Principiante!"
+        return f"[Grafico] Aun no has resuelto ningun reto.\n\n[Hierba] Comienza con los retos de nivel Principiante!"
     elif porcentaje < 25:
-        return f"📊 Has resuelto **{resueltos} de {total_retos} retos** ({porcentaje}% completado).\n\n💪 ¡Sigue así, cada reto cuenta!"
+        return f"[Grafico] Has resuelto {resueltos} de {total_retos} retos ({porcentaje}% completado).\n\n[Fuerza] Sigue asi, cada reto cuenta!"
     elif porcentaje < 50:
-        return f"📊 Has resuelto **{resueltos} de {total_retos} retos** ({porcentaje}% completado).\n\n📈 ¡Vas muy bien! No te detengas."
+        return f"[Grafico] Has resuelto {resueltos} de {total_retos} retos ({porcentaje}% completado).\n\n[Grafico] Vas muy bien! No te detengas."
     elif porcentaje < 75:
-        return f"📊 Has resuelto **{resueltos} de {total_retos} retos** ({porcentaje}% completado).\n\n🔥 ¡Excelente progreso! Estás cerca de la cima."
+        return f"[Grafico] Has resuelto {resueltos} de {total_retos} retos ({porcentaje}% completado).\n\n[Fuego] Excelente progreso! Estas cerca de la cima."
     elif porcentaje < 100:
-        return f"📊 Has resuelto **{resueltos} de {total_retos} retos** ({porcentaje}% completado).\n\n🏆 ¡Impresionante! Solo te faltan {total_retos - resueltos} retos para completar todo."
+        return f"[Grafico] Has resuelto {resueltos} de {total_retos} retos ({porcentaje}% completado).\n\n[Trofeo] Impresionante! Solo te faltan {total_retos - resueltos} retos para completar todo."
     else:
-        return f"🏆 ¡INCREÍBLE! Has resuelto TODOS los {total_retos} retos. ¡Eres un maestro del CTF!"
+        return f"[Trofeo] INCREIBLE! Has resuelto TODOS los {total_retos} retos. Eres un maestro del CTF!"
 
 
 def ver_retos_disponibles():
@@ -137,7 +156,7 @@ def ver_retos_disponibles():
     total = Reto.objects.filter(esta_oculto=False).count()
     
     if not retos:
-        return "📭 No hay retos disponibles aún. Vuelve más tarde."
+        return "[Carpeta] No hay retos disponibles aun. Vuelve mas tarde."
     
     # Clasificar por dificultad
     principiantes = Reto.objects.filter(esta_oculto=False, dificultad='PRINCIPIANTE').count()
@@ -146,48 +165,48 @@ def ver_retos_disponibles():
     
     lista = []
     for r in retos:
-        emoji = "🌱" if r.dificultad == 'PRINCIPIANTE' else "⚡" if r.dificultad == 'INTERMEDIO' else "🔥"
+        emoji = "[H] " if r.dificultad == 'PRINCIPIANTE' else "[R] " if r.dificultad == 'INTERMEDIO' else "[F] "
         lista.append(f"{emoji} {r.titulo} ({r.puntos} pts)")
     
-    return f"""🏁 **Retos disponibles:**
+    return f"""[Bandera] Retos disponibles:
 
 {chr(10).join(lista)}
 
-📊 **Distribución:**
-• 🌱 Principiantes: {principiantes}
-• ⚡ Intermedios: {intermedios}
-• 🔥 Avanzados: {avanzados}
+[Grafico] Distribucion:
+- [H] Principiantes: {principiantes}
+- [R] Intermedios: {intermedios}
+- [F] Avanzados: {avanzados}
 
-💡 Hay {total} retos en total. ¡Empieza con los Principiante!"""
+[Info] Hay {total} retos en total. Empieza con los Principiante!"""
 
 
 def total_retos():
     total = Reto.objects.filter(esta_oculto=False).count()
-    return f"📊 Hay **{total} retos** en total en CyberQuest.\n\n💡 ¿Quieres saber cuántos has resuelto? Pregúntame 'mis retos'."
+    return f"[Grafico] Hay {total} retos en total en CyberQuest.\n\n[Info] Quieres saber cuantos has resuelto? Preguntame 'mis retos'."
 
 
 def ver_equipo(usuario):
     equipo = usuario.equipos.first() or usuario.equipos_liderados.first()
     
     if not equipo:
-        return """⚠️ **No estás en ningún equipo.**
+        return """[Advertencia] No estas en ningun equipo.
 
 Puedes:
-• 🔨 **Crear un nuevo equipo** - Ve a la sección Equipos
-• 🔑 **Unirte con código** - Pídele el código al líder
+- [Martillo] Crear un nuevo equipo - Ve a la seccion Equipos
+- [Llave] Unirte con codigo - Pidele el codigo al lider
 
-💡 Los equipos suman puntos y pueden participar juntos en eventos CTF."""
+[Info] Los equipos suman puntos y pueden participar juntos en eventos CTF."""
     
     miembros = [equipo.lider.username] + [m.username for m in equipo.miembros.all()]
     
-    return f"""👥 **Tu equipo: {equipo.nombre}**
+    return f"""[Usuarios] Tu equipo: {equipo.nombre}
 
-• 👑 Líder: {equipo.lider.username}
-• 👤 Miembros: {', '.join(miembros)}
-• 📊 Puntos del equipo: {equipo.puntos}
-• 👥 Total: {equipo.cantidad_miembros()} integrantes
+- [Corona] Lider: {equipo.lider.username}
+- [Usuario] Miembros: {', '.join(miembros)}
+- [Grafico] Puntos del equipo: {equipo.puntos}
+- [Usuarios] Total: {equipo.cantidad_miembros()} integrantes
 
-💡 Comparte el código de invitación: `{equipo.codigo_invitacion}`"""
+[Info] Comparte el codigo de invitacion: {equipo.codigo_invitacion}"""
 
 
 def ver_eventos():
@@ -200,14 +219,14 @@ def ver_eventos():
         for e in activos:
             tiempo = e.fecha_fin - ahora
             horas = int(tiempo.total_seconds() / 3600)
-            lista.append(f"• {e.nombre} - Termina en {horas} horas")
-        return f"""🎯 **Eventos CTF activos:**
+            lista.append(f"- {e.nombre} - Termina en {horas} horas")
+        return f"""[Diana] Eventos CTF activos:
 
 {chr(10).join(lista)}
 
-🔥 ¡Inscríbete y participa para ganar puntos extra!"""
+[Fuego] Inscribete y participa para ganar puntos extra!"""
     
-    # Próximos eventos
+    # Proximos eventos
     proximos = Evento.objects.filter(fecha_inicio__gt=ahora).order_by('fecha_inicio')[:3]
     if proximos:
         lista = []
@@ -216,83 +235,83 @@ def ver_eventos():
             horas = int(tiempo.total_seconds() / 3600)
             dias = int(horas / 24)
             if dias > 0:
-                lista.append(f"• {e.nombre} - Comienza en {dias} días")
+                lista.append(f"- {e.nombre} - Comienza en {dias} dias")
             else:
-                lista.append(f"• {e.nombre} - Comienza en {horas} horas")
-        return f"""⏰ **Próximos eventos CTF:**
+                lista.append(f"- {e.nombre} - Comienza en {horas} horas")
+        return f"""[Reloj] Proximos eventos CTF:
 
 {chr(10).join(lista)}
 
-📅 ¡Prepárate para competir!"""
+[Calendario] Preparate para competir!"""
     
-    return "🎯 No hay eventos activos ni próximos en este momento. ¡Pronto habrá más competencias!"
+    return "[Diana] No hay eventos activos ni proximos en este momento. Pronto habra mas competencias!"
 
 
 def ver_cursos():
     modulos = Modulo.objects.filter(esta_publicado=True)
     
     if not modulos:
-        return "📚 Pronto habrá cursos disponibles. ¡Mantente atento a las novedades!"
+        return "[Libro] Pronto habra cursos disponibles. Mantente atento a las novedades!"
     
     lista = []
     for m in modulos[:5]:
         lecciones_count = m.lecciones.count()
-        lista.append(f"• {m.titulo} ({lecciones_count} lecciones)")
+        lista.append(f"- {m.titulo} ({lecciones_count} lecciones)")
     
-    resultado = f"📚 **Cursos disponibles:**\n\n{chr(10).join(lista)}"
+    resultado = f"[Libro] Cursos disponibles:\n\n{chr(10).join(lista)}"
     
     if modulos.count() > 5:
-        resultado += f"\n\n... y {modulos.count() - 5} cursos más."
+        resultado += f"\n\n... y {modulos.count() - 5} cursos mas."
     
-    resultado += "\n\n💡 Ve a 'Mis Cursos' para comenzar a aprender."
+    resultado += "\n\n[Info] Ve a 'Mis Cursos' para comenzar a aprender."
     return resultado
 
 
 def mostrar_ayuda():
-    return """🤖 **COMANDOS QUE ENTIENDO:**
+    return """[Ayuda] COMANDOS QUE ENTIENDO:
 
-📊 **PROGRESO PERSONAL:**
-• "mis puntos" - Ver tus puntos
-• "mi posición" - Ver tu lugar en el ranking
-• "mis retos" - Ver cuántos retos has resuelto
+[Grafico] PROGRESO PERSONAL:
+- "mis puntos" - Ver tus puntos
+- "mi posicion" - Ver tu lugar en el ranking
+- "mis retos" - Ver cuantos retos has resuelto
 
-🏆 **RETOS:**
-• "qué retos hay" - Ver retos disponibles
-• "total retos" - Ver cuántos retos hay en total
+[Bandera] RETOS:
+- "que retos hay" - Ver retos disponibles
+- "total retos" - Ver cuantos retos hay en total
 
-👥 **EQUIPOS:**
-• "mi equipo" - Información de tu equipo
+[Usuarios] EQUIPOS:
+- "mi equipo" - Informacion de tu equipo
 
-🎯 **EVENTOS:**
-• "eventos activos" - Ver eventos CTF actuales
+[Diana] EVENTOS:
+- "eventos activos" - Ver eventos CTF actuales
 
-📚 **CURSOS:**
-• "qué cursos hay" - Ver cursos disponibles
+[Libro] CURSOS:
+- "que cursos hay" - Ver cursos disponibles
 
-💬 **EJEMPLOS:**
-• "¿Cuántos puntos tengo?"
-• "¿En qué posición estoy?"
-• "¿Cuántos retos he resuelto?"
-• "Muéstrame los retos disponibles"
+[Hablar] EJEMPLOS:
+- "Cuantos puntos tengo?"
+- "En que posicion estoy?"
+- "Cuantos retos he resuelto?"
+- "Muestrame los retos disponibles"
 
-💡 ¡Pregúntame de forma natural! No necesitas palabras exactas."""
+[Info] Preguntame de forma natural! No necesitas palabras exactas."""
 
 
 def respuesta_no_entendida(pregunta):
-    return f"""🤔 No entendí: "{pregunta}"
+    return f"""[Interrogacion] No entendi: "{pregunta}"
 
-**Preguntas que SÍ entiendo:**
-• "hola" - Saludar
-• "mis puntos" - Ver tus puntos
-• "mi posición" - Ver tu ranking
-• "mis retos" - Ver retos resueltos
-• "qué retos hay" - Ver retos disponibles
-• "total retos" - Total de retos
-• "mi equipo" - Info de tu equipo
-• "eventos activos" - Eventos CTF
-• "qué cursos hay" - Cursos disponibles
-• "ayuda" - Ver todos los comandos
+[Info] Preguntas que SI entiendo:
+- "hola" - Saludar
+- "mis puntos" - Ver tus puntos
+- "mi posicion" - Ver tu ranking
+- "mis retos" - Ver retos resueltos
+- "que retos hay" - Ver retos disponibles
+- "total retos" - Total de retos
+- "mi equipo" - Info de tu equipo
+- "eventos activos" - Eventos CTF
+- "que cursos hay" - Cursos disponibles
+- "ayuda" - Ver todos los comandos
 
-💡 **Ejemplo:** "¿Cuántos puntos tengo?" o "¿En qué posición estoy?"
+[Ejemplo] "Cuantos puntos tengo?" o "En que posicion estoy?"
 
-¿Podrías reformular tu pregunta?"""
+Puedes reformular tu pregunta?"""

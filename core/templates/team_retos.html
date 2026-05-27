@@ -9,260 +9,327 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'principal.css' %}">
     <style>
-        .reto-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border-dark);
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            transition: all 0.2s ease;
+        :root {
+            --primary: #E10600;
+            --primary-hover: #FF2A2A;
+            --primary-light: rgba(225, 6, 0, 0.15);
+            --primary-dark: #8B0000;
+            --bg-primary: #0F0F12;
+            --bg-secondary: #16161C;
+            --bg-card: #1a1a24;
+            --bg-dark: #0a0a0f;
+            --text-primary: #F5F5F5;
+            --text-secondary: #B3B3B3;
+            --text-muted: #6c6c7a;
+            --border-dark: #8B0000;
+            --radius-sm: 4px;
+            --radius: 8px;
+            --radius-lg: 16px;
+            --shadow: 0 0 10px rgba(225, 6, 0, 0.3);
+            --shadow-green: 0 0 10px rgba(0, 170, 0, 0.3);
+            --shadow-red: 0 0 10px rgba(225, 6, 0, 0.4);
         }
-        .reto-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-3px);
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .reto-card.resuelto {
-            border-color: #00aa00;
-            background: rgba(0, 170, 0, 0.05);
-        }
-        .reto-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid var(--border-dark);
-        }
-        .reto-titulo {
-            font-family: 'Orbitron', monospace;
-            font-size: 1.3rem;
-            color: var(--primary);
-        }
-        .reto-badges {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-        }
-        .badge {
-            padding: 0.3rem 0.8rem;
-            border-radius: var(--radius-sm);
-            font-size: 0.7rem;
-            font-weight: bold;
-        }
-        .badge-dificultad {
-            background: var(--bg-dark);
-            color: var(--text-secondary);
-        }
-        .badge-dificultad.PRINCIPIANTE { background: #00aa00; color: white; }
-        .badge-dificultad.INTERMEDIO { background: #ff8800; color: white; }
-        .badge-dificultad.AVANZADO { background: #ff0000; color: white; }
-        .badge-puntos {
-            background: var(--primary);
-            color: white;
-        }
-        .badge-resuelto {
-            background: #00aa00;
-            color: white;
-        }
-        .reto-descripcion {
-            color: var(--text-secondary);
-            margin-bottom: 1rem;
+
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             line-height: 1.6;
         }
-        .reto-pista {
-            background: var(--bg-secondary);
-            padding: 0.8rem;
-            border-radius: var(--radius);
-            margin-bottom: 1rem;
-            border-left: 3px solid var(--primary);
-            font-size: 0.9rem;
-        }
-        .reto-pista i {
-            color: var(--primary);
-            margin-right: 0.5rem;
-        }
-        .flag-form {
+
+        .app-container {
             display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
-            flex-wrap: wrap;
+            min-height: 100vh;
         }
-        .flag-input {
+
+        .main-content {
             flex: 1;
-            padding: 0.8rem;
-            background: var(--bg-dark);
-            border: 1px solid var(--border-dark);
-            border-radius: var(--radius);
-            color: var(--text-primary);
-            font-family: 'Share Tech Mono', monospace;
-            font-size: 0.9rem;
+            margin-left: 280px;
+            padding: 2rem;
         }
-        .flag-input:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-        .btn {
-            padding: 0.6rem 1.2rem;
-            border-radius: var(--radius);
-            font-weight: 600;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-family: 'Orbitron', monospace;
-            font-size: 0.7rem;
-            transition: all 0.2s;
-            cursor: pointer;
-            border: none;
-        }
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        .btn-primary:hover {
-            background: var(--primary-hover);
-            transform: translateY(-2px);
-        }
-        .btn-success {
-            background: #00aa00;
-            color: white;
-        }
-        .btn-success:hover {
-            background: #00cc00;
-        }
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-        }
-        .btn-outline:hover {
-            background: var(--primary-light);
-        }
-        .btn-docker {
-            background: #2496ed;
-            color: white;
-        }
-        .btn-docker:hover {
-            background: #1a7bc9;
-        }
+
         .top-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             flex-wrap: wrap;
             gap: 1rem;
         }
+
         .page-title {
             font-family: 'Orbitron', monospace;
-            font-size: 1.3rem;
+            font-size: 1.6rem;
             color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
         }
-        .filtros-bar {
+
+        .page-title i {
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1.3rem;
+            border-radius: 40px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #E10600, #FF2A2A);
+            color: white;
+            box-shadow: var(--shadow-red);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(225, 6, 0, 0.6);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #E10600;
+            color: #E10600;
+        }
+
+        .btn-outline:hover {
+            background: rgba(225, 6, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .stats-resumen {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .resumen-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 1.2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .resumen-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), transparent);
+        }
+
+        .resumen-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary);
+            box-shadow: var(--shadow);
+        }
+
+        .resumen-number {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+        }
+
+        .resumen-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .filtros-section {
+            background: var(--bg-secondary);
+            border-radius: var(--radius-lg);
+            padding: 1.2rem;
+            margin-bottom: 2rem;
+        }
+
+        .filter-group {
             display: flex;
             gap: 1rem;
-            margin-bottom: 2rem;
             flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
         }
-        .search-box {
-            flex: 1;
-            max-width: 300px;
-        }
-        .search-box input {
-            width: 100%;
-            padding: 0.6rem;
-            background: var(--bg-dark);
-            border: 1px solid var(--border-dark);
-            border-radius: var(--radius);
-            color: var(--text-primary);
-        }
-        .filtros {
+
+        .filter-controls {
             display: flex;
-            gap: 0.5rem;
+            gap: 0.8rem;
             flex-wrap: wrap;
+            align-items: center;
         }
-        .filtro-btn {
-            padding: 0.4rem 1rem;
+
+        .form-control {
+            padding: 0.6rem 1rem;
             background: var(--bg-dark);
             border: 1px solid var(--border-dark);
-            border-radius: var(--radius-sm);
-            color: var(--text-secondary);
+            border-radius: 40px;
+            color: var(--text-primary);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.8rem;
             cursor: pointer;
-            font-size: 0.7rem;
-            transition: all 0.2s;
         }
-        .filtro-btn.active {
-            background: var(--primary);
-            color: white;
+
+        .form-control:focus {
+            outline: none;
             border-color: var(--primary);
         }
-        .stats-equipo {
+
+        .challenges-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
         }
-        .stat-card {
+
+        .challenge-card {
             background: var(--bg-card);
             border: 1px solid var(--border-dark);
-            border-radius: var(--radius);
-            padding: 1rem;
-            text-align: center;
+            border-radius: var(--radius-lg);
+            padding: 1.3rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
         }
-        .stat-number {
-            font-family: 'Orbitron', monospace;
-            font-size: 1.5rem;
-            font-weight: 700;
+
+        .challenge-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--primary);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .challenge-card.resuelto {
+            background: linear-gradient(135deg, var(--bg-card) 0%, rgba(0, 170, 0, 0.08) 100%);
+            border-color: #00aa00;
+        }
+
+        .badge-resuelto {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: linear-gradient(135deg, #00aa00, #00cc00);
+            color: white;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.6rem;
+            font-weight: bold;
+        }
+
+        .challenge-icon {
+            font-size: 2.2rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .challenge-icon.resuelto-icon {
+            color: #00aa00;
+        }
+
+        .challenge-icon.no-resuelto {
             color: var(--primary);
         }
-        .stat-label {
+
+        .challenge-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+
+        .challenge-category {
             font-size: 0.7rem;
             color: var(--text-muted);
+            margin-bottom: 0.5rem;
         }
+
+        .challenge-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0.8rem 0;
+            padding: 0.5rem 0;
+            border-top: 1px solid rgba(225, 6, 0, 0.15);
+            border-bottom: 1px solid rgba(225, 6, 0, 0.15);
+        }
+
+        .difficulty-easy { color: #00ff00; }
+        .difficulty-medium { color: #ffaa00; }
+        .difficulty-hard { color: #ff0000; }
+
+        .points {
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
         .empty-state {
             text-align: center;
             padding: 3rem;
             background: var(--bg-card);
             border-radius: var(--radius-lg);
+            border: 1px solid var(--border-dark);
+            grid-column: 1 / -1;
         }
-        .mensaje-flotante {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #00aa00;
-            color: white;
-            padding: 1rem;
-            border-radius: var(--radius);
-            z-index: 1000;
-            animation: fadeOut 3s ease forwards;
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
         }
-        .mensaje-flotante.error {
-            background: #ff0000;
+
+        @media (max-width: 1024px) {
+            .stats-resumen {
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
-        @keyframes fadeOut {
-            0% { opacity: 1; transform: translateY(0); }
-            70% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-20px); visibility: hidden; }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 80px;
+                padding: 1rem;
+            }
+            .challenges-grid {
+                grid-template-columns: 1fr;
+            }
         }
-        .entorno-info {
-            margin-top: 1rem;
-            padding: 0.8rem;
-            background: var(--bg-secondary);
-            border-radius: var(--radius);
-            border: 1px solid var(--primary);
+
+        ::-webkit-scrollbar {
+            width: 6px;
         }
-        .entorno-url {
-            font-family: monospace;
-            color: var(--primary);
-            word-break: break-all;
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
         }
-        .btn-sm {
-            padding: 0.3rem 0.8rem;
-            font-size: 0.6rem;
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 4px;
         }
     </style>
 </head>
@@ -278,126 +345,95 @@
                 <i class="fas fa-flag-checkered"></i> Retos del Equipo: {{ equipo.nombre }}
             </h1>
             <a href="{% url 'listar_equipos' %}" class="btn btn-outline">
-                <i class="fas fa-arrow-left"></i> Volver a Equipos
+                <i class="fas fa-arrow-left"></i> Volver
             </a>
         </div>
 
-        <!-- Estadísticas del equipo -->
-        <div class="stats-equipo">
-            <div class="stat-card">
-                <div class="stat-number">{{ equipo.nombre }}</div>
-                <div class="stat-label">Equipo</div>
+        <div class="stats-resumen">
+            <div class="resumen-card">
+                <div class="resumen-number">{{ retos|length }}</div>
+                <div class="resumen-label">Total Retos</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ retos_resueltos_count }}</div>
-                <div class="stat-label">Retos Resueltos</div>
+            <div class="resumen-card">
+                <div class="resumen-number" style="color: #00aa00;">{{ retos_resueltos_count|default:"0" }}</div>
+                <div class="resumen-label">Retos Resueltos</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ equipo.puntos }}</div>
-                <div class="stat-label">Puntos Totales</div>
+            <div class="resumen-card">
+                <div class="resumen-number" style="color: #ffaa00;">{{ retos|length|add:retos_resueltos_count|add:"-"|cut:"-" }}</div>
+                <div class="resumen-label">Retos Pendientes</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-number">{{ equipo.cantidad_miembros }}</div>
-                <div class="stat-label">Miembros</div>
-            </div>
-        </div>
-
-        <!-- Filtros -->
-        <div class="filtros-bar">
-            <div class="search-box">
-                <input type="text" id="buscarReto" placeholder="🔍 Buscar reto por nombre..." onkeyup="filtrarRetos()">
-            </div>
-            <div class="filtros">
-                <button class="filtro-btn active" data-dificultad="todos" onclick="filtrarPorDificultad('todos')">Todos</button>
-                <button class="filtro-btn" data-dificultad="PRINCIPIANTE" onclick="filtrarPorDificultad('PRINCIPIANTE')">🌱 Principiante</button>
-                <button class="filtro-btn" data-dificultad="INTERMEDIO" onclick="filtrarPorDificultad('INTERMEDIO')">⚡ Intermedio</button>
-                <button class="filtro-btn" data-dificultad="AVANZADO" onclick="filtrarPorDificultad('AVANZADO')">🔥 Avanzado</button>
-            </div>
-        </div>
-
-        <!-- Lista de retos -->
-        <div id="listaRetos">
-            {% for reto in retos %}
-            <div class="reto-card {% if reto.id in retos_resueltos_ids %}resuelto{% endif %}" 
-                 data-titulo="{{ reto.titulo|lower }}" 
-                 data-dificultad="{{ reto.dificultad }}">
-                
-                <div class="reto-header">
-                    <span class="reto-titulo">
-                        <i class="fas fa-flag"></i> {{ reto.titulo }}
-                    </span>
-                    <div class="reto-badges">
-                        <span class="badge badge-dificultad {{ reto.dificultad }}">
-                            {% if reto.dificultad == 'PRINCIPIANTE' %}🌱 Principiante
-                            {% elif reto.dificultad == 'INTERMEDIO' %}⚡ Intermedio
-                            {% else %}🔥 Avanzado{% endif %}
-                        </span>
-                        <span class="badge badge-puntos">
-                            <i class="fas fa-star"></i> {{ reto.puntos }} pts
-                        </span>
-                        {% if reto.id in retos_resueltos_ids %}
-                        <span class="badge badge-resuelto">
-                            <i class="fas fa-check-circle"></i> Resuelto
-                        </span>
-                        {% endif %}
-                        {% if reto.tiene_docker %}
-                        <span class="badge" style="background: #2496ed;">
-                            <i class="fab fa-docker"></i> Docker
-                        </span>
-                        {% endif %}
-                    </div>
-                </div>
-                
-                <div class="reto-descripcion">
-                    {{ reto.descripcion|linebreaks }}
-                </div>
-                
-                {% if reto.pista %}
-                <div class="reto-pista">
-                    <i class="fas fa-lightbulb"></i>
-                    <strong>Pista:</strong> {{ reto.pista }}
-                </div>
-                {% endif %}
-                
-                <!-- Botón para entorno Docker -->
-                {% if reto.tiene_docker %}
-                <div class="entorno-info" id="entorno-{{ reto.id }}">
-                    {% if reto.entorno_activo and reto.entorno_activo.estado == 'EJECUTANDO' %}
-                        <p><i class="fas fa-play-circle" style="color: #00aa00;"></i> <strong>Entorno activo:</strong></p>
-                        <p class="entorno-url"><i class="fas fa-link"></i> URL: <a href="{{ reto.entorno_activo.configuracion_vpn }}" target="_blank">{{ reto.entorno_activo.configuracion_vpn }}</a></p>
-                        <a href="{% url 'detener_entorno' reto.entorno_activo.id %}" class="btn btn-outline btn-sm" onclick="return confirm('¿Detener el entorno?')">
-                            <i class="fas fa-stop"></i> Detener Entorno
-                        </a>
+            <div class="resumen-card">
+                <div class="resumen-number">
+                    {% if retos|length > 0 %}
+                        {% widthratio retos_resueltos_count retos|length 100 %}%
                     {% else %}
-                        <a href="{% url 'iniciar_entorno' reto.id %}" class="btn btn-docker btn-sm">
-                            <i class="fab fa-docker"></i> Iniciar Entorno Docker
-                        </a>
+                        0%
                     {% endif %}
                 </div>
+                <div class="resumen-label">Progreso</div>
+            </div>
+        </div>
+
+        <div class="filtros-section">
+            <div class="filter-group">
+                <div class="filter-controls">
+                    <select id="filtroDificultad" class="form-control">
+                        <option value="todos">Todas las dificultades</option>
+                        <option value="PRINCIPIANTE">Principiante</option>
+                        <option value="INTERMEDIO">Intermedio</option>
+                        <option value="AVANZADO">Avanzado</option>
+                    </select>
+                    <select id="filtroEstado" class="form-control">
+                        <option value="todos">Todos los estados</option>
+                        <option value="resuelto">Resueltos</option>
+                        <option value="pendiente">Pendientes</option>
+                    </select>
+                </div>
+                <div class="filter-controls">
+                    <input type="text" id="buscarReto" class="form-control" placeholder="Buscar reto..." style="min-width: 200px;">
+                    <button class="btn btn-primary btn-sm" onclick="aplicarFiltros()">Filtrar</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="challenges-grid" id="listaRetos">
+            {% for reto in retos %}
+            <div class="challenge-card {% if reto.id in retos_resueltos_ids %}resuelto{% endif %}"
+                 data-titulo="{{ reto.titulo|lower }}"
+                 data-dificultad="{{ reto.dificultad }}"
+                 data-resuelto="{% if reto.id in retos_resueltos_ids %}true{% else %}false{% endif %}"
+                 onclick="verDetalle({{ reto.id }})">
+                
+                {% if reto.id in retos_resueltos_ids %}
+                <span class="badge-resuelto">
+                    <i class="fas fa-check-circle"></i> Resuelto
+                </span>
                 {% endif %}
                 
-                <!-- Formulario para enviar bandera -->
-                {% if reto.id not in retos_resueltos_ids %}
-                <form method="POST" action="{% url 'enviar_bandera_equipo' equipo.id %}" class="flag-form" onsubmit="return enviarBandera(event, this, {{ reto.id }})">
-                    {% csrf_token %}
-                    <input type="hidden" name="reto_id" value="{{ reto.id }}">
-                    <input type="text" name="bandera" class="flag-input" placeholder="Ingresa la bandera (flag)..." required>
-                    <button type="submit" class="btn btn-success">
-                        <i class="fas fa-paper-plane"></i> Enviar Bandera
-                    </button>
-                </form>
-                {% else %}
-                <div style="margin-top: 1rem; text-align: center; padding: 0.5rem; background: rgba(0, 170, 0, 0.1); border-radius: var(--radius);">
-                    <i class="fas fa-trophy" style="color: #00aa00;"></i> 
-                    <span style="color: #00aa00;">¡Este reto ya fue superado por el equipo!</span>
+                <div class="challenge-icon {% if reto.id in retos_resueltos_ids %}resuelto-icon{% else %}no-resuelto{% endif %}">
+                    <i class="fas fa-flag"></i>
                 </div>
-                {% endif %}
+                
+                <div class="challenge-title">{{ reto.titulo }}</div>
+                <div class="challenge-category">{{ reto.categoria.nombre }}</div>
+                
+                <div class="challenge-meta">
+                    <span class="difficulty 
+                        {% if reto.dificultad == 'PRINCIPIANTE' %}difficulty-easy
+                        {% elif reto.dificultad == 'INTERMEDIO' %}difficulty-medium
+                        {% else %}difficulty-hard{% endif %}">
+                        {% if reto.dificultad == 'PRINCIPIANTE' %}Principiante
+                        {% elif reto.dificultad == 'INTERMEDIO' %}Intermedio
+                        {% else %}Avanzado{% endif %}
+                    </span>
+                    <span class="points"><i class="fas fa-star"></i> {{ reto.puntos }} pts</span>
+                </div>
             </div>
             {% empty %}
             <div class="empty-state">
-                <i class="fas fa-flag" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                <i class="fas fa-inbox"></i>
                 <h3>No hay retos disponibles</h3>
-                <p>Pronto se agregarán nuevos retos para tu equipo</p>
+                <p>Pronto se agregarán nuevos retos para tu equipo.</p>
             </div>
             {% endfor %}
         </div>
@@ -405,109 +441,36 @@
 </div>
 
 <script>
-    let dificultadActual = 'todos';
-    
-    function filtrarRetos() {
+    function aplicarFiltros() {
+        const dificultad = document.getElementById('filtroDificultad').value;
+        const estado = document.getElementById('filtroEstado').value;
         const busqueda = document.getElementById('buscarReto').value.toLowerCase();
-        const retos = document.querySelectorAll('.reto-card');
+        
+        const retos = document.querySelectorAll('.challenge-card');
         
         retos.forEach(reto => {
             const titulo = reto.getAttribute('data-titulo');
-            const dificultad = reto.getAttribute('data-dificultad');
+            const dificultadReto = reto.getAttribute('data-dificultad');
+            const resuelto = reto.getAttribute('data-resuelto') === 'true';
             
-            const coincideBusqueda = titulo.includes(busqueda);
-            const coincideDificultad = dificultadActual === 'todos' || dificultad === dificultadActual;
+            let mostrar = true;
             
-            if (coincideBusqueda && coincideDificultad) {
-                reto.style.display = 'block';
-            } else {
-                reto.style.display = 'none';
-            }
+            if (dificultad !== 'todos' && dificultadReto !== dificultad) mostrar = false;
+            if (estado === 'resuelto' && !resuelto) mostrar = false;
+            if (estado === 'pendiente' && resuelto) mostrar = false;
+            if (busqueda && !titulo.includes(busqueda)) mostrar = false;
+            
+            reto.style.display = mostrar ? 'block' : 'none';
         });
     }
     
-    function filtrarPorDificultad(dificultad) {
-        dificultadActual = dificultad;
-        
-        document.querySelectorAll('.filtro-btn').forEach(btn => {
-            btn.classList.remove('active');
-            if (btn.getAttribute('data-dificultad') === dificultad) {
-                btn.classList.add('active');
-            }
-        });
-        
-        filtrarRetos();
+    function verDetalle(retoId) {
+        window.location.href = `/equipo/reto/${retoId}/`;
     }
     
-    async function enviarBandera(event, form, retoId) {
-        event.preventDefault();
-        
-        // Mostrar mensaje de carga
-        const btn = form.querySelector('button[type="submit"]');
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-        btn.disabled = true;
-        
-        const formData = new FormData(form);
-        
-        try {
-            const response = await fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                mostrarMensaje(data.message, 'success');
-                setTimeout(() => {
-                    location.reload();
-                }, 1500);
-            } else {
-                mostrarMensaje(data.message, 'error');
-                form.querySelector('.flag-input').value = '';
-                form.querySelector('.flag-input').focus();
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            mostrarMensaje('Error al conectar con el servidor: ' + error.message, 'error');
-        } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-        }
-        
-        return false;
-    }
-    
-    function mostrarMensaje(mensaje, tipo) {
-        // Eliminar mensajes anteriores
-        const existingMessages = document.querySelectorAll('.mensaje-flotante');
-        existingMessages.forEach(msg => msg.remove());
-        
-        const div = document.createElement('div');
-        div.className = `mensaje-flotante ${tipo === 'error' ? 'error' : ''}`;
-        div.innerHTML = `<i class="fas ${tipo === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${mensaje}`;
-        document.body.appendChild(div);
-        
-        setTimeout(() => {
-            if (div && div.remove) {
-                div.remove();
-            }
-        }, 3000);
-    }
-    
-    // Inicializar búsqueda al cargar
-    document.addEventListener('DOMContentLoaded', function() {
-        // Asegurar que todos los retos sean visibles inicialmente
-        filtrarRetos();
-    });
+    document.getElementById('filtroDificultad').addEventListener('change', aplicarFiltros);
+    document.getElementById('filtroEstado').addEventListener('change', aplicarFiltros);
+    document.getElementById('buscarReto').addEventListener('keyup', aplicarFiltros);
 </script>
 
 </body>

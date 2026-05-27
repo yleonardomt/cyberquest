@@ -25,7 +25,6 @@
             --radius-lg: 16px;
             --shadow-red: 0 0 10px rgba(225, 6, 0, 0.3);
             --shadow-green: 0 0 10px rgba(0, 170, 0, 0.3);
-            --shadow-blue: 0 0 10px rgba(0, 100, 255, 0.3);
         }
 
         * {
@@ -270,18 +269,6 @@
             box-shadow: 0 0 10px rgba(225, 6, 0, 0.3);
         }
 
-        .btn-success {
-            background: linear-gradient(135deg, #00aa00, #00ff00);
-            color: #000;
-            font-weight: bold;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
-        }
-
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
-        }
-
         .btn-warning {
             background: linear-gradient(135deg, #ff6600, #ffaa00);
             color: white;
@@ -313,22 +300,6 @@
             justify-content: center;
         }
 
-        /* ========== CERTIFICADO ========== */
-        .certificado-section {
-            margin-top: 2rem;
-            padding: 1.5rem;
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
-            border: 1px dashed #ffd700;
-            border-radius: var(--radius-lg);
-            text-align: center;
-        }
-
-        .certificado-section i {
-            font-size: 2rem;
-            color: #ffd700;
-            margin-bottom: 0.5rem;
-        }
-
         /* ========== ALERTAS ========== */
         .alert {
             padding: 0.8rem;
@@ -347,6 +318,48 @@
             background: rgba(255, 136, 0, 0.1);
             border-left: 4px solid #ff8800;
             color: #ff8800;
+        }
+
+        /* Mensaje flotante */
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #00aa00;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease, fadeOut 3s ease 2.7s forwards;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border-left: 4px solid white;
+        }
+
+        .toast-message.error {
+            background: #cc0000;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
         }
 
         @media (max-width: 768px) {
@@ -383,11 +396,13 @@
     {% include 'nav.html' %}
     
     <main class="main-content">
+        
+        <!-- Mensajes flotantes -->
         {% if messages %}
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-triangle{% endif %}"></i>
-                {{ message }}
+            <div class="toast-message {% if message.tags == 'error' %}error{% endif %}">
+                <i class="fas {% if message.tags == 'error' %}fa-exclamation-triangle{% elif message.tags == 'success' %}fa-check-circle{% else %}fa-info-circle{% endif %}"></i>
+                <span>{{ message }}</span>
             </div>
             {% endfor %}
         {% endif %}
@@ -464,11 +479,6 @@
         
         <!-- Botones de acción -->
         <div class="btn-group">
-            {% if modulo_completado %}
-            <a href="{% url 'certificado' modulo.id %}" class="btn btn-success">
-                <i class="fas fa-certificate"></i> Descargar certificado
-            </a>
-            {% endif %}
             <a href="{% url 'listar_modulos' %}" class="btn btn-volver">
                 <i class="fas fa-arrow-left"></i> Volver a módulos
             </a>
@@ -478,22 +488,20 @@
             </a>
             {% endif %}
         </div>
-
-        <!-- Sección de certificado si está completado -->
-        {% if modulo_completado %}
-        <div class="certificado-section">
-            <i class="fas fa-certificate"></i>
-            <h4>¡Felicidades!</h4>
-            <p>Has completado exitosamente el módulo <strong>{{ modulo.titulo }}</strong></p>
-            <p style="font-size: 0.8rem; margin-top: 0.5rem;">Tu certificado está disponible para descargar.</p>
-        </div>
-        {% endif %}
     </main>
 </div>
 
 <script>
-    // Animación de la barra de progreso
+    // Auto-remover mensajes flotantes
     document.addEventListener('DOMContentLoaded', function() {
+        var messages = document.querySelectorAll('.toast-message');
+        messages.forEach(function(msg) {
+            setTimeout(function() {
+                if (msg && msg.remove) msg.remove();
+            }, 3000);
+        });
+        
+        // Animación de la barra de progreso
         const progressBar = document.querySelector('.progreso-fill');
         if (progressBar) {
             const width = progressBar.style.width;

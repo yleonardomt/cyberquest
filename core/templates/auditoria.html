@@ -26,6 +26,125 @@
         .app-container { display: flex; min-height: 100vh; }
         .main-content { flex: 1; margin-left: 280px; padding: 2rem; }
         
+        /* SIDEBAR COMPLETO DENTRO DEL MISMO ARCHIVO */
+        .sidebar {
+            width: 280px;
+            background: #0a0a0f;
+            border-right: 1px solid #E10600;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .sidebar-logo {
+            padding: 1.8rem;
+            border-bottom: 1px solid #E10600;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .sidebar-logo h2 {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #F5F5F5;
+            letter-spacing: 2px;
+        }
+        .sidebar-logo h2 span { color: #E10600; }
+        .sidebar-logo p {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.65rem;
+            color: #6c6c7a;
+            margin-top: 0.5rem;
+        }
+        .sidebar-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0 1.5rem 1.5rem 1.5rem;
+            border-bottom: 1px solid rgba(225, 6, 0, 0.2);
+            margin-bottom: 1.5rem;
+        }
+        .profile-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #E10600, #8B0000);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            overflow: hidden;
+        }
+        .profile-info h4 {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+            color: #F5F5F5;
+        }
+        .role-badge {
+            background: rgba(225, 6, 0, 0.15);
+            color: #E10600;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: 600;
+        }
+        .nav-menu { flex: 1; padding: 0 1rem; }
+        .nav-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #6c6c7a;
+            padding: 1rem 1rem 0.5rem 1rem;
+        }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.7rem 1rem;
+            margin-bottom: 0.35rem;
+            border-radius: 8px;
+            color: #B3B3B3;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+        }
+        .nav-item i { width: 24px; font-size: 1rem; }
+        .nav-item:hover {
+            background: rgba(225, 6, 0, 0.15);
+            color: #E10600;
+        }
+        .nav-item.active {
+            background: #E10600;
+            color: white;
+        }
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(225, 6, 0, 0.2);
+            margin-top: auto;
+        }
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #ff0000;
+            text-decoration: none;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            font-family: 'Share Tech Mono', monospace;
+        }
+        .logout-btn:hover {
+            background: rgba(255, 0, 0, 0.1);
+            color: #ff4444;
+        }
+        
         .top-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
         .page-title { font-family: 'Orbitron', monospace; font-size: 1.5rem; color: var(--text-primary); }
         
@@ -40,8 +159,11 @@
         .filter-select { background: var(--bg-secondary); border: 1px solid var(--border-dark); border-radius: var(--radius); padding: 0.5rem 1rem; color: var(--text-primary); font-family: 'Share Tech Mono', monospace; }
         .btn { padding: 0.5rem 1rem; border-radius: var(--radius); text-decoration: none; background: var(--primary); color: white; border: none; cursor: pointer; font-family: 'Orbitron', monospace; transition: all 0.2s ease; }
         .btn:hover { background: var(--primary); opacity: 0.9; transform: translateY(-1px); }
+        .btn-primary { background: var(--primary); color: white; }
         .btn-outline { background: transparent; border: 1px solid var(--primary); color: var(--primary); }
         .btn-outline:hover { background: var(--primary-light); }
+        .btn-sessions { background: #00aa00; color: white; }
+        .btn-sessions:hover { background: #00cc00; }
         
         .table-container { background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-lg); overflow-x: auto; }
         .audit-table { width: 100%; border-collapse: collapse; }
@@ -67,8 +189,15 @@
         
         @media (max-width: 768px) {
             .main-content { margin-left: 80px; padding: 1rem; }
+            .sidebar { width: 80px; }
+            .sidebar-logo h2, .sidebar-logo p, .profile-info, .nav-item span, .nav-title, .sidebar-footer span { display: none; }
+            .nav-item { justify-content: center; }
             .stats-grid { grid-template-columns: 1fr; }
         }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0a0a0f; }
+        ::-webkit-scrollbar-thumb { background: #E10600; border-radius: 4px; }
         
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -80,16 +209,86 @@
 <body>
 
 <div class="app-container">
-    {% include 'nav.html' %}
+    <!-- SIDEBAR COMPLETO -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <h2><span>CYBER</span>QUEST</h2>
+            <p>Security Training Platform</p>
+        </div>
+        <div class="sidebar-profile">
+            <div class="profile-avatar">
+                {% if perfil.avatar %}
+                <img src="{{ perfil.avatar.url }}" alt="Avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                <i class="fas fa-user"></i>
+                {% endif %}
+            </div>
+            <div class="profile-info">
+                <h4>{{ perfil.usuario.username }}</h4>
+                <span class="role-badge">
+                    {% if rol == 'ADMIN' %}
+                        <i class="fas fa-crown"></i> Admin
+                    {% elif rol == 'INSTRUCTOR' %}
+                        <i class="fas fa-chalkboard-user"></i> Instructor
+                    {% else %}
+                        <i class="fas fa-user-graduate"></i> Competidor
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        <div class="nav-menu">
+            <div class="nav-title">PRINCIPAL</div>
+            <a href="{% url 'dashboard' %}" class="nav-item"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a>
+            <a href="{% url 'listar_retos' %}" class="nav-item"><i class="fas fa-flag"></i><span>Retos</span></a>
+            <a href="{% url 'ranking_individual' %}" class="nav-item"><i class="fas fa-chart-line"></i><span>Rankings</span></a>
+            <a href="{% url 'listar_equipos' %}" class="nav-item"><i class="fas fa-users"></i><span>Equipos</span></a>
+            <a href="{% url 'consultar_asistente' %}" class="nav-item"><i class="fas fa-robot"></i><span>Asistente IA</span></a>
+            
+            {% if rol == 'ESTUDIANTE' or rol == 'INSTRUCTOR' %}
+            <div class="nav-title">APRENDIZAJE</div>
+            <a href="{% url 'listar_modulos' %}" class="nav-item"><i class="fas fa-book"></i><span>Mis Cursos</span></a>
+            <div class="nav-title">COMPETENCIAS</div>
+            <a href="{% url 'listar_eventos' %}" class="nav-item"><i class="fas fa-calendar-alt"></i><span>Eventos CTF</span></a>
+            {% endif %}
+            
+            {% if rol == 'INSTRUCTOR' or rol == 'ADMIN' %}
+            <div class="nav-title">GESTION</div>
+            <a href="{% url 'listar_retos' %}" class="nav-item"><i class="fas fa-edit"></i><span>Gestionar Retos</span></a>
+            <a href="{% url 'listar_modulos' %}" class="nav-item"><i class="fas fa-book-open"></i><span>Gestionar Cursos</span></a>
+            <a href="{% url 'listar_eventos' %}" class="nav-item"><i class="fas fa-calendar-plus"></i><span>Gestionar Eventos</span></a>
+            {% endif %}
+            
+            {% if rol == 'ADMIN' %}
+            <div class="nav-title">ADMINISTRACION</div>
+            <a href="{% url 'listar_usuarios' %}" class="nav-item"><i class="fas fa-user-shield"></i><span>Gestionar Usuarios</span></a>
+            <a href="{% url 'listar_equipos' %}" class="nav-item"><i class="fas fa-users-cog"></i><span>Gestionar Equipos</span></a>
+            <a href="{% url 'auditoria' %}" class="nav-item active"><i class="fas fa-chart-simple"></i><span>Auditoria</span></a>
+            <a href="{% url 'configuracion_ia' %}" class="nav-item"><i class="fas fa-robot"></i><span>Asistente IA</span></a>
+            <a href="{% url 'sesiones_activas' %}" class="nav-item"><i class="fas fa-clock"></i><span>Sesiones Activas</span></a>
+            {% endif %}
+            
+            <div class="nav-title">PERFIL</div>
+            <a href="{% url 'perfil_detalle' %}" class="nav-item"><i class="fas fa-user-circle"></i><span>Mi Perfil</span></a>
+        </div>
+        <div class="sidebar-footer">
+            <a href="{% url 'logout' %}" class="logout-btn"><i class="fas fa-sign-out-alt"></i><span>Cerrar Sesion</span></a>
+        </div>
+    </aside>
 
     <main class="main-content">
         <div class="top-header">
             <h1 class="page-title">
                 <i class="fas fa-chart-simple"></i> Auditoría del Sistema
             </h1>
-            <button onclick="window.location.reload()" class="btn btn-outline">
-                <i class="fas fa-sync-alt"></i> Actualizar
-            </button>
+            <div style="display: flex; gap: 1rem;">
+                <a href="{% url 'sesiones_activas' %}" class="btn btn-sessions">
+                    <i class="fas fa-clock"></i> Ver Sesiones Activas
+                </a>
+                <a href="{% url 'exportar_logs_pdf' %}{% if request.GET.tipo %}?tipo={{ request.GET.tipo }}{% endif %}{% if request.GET.usuario %}&usuario={{ request.GET.usuario }}{% endif %}" class="btn btn-primary">
+                    <i class="fas fa-file-pdf"></i> Exportar PDF
+                </a>
+              
+            </div>
         </div>
 
         <!-- Stats Cards -->
@@ -120,20 +319,20 @@
         <div class="filters">
             <form method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap;">
                 <select name="tipo" class="filter-select">
-                    <option value="">📋 Todos los tipos</option>
-                    <option value="INICIAR_SESION" {% if request.GET.tipo == 'INICIAR_SESION' %}selected{% endif %}>🔓 Inicio de Sesión</option>
-                    <option value="CERRAR_SESION" {% if request.GET.tipo == 'CERRAR_SESION' %}selected{% endif %}>🔒 Cierre de Sesión</option>
-                    <option value="CREAR" {% if request.GET.tipo == 'CREAR' %}selected{% endif %}>➕ Creaciones</option>
-                    <option value="EDITAR" {% if request.GET.tipo == 'EDITAR' %}selected{% endif %}>✏️ Ediciones</option>
-                    <option value="ELIMINAR" {% if request.GET.tipo == 'ELIMINAR' %}selected{% endif %}>🗑️ Eliminaciones</option>
-                    <option value="BLOQUEAR" {% if request.GET.tipo == 'BLOQUEAR' %}selected{% endif %}>🚫 Bloqueos</option>
-                    <option value="RESOLVER_RETO" {% if request.GET.tipo == 'RESOLVER_RETO' %}selected{% endif %}>🏆 Retos Resueltos</option>
-                    <option value="EQUIPO" {% if request.GET.tipo == 'EQUIPO' %}selected{% endif %}>👥 Equipos</option>
-                    <option value="ENTORNO" {% if request.GET.tipo == 'ENTORNO' %}selected{% endif %}>🐳 Docker</option>
+                    <option value="">Todos los tipos</option>
+                    <option value="INICIAR_SESION" {% if request.GET.tipo == 'INICIAR_SESION' %}selected{% endif %}>Inicio de Sesion</option>
+                    <option value="CERRAR_SESION" {% if request.GET.tipo == 'CERRAR_SESION' %}selected{% endif %}>Cierre de Sesion</option>
+                    <option value="CREAR" {% if request.GET.tipo == 'CREAR' %}selected{% endif %}>Creaciones</option>
+                    <option value="EDITAR" {% if request.GET.tipo == 'EDITAR' %}selected{% endif %}>Ediciones</option>
+                    <option value="ELIMINAR" {% if request.GET.tipo == 'ELIMINAR' %}selected{% endif %}>Eliminaciones</option>
+                    <option value="BLOQUEAR" {% if request.GET.tipo == 'BLOQUEAR' %}selected{% endif %}>Bloqueos</option>
+                    <option value="RESOLVER_RETO" {% if request.GET.tipo == 'RESOLVER_RETO' %}selected{% endif %}>Retos Resueltos</option>
+                    <option value="EQUIPO" {% if request.GET.tipo == 'EQUIPO' %}selected{% endif %}>Equipos</option>
+                    <option value="ENTORNO" {% if request.GET.tipo == 'ENTORNO' %}selected{% endif %}>Docker</option>
                 </select>
                 
                 <select name="usuario" class="filter-select">
-                    <option value="">👤 Todos los usuarios</option>
+                    <option value="">Todos los usuarios</option>
                     {% for u in usuarios_activos %}
                     <option value="{{ u.usuario__id }}" {% if request.GET.usuario == u.usuario__id|stringformat:"s" %}selected{% endif %}>
                         {{ u.usuario__username }} ({{ u.total }} acciones)
@@ -160,8 +359,8 @@
                     <tr>
                         <th><i class="fas fa-calendar"></i> Fecha y Hora</th>
                         <th><i class="fas fa-user"></i> Usuario</th>
-                        <th><i class="fas fa-cog"></i> Acción</th>
-                        <th><i class="fas fa-network-wired"></i> Dirección IP</th>
+                        <th><i class="fas fa-cog"></i> Accion</th>
+                        <th><i class="fas fa-network-wired"></i> Direccion IP</th>
                     </thead>
                 </thead>
                 <tbody>
@@ -213,9 +412,9 @@
                     <tr>
                         <td colspan="4" style="text-align: center; padding: 3rem;">
                             <i class="fas fa-chart-line fa-3x" style="color: var(--text-muted); margin-bottom: 1rem; display: block;"></i>
-                            <p>No hay registros de auditoría</p>
-                            <p style="font-size: 0.7rem; color: var(--text-muted);">Las acciones se registrarán automáticamente cuando los usuarios interactúen con el sistema</p>
-                        </td>
+                            <p>No hay registros de auditoria</p>
+                            <p style="font-size: 0.7rem; color: var(--text-muted);">Las acciones se registrarán automaticamente cuando los usuarios interactuen con el sistema</p>
+                        </a>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -227,7 +426,7 @@
             <div class="stat-card">
                 <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
                     <i class="fas fa-chart-bar" style="color: var(--primary);"></i> 
-                    Acciones más frecuentes
+                    Acciones mas frecuentes
                 </h3>
                 <div>
                     {% for accion in tipos_acciones %}
@@ -255,7 +454,7 @@
             <div class="stat-card">
                 <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
                     <i class="fas fa-users" style="color: var(--primary);"></i> 
-                    Usuarios más activos
+                    Usuarios mas activos
                 </h3>
                 <div>
                     {% for usuario in usuarios_activos %}

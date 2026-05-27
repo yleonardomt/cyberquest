@@ -1,0 +1,24 @@
+FROM ubuntu:22.04
+
+# Evita preguntas interactivas durante la instalación
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Actualizar e instalar Apache y PHP (esencial para un reto de SQLi)
+RUN apt update && apt install -y \
+    apache2 \
+    php \
+    libapache2-mod-php \
+    && rm -rf /var/lib/apt/lists/*
+
+# Crear el directorio de la web por si acaso
+RUN mkdir -p /var/www/html/
+
+# En lugar de COPY, creamos el archivo vulnerable directamente aquí
+RUN echo '<?php echo "<h2>Reto SQLi</h2>"; ?>' > /var/www/html/index.php
+
+# Eliminar el index.html por defecto de Apache para que cargue el .php
+RUN rm -f /var/www/html/index.html
+
+EXPOSE 80
+
+CMD ["apache2ctl", "-D", "FOREGROUND"]
