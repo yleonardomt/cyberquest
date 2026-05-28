@@ -210,18 +210,33 @@
                     <textarea name="descripcion" rows="4" class="form-control" placeholder="Describe el evento, las reglas y los objetivos..." required></textarea>
                 </div>
                 
-                <div class="row">
-                    <div class="col">
-                        <label><i class="fas fa-calendar-alt"></i> Fecha de Inicio</label>
-                        <input type="datetime-local" name="fecha_inicio" class="form-control" required 
-                               value="{% now 'Y-m-d\TH:i' %}">
-                    </div>
-                    <div class="col">
-                        <label><i class="fas fa-calendar-check"></i> Fecha de Fin</label>
-                        <input type="datetime-local" name="fecha_fin" class="form-control" required 
-                               value="{% now 'Y-m-d\TH:i' %}">
-                    </div>
-                </div>
+              <style>
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+</style>
+
+<div class="row">
+    <div class="col">
+        <label><i class="fas fa-calendar-alt"></i> Fecha de Inicio</label>
+        <input type="datetime-local" 
+               name="fecha_inicio" 
+               class="form-control" 
+               style="color: white; "
+               required 
+               value="{% now 'Y-m-d\TH:i' %}">
+    </div>
+
+    <div class="col">
+        <label><i class="fas fa-calendar-check"></i> Fecha de Fin</label>
+        <input type="datetime-local" 
+               name="fecha_fin" 
+               class="form-control" 
+               style="color: white; "
+               required 
+               value="{% now 'Y-m-d\TH:i' %}">
+    </div>
+</div>
                 
                 <div style="margin-bottom: 1rem;">
                     <label><i class="fas fa-gavel"></i> Reglas del Evento</label>

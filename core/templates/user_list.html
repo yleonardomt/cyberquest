@@ -122,6 +122,8 @@
             border-radius: var(--radius-sm);
             text-decoration: none;
             transition: all 0.2s;
+            cursor: pointer;
+            border: none;
         }
         .btn-icon.edit {
             background: var(--primary-light);
@@ -156,20 +158,82 @@
             color: var(--text-muted);
             margin-bottom: 1rem;
         }
-        .alert {
-            padding: 0.8rem;
-            border-radius: var(--radius);
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #00aa00;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease, fadeOut 3s ease 2.7s forwards;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border-left: 4px solid white;
+        }
+        .toast-message.error {
+            background: #cc0000;
+        }
+        .toast-message.warning {
+            background: #ff8800;
+        }
+        .toast-message i {
+            font-size: 1.2rem;
+        }
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+        .modal-confirm {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-confirm.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            max-width: 400px;
+            text-align: center;
+        }
+        .modal-content i {
+            font-size: 3rem;
+            color: var(--primary);
             margin-bottom: 1rem;
         }
-        .alert-success {
-            background: rgba(0, 255, 0, 0.1);
-            border: 1px solid #00ff00;
-            color: #00ff00;
-        }
-        .alert-error {
-            background: rgba(255, 0, 0, 0.1);
-            border: 1px solid #ff0000;
-            color: #ff6666;
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
         }
         .btn {
             padding: 0.5rem 1rem;
@@ -180,6 +244,9 @@
             gap: 0.5rem;
             font-family: 'Orbitron', monospace;
             font-size: 0.7rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
         }
         .btn-primary {
             background: var(--primary);
@@ -187,11 +254,24 @@
         }
         .btn-primary:hover {
             background: var(--primary-hover);
+            transform: translateY(-2px);
         }
         .btn-outline {
             background: transparent;
             border: 1px solid var(--primary);
             color: var(--primary);
+        }
+        .btn-outline:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        .btn-danger {
+            background: #aa0000;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #cc0000;
+            transform: translateY(-2px);
         }
         .top-header {
             display: flex;
@@ -205,6 +285,12 @@
             font-family: 'Orbitron', monospace;
             font-size: 1.3rem;
             color: var(--text-primary);
+        }
+        .activity-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-dark);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
         }
     </style>
 </head>
@@ -224,11 +310,12 @@
             </a>
         </div>
 
+        <!-- Mensajes tipo toast -->
         {% if messages %}
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-circle{% endif %}"></i>
-                {{ message }}
+            <div class="toast-message {% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% endif %}">
+                <i class="fas {% if message.tags == 'error' %}fa-exclamation-triangle{% elif message.tags == 'success' %}fa-check-circle{% elif message.tags == 'warning' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+                <span>{{ message }}</span>
             </div>
             {% endfor %}
         {% endif %}
@@ -273,7 +360,7 @@
                                     </div>
                                     <strong>{{ p.usuario.username }}</strong>
                                     {% if p.usuario == request.user %}
-                                    <span class="badge-actual">(Tú)</span>
+                                    <span class="badge-actual">(Tu)</span>
                                     {% endif %}
                                 </div>
                             </td>
@@ -301,17 +388,17 @@
                                 <a href="{% url 'editar_usuario' p.id %}" class="btn-icon edit" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <a href="{% url 'bloquear_usuario' p.id %}" class="btn-icon block" title="{% if p.esta_bloqueado %}Desbloquear{% else %}Bloquear{% endif %}">
+                                <button class="btn-icon block" onclick="mostrarModalBloquear('{% url 'bloquear_usuario' p.id %}', '{{ p.usuario.username }}', '{{ p.esta_bloqueado|yesno:"desbloquear,bloquear" }}')" title="{% if p.esta_bloqueado %}Desbloquear{% else %}Bloquear{% endif %}">
                                     {% if p.esta_bloqueado %}
                                     <i class="fas fa-unlock-alt"></i>
                                     {% else %}
                                     <i class="fas fa-ban"></i>
                                     {% endif %}
-                                </a>
+                                </button>
                                 {% if p.usuario != request.user %}
-                                <a href="{% url 'eliminar_usuario' p.id %}" class="btn-icon delete" title="Eliminar" onclick="return confirm('¿Eliminar usuario {{ p.usuario.username }}?')">
+                                <button class="btn-icon delete" onclick="mostrarModalEliminar('{% url 'eliminar_usuario' p.id %}', '{{ p.usuario.username }}')" title="Eliminar">
                                     <i class="fas fa-trash-alt"></i>
-                                </a>
+                                </button>
                                 {% endif %}
                             </td>
                         </tr>
@@ -329,6 +416,59 @@
         </div>
     </main>
 </div>
+
+<!-- Modal de confirmación -->
+<div id="modalConfirm" class="modal-confirm">
+    <div class="modal-content">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3 id="modalTitulo">Confirmar acción</h3>
+        <p id="modalMensaje">¿Estás seguro de realizar esta acción?</p>
+        <div class="modal-buttons">
+            <button class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+            <a id="modalConfirmarBtn" href="#" class="btn btn-danger">Confirmar</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function mostrarModalEliminar(url, username) {
+        document.getElementById('modalTitulo').innerText = 'Eliminar usuario';
+        document.getElementById('modalMensaje').innerHTML = 'Eliminar al usuario <strong>' + username + '</strong> permanentemente? Esta acción no se puede deshacer.';
+        document.getElementById('modalConfirmarBtn').href = url;
+        document.getElementById('modalConfirmarBtn').className = 'btn btn-danger';
+        document.getElementById('modalConfirm').classList.add('active');
+    }
+    
+    function mostrarModalBloquear(url, username, accion) {
+        var textoAccion = accion === 'bloquear' ? 'Bloquear' : 'Desbloquear';
+        document.getElementById('modalTitulo').innerText = textoAccion + ' usuario';
+        document.getElementById('modalMensaje').innerHTML = textoAccion + ' al usuario <strong>' + username + '</strong>?';
+        document.getElementById('modalConfirmarBtn').href = url;
+        document.getElementById('modalConfirmarBtn').className = 'btn btn-warning';
+        document.getElementById('modalConfirm').classList.add('active');
+    }
+    
+    function cerrarModal() {
+        document.getElementById('modalConfirm').classList.remove('active');
+    }
+    
+    // Auto-remover mensajes toast
+    document.addEventListener('DOMContentLoaded', function() {
+        var messages = document.querySelectorAll('.toast-message');
+        messages.forEach(function(msg) {
+            setTimeout(function() {
+                if (msg && msg.remove) msg.remove();
+            }, 3000);
+        });
+        
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('modalConfirm').addEventListener('click', function(e) {
+            if (e.target === this) {
+                cerrarModal();
+            }
+        });
+    });
+</script>
 
 </body>
 </html>

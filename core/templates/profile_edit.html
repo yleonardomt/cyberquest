@@ -109,7 +109,8 @@
             margin-right: 0.5rem;
         }
 
-        .grupo-formulario input {
+        .grupo-formulario input,
+        .grupo-formulario select {
             width: 100%;
             padding: 0.75rem;
             background: var(--bg-secondary);
@@ -120,7 +121,8 @@
             font-size: 0.9rem;
         }
 
-        .grupo-formulario input:focus {
+        .grupo-formulario input:focus,
+        .grupo-formulario select:focus {
             outline: none;
             border-color: var(--primary);
         }
@@ -128,6 +130,12 @@
         .grupo-formulario input[type="file"] {
             padding: 0.5rem;
             background: var(--bg-secondary);
+        }
+
+        .password-note {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
         }
 
         .avatar-preview {
@@ -182,6 +190,39 @@
 
         .btn-cancelar:hover {
             background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .btn-back {
+            padding: 0.4rem 1rem;
+            font-size: 0.7rem;
+        }
+
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #00aa00;
+            color: white;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease, fadeOut 3s ease 2.7s forwards;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            border-left: 4px solid white;
+        }
+        .toast-message.error { background: #cc0000; }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
         }
 
         @media (max-width: 768px) {
@@ -198,6 +239,16 @@
         {% include 'nav.html' %}
 
         <main class="main-content">
+            
+            {% if messages %}
+                {% for message in messages %}
+                <div class="toast-message {% if message.tags == 'error' %}error{% endif %}">
+                    <i class="fas {% if message.tags == 'error' %}fa-exclamation-triangle{% else %}fa-check-circle{% endif %}"></i>
+                    <span>{{ message }}</span>
+                </div>
+                {% endfor %}
+            {% endif %}
+
             <div class="editar-contenedor">
                 <div class="editar-cabecera">
                     <div class="avatar-editar" id="avatar-container">
@@ -211,17 +262,19 @@
                         </div>
                     </div>
                     <h1 class="editar-titulo">Editar Perfil</h1>
-                    <p class="mensaje-info">Actualiza tu información personal y avatar</p>
+                  
                 </div>
 
                 <div class="editar-cuerpo">
-                    <form method="POST" enctype="multipart/form-data">
+                    <form method="POST" enctype="multipart/form-data" id="editProfileForm">
                         {% csrf_token %}
                         
                         <div class="grupo-formulario">
-                            <label><i class="fas fa-envelope"></i> Correo Electrónico</label>
-                            <input type="email" name="email" value="{{ perfil.usuario.email }}" placeholder="tu@email.com">
+                            <label><i class="fas fa-user"></i> Nombre de usuario</label>
+                            <input type="text" name="username" value="{{ perfil.usuario.username }}" placeholder="Nombre de usuario">
                         </div>
+
+                      
 
                         <div class="grupo-formulario">
                             <label><i class="fas fa-phone"></i> Teléfono</label>
@@ -229,10 +282,24 @@
                         </div>
 
                         <div class="grupo-formulario">
+                            <label><i class="fas fa-lock"></i> Nueva contraseña <span style="color: var(--text-muted);">(opcional)</span></label>
+                            <input type="password" name="password" placeholder="Dejar vacío para no cambiar">
+                            <div class="password-note">
+                                <i class="fas fa-info-circle"></i> Solo escribe si deseas cambiar tu contraseña
+                            </div>
+                        </div>
+
+                        <div class="grupo-formulario">
+                            <label><i class="fas fa-lock"></i> Confirmar nueva contraseña</label>
+                            <input type="password" name="password2" placeholder="Repite la nueva contraseña">
+                        </div>
+
+                        <div class="grupo-formulario">
                             <label><i class="fas fa-image"></i> Avatar</label>
-                            <input type="file" name="avatar" id="avatar-input" accept="image/*" style="display: none;">
                             <input type="file" name="avatar" class="form-control" accept="image/*">
-                            <div class="avatar-preview">Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 2MB</div>
+                            <div class="avatar-preview">
+                                <i class="fas fa-info-circle"></i> Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 2MB
+                            </div>
                         </div>
 
                         <div class="acciones-formulario">
@@ -255,29 +322,48 @@
         const avatarImg = document.getElementById('avatar-img');
         const avatarIcon = document.getElementById('avatar-icon');
         
-        avatarInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    if (avatarImg) {
-                        avatarImg.src = event.target.result;
-                        avatarImg.style.display = 'block';
-                        if (avatarIcon) avatarIcon.style.display = 'none';
-                    } else {
-                        const container = document.getElementById('avatar-container');
-                        const newImg = document.createElement('img');
-                        newImg.id = 'avatar-img';
-                        newImg.src = event.target.result;
-                        newImg.style.width = '100%';
-                        newImg.style.height = '100%';
-                        newImg.style.objectFit = 'cover';
-                        if (avatarIcon) avatarIcon.style.display = 'none';
-                        container.appendChild(newImg);
-                    }
-                };
-                reader.readAsDataURL(file);
-            }
+        if (avatarInput) {
+            avatarInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        if (avatarImg) {
+                            avatarImg.src = event.target.result;
+                            avatarImg.style.display = 'block';
+                            if (avatarIcon) avatarIcon.style.display = 'none';
+                        } else {
+                            const container = document.getElementById('avatar-container');
+                            const newImg = document.createElement('img');
+                            newImg.id = 'avatar-img';
+                            newImg.src = event.target.result;
+                            newImg.style.width = '100%';
+                            newImg.style.height = '100%';
+                            newImg.style.objectFit = 'cover';
+                            if (avatarIcon) avatarIcon.style.display = 'none';
+                            container.appendChild(newImg);
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Spinner al enviar formulario
+        document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+            const btn = this.querySelector('button[type="submit"]');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+            btn.disabled = true;
+        });
+
+        // Auto-remover mensajes toast
+        document.addEventListener('DOMContentLoaded', function() {
+            var messages = document.querySelectorAll('.toast-message');
+            messages.forEach(function(msg) {
+                setTimeout(function() {
+                    if (msg && msg.remove) msg.remove();
+                }, 3000);
+            });
         });
     </script>
 </body>

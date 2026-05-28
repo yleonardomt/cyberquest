@@ -154,7 +154,11 @@
     </style>
 </head>
 <body>
-
+<style>
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+}
+</style>
 <div class="app-container">
     
     {% include 'nav.html' %}
@@ -216,10 +220,7 @@
                     {% endfor %}
                 </div>
                 
-                <div class="checkbox-group" style="margin-top: 1rem;">
-                    <input type="checkbox" name="esta_activo" id="esta_activo" {% if evento.esta_activo %}checked{% endif %}>
-                    <label for="esta_activo" style="margin-bottom: 0;">Evento activo</label>
-                </div>
+                
                 
                 <div class="btn-group">
                     <button type="submit" class="btn btn-primary">

@@ -20,9 +20,9 @@ from .models import (
     Reto,
     RecursoReto,
     IntentoReto,
-    CalificacionReto,
+    # CalificacionReto,  # COMENTADO - No existe en models.py
     Entorno,
-    InformeTecnico,
+    # InformeTecnico,   # COMENTADO - No existe en models.py
     ConsultaIA,
     Equipo,
     InvitacionEquipo,
@@ -35,14 +35,13 @@ from .models import (
     EnvioBandera,
     RegistroAuditoria,
     Evento,
-    Ticket,
+    # Ticket,           # COMENTADO - No existe en models.py
     ConfiguracionIA,
-    DocumentoIA,
+    # DocumentoIA,      # COMENTADO - No existe en models.py
 )
 from django.http import JsonResponse
 from django.conf import settings
 from django.core.mail import send_mail
-# Agrega estas importaciones al principio de tu views.py
 from django.contrib.sessions.models import Session
 from reportlab.lib.pagesizes import letter, landscape
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Spacer, Paragraph
@@ -51,6 +50,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 import io
 from django.http import HttpResponse
+from django.apps import apps  # Para obtener modelos dinámicamente si es necesario
 # ============================================================
 # VISTAS PÚBLICAS
 # ============================================================
@@ -297,22 +297,61 @@ def perfil_detalle(request):
 @login_required
 def perfil_editar(request):
     if request.method == "POST":
+        username = request.POST.get("username")
         email = request.POST.get("email")
         telefono = request.POST.get("telefono")
+        password = request.POST.get("password")
+        password2 = request.POST.get("password2")
+        
+        usuario = request.user
+        perfil = usuario.perfil
+        
+        # Variables para controlar si la sesión debe mantenerse
+        password_changed = False
 
+        # Validar username único
+        if username and username != usuario.username:
+            if User.objects.filter(username=username).exists():
+                messages.error(request, "El nombre de usuario ya existe")
+                return redirect("perfil_editar")
+            usuario.username = username
+
+        # Actualizar email
         if email:
-            request.user.email = email
-            request.user.save()
+            usuario.email = email
 
+        # Actualizar teléfono
         if telefono:
-            request.user.perfil.telefono = telefono
-            request.user.perfil.save()
+            perfil.telefono = telefono
 
+        # Cambiar contraseña si se proporcionó
+        if password and password == password2:
+            usuario.set_password(password)
+            password_changed = True
+            messages.success(request, "Contraseña actualizada correctamente. Por favor, inicia sesión nuevamente con tu nueva contraseña.")
+        elif password and password != password2:
+            messages.error(request, "Las contraseñas no coinciden")
+            return redirect("perfil_editar")
+
+        # Guardar cambios del usuario
+        usuario.save()
+        
+        # Guardar cambios del perfil
+        perfil.save()
+
+        # Actualizar avatar
         if request.FILES.get("avatar"):
-            if request.user.perfil.avatar:
-                request.user.perfil.avatar.delete()
-            request.user.perfil.avatar = request.FILES["avatar"]
-            request.user.perfil.save()
+            if perfil.avatar:
+                perfil.avatar.delete()
+            perfil.avatar = request.FILES["avatar"]
+            perfil.save()
+
+        # Si se cambió la contraseña, cerrar sesión y pedir que inicie nuevamente
+        if password_changed:
+            from django.contrib.auth import logout
+            logout(request)
+            messages.info(request, "Tu sesión ha sido cerrada. Inicia sesión con tu nueva contraseña.")
+            return redirect("login")
 
         messages.success(request, "Perfil actualizado correctamente")
         return redirect("perfil_detalle")
@@ -376,16 +415,24 @@ def editar_usuario(request, user_id):
     perfil = get_object_or_404(Perfil, id=user_id)
 
     if request.method == "POST":
-        email = request.POST.get("email")
+        username = request.POST.get("username")
+        password = request.POST.get("password")
         rol = request.POST.get("rol")
-        puntos = request.POST.get("puntos")
 
-        if email:
-            perfil.usuario.email = email
-            perfil.usuario.save()
+        # Validar username único
+        if username and username != perfil.usuario.username:
+            if User.objects.filter(username=username).exclude(id=perfil.usuario.id).exists():
+                messages.error(request, "El nombre de usuario ya existe")
+                return redirect("editar_usuario", user_id=user_id)
+            perfil.usuario.username = username
 
+        # Cambiar contraseña solo si se proporcionó
+        if password and password.strip():
+            perfil.usuario.set_password(password)
+
+        # Actualizar rol
         perfil.rol = rol
-        perfil.puntos = puntos
+        perfil.usuario.save()
         perfil.save()
 
         RegistroAuditoria.objects.create(
@@ -394,9 +441,7 @@ def editar_usuario(request, user_id):
             direccion_ip=request.META.get("REMOTE_ADDR"),
         )
 
-        messages.success(
-            request, f'Usuario "{perfil.usuario.username}" actualizado correctamente'
-        )
+        messages.success(request, f'Usuario "{perfil.usuario.username}" actualizado correctamente')
         return redirect("listar_usuarios")
 
     return render(request, "user_edit.html", {"perfil": perfil})
@@ -2113,28 +2158,24 @@ def configuracion_ia(request):
     # Obtener o crear la configuración
     config = ConfiguracionIA.objects.first()
     if not config:
-        config = ConfiguracionIA.objects.create(
-            asistente_activo=True, limite_consultas_por_dia=10
-        )
+        config = ConfiguracionIA.objects.create(asistente_activo=True)  # Sin limite_consultas
 
     if request.method == "POST":
         asistente_activo = request.POST.get("asistente_activo") == "on"
-        limite_consultas = request.POST.get("limite_consultas", 10)
+        # limite_consultas = request.POST.get("limite_consultas", 10)  # ELIMINADO
 
         config.asistente_activo = asistente_activo
-        config.limite_consultas_por_dia = limite_consultas
+        # config.limite_consultas_por_dia = limite_consultas  # ELIMINADO
         config.actualizado_por = request.user
         config.save()
 
         RegistroAuditoria.objects.create(
             usuario=request.user,
-            accion=f"CONFIGURACION_IA: {'Activado' if asistente_activo else 'Desactivado'} (Límite: {limite_consultas})",
+            accion=f"CONFIGURACION_IA: {'Activado' if asistente_activo else 'Desactivado'}",
             direccion_ip=request.META.get("REMOTE_ADDR"),
         )
 
-        messages.success(
-            request, "Configuración del Asistente IA actualizada correctamente"
-        )
+        messages.success(request, "Configuración del Asistente IA actualizada correctamente")
         return redirect("configuracion_ia")
 
     context = {
@@ -2684,3 +2725,169 @@ def eliminar_sesion(request, session_key):
     except Session.DoesNotExist:
         messages.error(request, "Sesión no encontrada")
     return redirect('sesiones_activas')
+
+@login_required
+def ver_modulo(request, modulo_id):
+    """Ver detalles de un módulo"""
+    modulo = get_object_or_404(Modulo, id=modulo_id)
+    
+    # Verificar permisos (solo ver módulos publicados o si es instructor/admin)
+    if not modulo.esta_publicado and request.user.perfil.rol not in ['INSTRUCTOR', 'ADMIN']:
+        messages.error(request, "Este módulo no está disponible")
+        return redirect('listar_modulos')
+    
+    # Obtener lecciones del módulo
+    lecciones = modulo.lecciones.all().order_by('orden')
+    
+    # Si es estudiante, calcular progreso
+    progreso = None
+    if request.user.perfil.rol == 'ESTUDIANTE':
+        lecciones_completadas = 0
+        puntos_obtenidos = 0
+        puntos_totales = 0
+        
+        for leccion in lecciones:
+            prog = ProgresoUsuario.objects.filter(usuario=request.user, leccion=leccion).first()
+            if prog and prog.completado:
+                lecciones_completadas += 1
+                puntos_obtenidos += prog.puntaje
+            
+            # Calcular puntos máximos de la lección
+            puntos_leccion = sum(p.puntos for p in leccion.preguntas.all())
+            puntos_totales += puntos_leccion
+        
+        porcentaje = int((lecciones_completadas / lecciones.count() * 100)) if lecciones.count() > 0 else 0
+        
+        progreso = {
+            'lecciones_completadas': lecciones_completadas,
+            'porcentaje': porcentaje,
+            'puntos_obtenidos': puntos_obtenidos,
+            'puntos_totales': puntos_totales,
+        }
+    
+    context = {
+        'modulo': modulo,
+        'lecciones': lecciones,
+        'progreso': progreso,
+        'perfil': request.user.perfil,
+        'rol': request.user.perfil.rol,
+    }
+    return render(request, 'modulo_detail.html', context)
+
+
+@login_required
+def historial_consultas(request):
+    consultas = ConsultaIA.objects.filter(usuario=request.user).order_by('-creado_en')
+    data = {
+        'consultas': [{
+            'pregunta': c.pregunta,
+            'respuesta': c.respuesta,
+            'fecha': c.creado_en.strftime('%d/%m/%Y %H:%M')
+        } for c in consultas]
+    }
+    return JsonResponse(data)
+
+
+# Agrega estas funciones al final de views.py
+
+def handler404(request, exception):
+    """Manejo de error 404 - Página no encontrada"""
+    return render(request, '404.html', status=404)
+
+def handler500(request):
+    """Manejo de error 500 - Error interno del servidor"""
+    return render(request, '500.html', status=500)
+
+def handler403(request, exception):
+    """Manejo de error 403 - Acceso denegado"""
+    return render(request, '403.html', status=403)
+
+# ============================================================
+# GESTIÓN DE PREGUNTAS
+# ============================================================
+
+@login_required
+@user_passes_test(lambda u: u.perfil.rol in ["INSTRUCTOR", "ADMIN"])
+def agregar_pregunta(request):
+    """Agregar una nueva pregunta a una lección"""
+    if request.method == "POST":
+        leccion_id = request.POST.get("leccion_id_pregunta")  # Cambiado: leccion_id_pregunta
+        texto_pregunta = request.POST.get("texto_pregunta")
+        respuesta_correcta = request.POST.get("respuesta_correcta")
+        puntos = request.POST.get("puntos", 10)
+        
+        if not leccion_id or not texto_pregunta or not respuesta_correcta:
+            messages.error(request, "Todos los campos son requeridos")
+            return redirect("listar_modulos")
+        
+        # Obtener la lección ANTES de usarla
+        leccion = get_object_or_404(Leccion, id=leccion_id)
+        
+        Pregunta.objects.create(
+            leccion=leccion,
+            texto_pregunta=texto_pregunta,
+            respuesta_correcta=respuesta_correcta,
+            puntos=puntos
+        )
+        
+        RegistroAuditoria.objects.create(
+            usuario=request.user,
+            accion=f"CREAR_PREGUNTA: {texto_pregunta[:50]}",
+            direccion_ip=request.META.get("REMOTE_ADDR"),
+        )
+        
+        messages.success(request, "Pregunta agregada correctamente")
+        return redirect("editar_modulo", modulo_id=leccion.modulo.id)
+    
+    return redirect("listar_modulos")
+
+
+@login_required
+@user_passes_test(lambda u: u.perfil.rol in ["INSTRUCTOR", "ADMIN"])
+def editar_pregunta(request, pregunta_id):
+    """Editar una pregunta existente"""
+    pregunta = get_object_or_404(Pregunta, id=pregunta_id)
+    
+    if request.method == "POST":
+        texto_pregunta = request.POST.get("texto_pregunta")
+        respuesta_correcta = request.POST.get("respuesta_correcta")
+        puntos = request.POST.get("puntos", 10)
+        
+        if not texto_pregunta or not respuesta_correcta:
+            messages.error(request, "Todos los campos son requeridos")
+            return redirect("editar_modulo", modulo_id=pregunta.leccion.modulo.id)
+        
+        pregunta.texto_pregunta = texto_pregunta
+        pregunta.respuesta_correcta = respuesta_correcta
+        pregunta.puntos = puntos
+        pregunta.save()
+        
+        RegistroAuditoria.objects.create(
+            usuario=request.user,
+            accion=f"EDITAR_PREGUNTA: {texto_pregunta[:50]}",
+            direccion_ip=request.META.get("REMOTE_ADDR"),
+        )
+        
+        messages.success(request, "Pregunta actualizada correctamente")
+        return redirect("editar_modulo", modulo_id=pregunta.leccion.modulo.id)
+    
+    return redirect("listar_modulos")
+
+
+@login_required
+@user_passes_test(lambda u: u.perfil.rol in ["INSTRUCTOR", "ADMIN"])
+def eliminar_pregunta(request, pregunta_id):
+    """Eliminar una pregunta"""
+    pregunta = get_object_or_404(Pregunta, id=pregunta_id)
+    modulo_id = pregunta.leccion.modulo.id
+    texto_pregunta = pregunta.texto_pregunta[:50]
+    
+    RegistroAuditoria.objects.create(
+        usuario=request.user,
+        accion=f"ELIMINAR_PREGUNTA: {texto_pregunta}",
+        direccion_ip=request.META.get("REMOTE_ADDR"),
+    )
+    
+    pregunta.delete()
+    messages.success(request, "Pregunta eliminada correctamente")
+    return redirect("editar_modulo", modulo_id=modulo_id)

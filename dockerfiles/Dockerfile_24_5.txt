@@ -1,0 +1,16 @@
+FROM nginx:alpine
+
+# Crear archivo con la bandera
+RUN echo "flag{hola_mundo_docker}" > /usr/share/nginx/html/flag.txt
+
+# Crear página principal
+RUN echo '<!DOCTYPE html>' > /usr/share/nginx/html/index.html
+RUN echo '<html>' >> /usr/share/nginx/html/index.html
+RUN echo '<head><title>Docker Challenge</title></head>' >> /usr/share/nginx/html/index.html
+RUN echo '<body style="background:black;color:green;font-family:monospace;text-align:center;padding:50px;">' >> /usr/share/nginx/html/index.html
+RUN echo '<h1 style="color:red;"> Reto Docker</h1>' >> /usr/share/nginx/html/index.html
+RUN echo '<p>La bandera esta en flag.txt</p>' >> /usr/share/nginx/html/index.html
+RUN echo '<p>Usa: curl http://localhost/flag.txt</p>' >> /usr/share/nginx/html/index.html
+RUN echo '</body></html>' >> /usr/share/nginx/html/index.html
+
+EXPOSE 80

@@ -426,7 +426,7 @@
                 <i class="fas fa-sign-out-alt"></i> Salir del Equipo
             </button>
             {% endif %}
-            
+
             <!-- SOLO ESTUDIANTES pueden unirse, NI INSTRUCTOR NI ADMIN -->
             {% if not es_miembro and rol == 'ESTUDIANTE' %}
             <a href="{% url 'unirse_equipo' %}" class="btn btn-primary">
@@ -495,7 +495,7 @@
     
     function mostrarModalSalir(equipoId, equipoNombre) {
         document.getElementById('modalTitulo').innerText = 'Salir del equipo';
-        document.getElementById('modalMensaje').innerHTML = 'Seguro que quieres salir del equipo <strong>' + equipoNombre + '</strong>?<br>Perderas acceso a los retos del equipo.';
+        document.getElementById('modalMensaje').innerHTML = '¿Seguro que quieres salir del equipo <strong>' + equipoNombre + '</strong>?<br>Perderas acceso a los retos del equipo.';
         document.getElementById('modalConfirmarBtn').href = '/teams/' + equipoId + '/salir/';
         document.getElementById('modalConfirmarBtn').className = 'btn btn-warning';
         document.getElementById('modalConfirm').classList.add('active');

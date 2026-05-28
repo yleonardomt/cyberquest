@@ -15,19 +15,7 @@ def obtener_respuesta(usuario, pregunta):
     
     # Verificar si el asistente esta habilitado
     if not config or not config.asistente_activo:
-        return "[X] El asistente IA ha sido deshabilitado por el administrador. Por favor, intenta mas tarde."
-    
-    # Verificar limite de consultas por dia
-    hoy = timezone.now().date()
-    consultas_hoy = ConsultaIA.objects.filter(
-        usuario=usuario,
-        creado_en__date=hoy
-    ).count()
-    
-    limite = config.limite_consultas_por_dia if config else 10
-    
-    if consultas_hoy >= limite:
-        return f"[!] Has alcanzado el limite de {limite} consultas por dia.\n\nEl limite se reinicia manana. Por ahora, revisa tus estadisticas en el Dashboard."
+        return "El asistente IA ha sido deshabilitado por el administrador. Por favor, intenta mas tarde."
     
     pregunta_lower = pregunta.lower().strip()
     perfil = usuario.perfil
@@ -41,7 +29,7 @@ def obtener_respuesta(usuario, pregunta):
         return ver_puntos(perfil)
     
     # ========== POSICION / RANKING ==========
-    elif any(word in pregunta_lower for word in ['posicion', 'posicion', 'ranking', 'lugar', 'puesto', 'clasificacion', 'en que lugar']):
+    elif any(word in pregunta_lower for word in ['posicion', 'ranking', 'lugar', 'puesto', 'clasificacion', 'en que lugar']):
         return ver_posicion(usuario, perfil)
     
     # ========== RETOS RESUELTOS ==========
@@ -49,7 +37,7 @@ def obtener_respuesta(usuario, pregunta):
         return ver_retos_resueltos(usuario)
     
     # ========== QUE RETOS HAY ==========
-    elif any(word in pregunta_lower for word in ['que retos', 'que retos', 'retos hay', 'retos disponibles', 'que retos hay', 'mostrar retos']):
+    elif any(word in pregunta_lower for word in ['que retos', 'retos hay', 'retos disponibles', 'mostrar retos']):
         return ver_retos_disponibles()
     
     # ========== TOTAL DE RETOS ==========
@@ -65,7 +53,7 @@ def obtener_respuesta(usuario, pregunta):
         return ver_eventos()
     
     # ========== CURSOS ==========
-    elif any(word in pregunta_lower for word in ['cursos', 'mis cursos', 'que cursos', 'que cursos', 'capacitacion']):
+    elif any(word in pregunta_lower for word in ['cursos', 'mis cursos', 'que cursos', 'capacitacion']):
         return ver_cursos()
     
     # ========== AYUDA ==========
@@ -82,9 +70,9 @@ def obtener_respuesta(usuario, pregunta):
 # ============================================================
 
 def saludar(usuario):
-    return f"""[Hola] Hola {usuario.username}! Soy CyberAI, tu asistente virtual.
+    return f"""Hola {usuario.username}! Soy CyberAI, tu asistente virtual.
 
-[Info] Preguntame cosas como:
+Preguntame cosas como:
 - Cuantos puntos tengo?
 - En que posicion estoy?
 - Cuantos retos he resuelto?
@@ -92,19 +80,19 @@ def saludar(usuario):
 - En que equipo estoy?
 - Que eventos hay activos?
 
-[Ayuda] Tambien puedes escribir "ayuda" para ver todos los comandos."""
+Escribe "ayuda" para ver todos los comandos."""
 
 
 def ver_puntos(perfil):
     puntos = perfil.puntos
     if puntos == 0:
-        return "[Trofeo] Aun no tienes puntos. Comienza resolviendo retos!"
+        return "Aun no tienes puntos. Comienza resolviendo retos!"
     elif puntos < 100:
-        return f"[Trofeo] Tienes {puntos} puntos. Sigue asi, cada reto suma!"
+        return f"Tienes {puntos} puntos. Sigue asi, cada reto suma!"
     elif puntos < 500:
-        return f"[Trofeo] Tienes {puntos} puntos. Buen trabajo, vas por buen camino!"
+        return f"Tienes {puntos} puntos. Buen trabajo, vas por buen camino!"
     else:
-        return f"[Trofeo] Tienes {puntos} puntos. Eres un experto! Sigue asi."
+        return f"Tienes {puntos} puntos. Eres un experto! Sigue asi."
 
 
 def ver_posicion(usuario, perfil):
@@ -112,18 +100,18 @@ def ver_posicion(usuario, perfil):
     posicion = Perfil.objects.filter(puntos__gt=perfil.puntos, esta_bloqueado=False, rol='ESTUDIANTE').count() + 1
     
     if total_usuarios == 0:
-        return "[Diana] Eres el unico competidor por ahora. Invita a mas amigos!"
+        return "Eres el unico competidor por ahora. Invita a mas amigos!"
     
-    mensaje = f"[Diana] Estas en la posicion #{posicion} de {total_usuarios} competidores."
+    mensaje = f"Estas en la posicion #{posicion} de {total_usuarios} competidores."
     
     if posicion == 1:
-        mensaje += "\n\n[Trofeo] Eres el numero 1! Impresionante! Sigue dominando."
+        mensaje += "\n\nEres el numero 1! Impresionante! Sigue dominando."
     elif posicion <= 10:
-        mensaje += "\n\n[Estrella] Estas en el top 10. Sigue asi para llegar al primer lugar!"
+        mensaje += "\n\nEstas en el top 10. Sigue asi para llegar al primer lugar!"
     elif posicion <= 50:
-        mensaje += "\n\n[Grafico] Buen trabajo. Puedes llegar al top 10 si sigues practicando!"
+        mensaje += "\n\nBuen trabajo. Puedes llegar al top 10 si sigues practicando!"
     else:
-        mensaje += "\n\n[Fuerza] No te preocupes, cada reto suma puntos. Sigue practicando!"
+        mensaje += "\n\nNo te preocupes, cada reto suma puntos. Sigue practicando!"
     
     return mensaje
 
@@ -133,22 +121,22 @@ def ver_retos_resueltos(usuario):
     resueltos = IntentoReto.objects.filter(usuario=usuario, es_correcto=True).count()
     
     if total_retos == 0:
-        return "[Carpeta] No hay retos disponibles aun. Vuelve mas tarde."
+        return "No hay retos disponibles aun. Vuelve mas tarde."
     
     porcentaje = int(resueltos / total_retos * 100) if total_retos > 0 else 0
     
     if resueltos == 0:
-        return f"[Grafico] Aun no has resuelto ningun reto.\n\n[Hierba] Comienza con los retos de nivel Principiante!"
+        return f"Aun no has resuelto ningun reto.\n\nComienza con los retos de nivel Principiante!"
     elif porcentaje < 25:
-        return f"[Grafico] Has resuelto {resueltos} de {total_retos} retos ({porcentaje}% completado).\n\n[Fuerza] Sigue asi, cada reto cuenta!"
+        return f"Has resuelto {resueltos} de {total_retos} retos ({porcentaje}% completado).\n\nSigue asi, cada reto cuenta!"
     elif porcentaje < 50:
-        return f"[Grafico] Has resuelto {resueltos} de {total_retos} retos ({porcentaje}% completado).\n\n[Grafico] Vas muy bien! No te detengas."
+        return f"Has resuelto {resueltos} de {total_retos} retos ({porcentaje}% completado).\n\nVas muy bien! No te detengas."
     elif porcentaje < 75:
-        return f"[Grafico] Has resuelto {resueltos} de {total_retos} retos ({porcentaje}% completado).\n\n[Fuego] Excelente progreso! Estas cerca de la cima."
+        return f"Has resuelto {resueltos} de {total_retos} retos ({porcentaje}% completado).\n\nExcelente progreso! Estas cerca de la cima."
     elif porcentaje < 100:
-        return f"[Grafico] Has resuelto {resueltos} de {total_retos} retos ({porcentaje}% completado).\n\n[Trofeo] Impresionante! Solo te faltan {total_retos - resueltos} retos para completar todo."
+        return f"Has resuelto {resueltos} de {total_retos} retos ({porcentaje}% completado).\n\nImpresionante! Solo te faltan {total_retos - resueltos} retos para completar todo."
     else:
-        return f"[Trofeo] INCREIBLE! Has resuelto TODOS los {total_retos} retos. Eres un maestro del CTF!"
+        return f"INCREIBLE! Has resuelto TODOS los {total_retos} retos. Eres un maestro del CTF!"
 
 
 def ver_retos_disponibles():
@@ -156,7 +144,7 @@ def ver_retos_disponibles():
     total = Reto.objects.filter(esta_oculto=False).count()
     
     if not retos:
-        return "[Carpeta] No hay retos disponibles aun. Vuelve mas tarde."
+        return "No hay retos disponibles aun. Vuelve mas tarde."
     
     # Clasificar por dificultad
     principiantes = Reto.objects.filter(esta_oculto=False, dificultad='PRINCIPIANTE').count()
@@ -165,48 +153,54 @@ def ver_retos_disponibles():
     
     lista = []
     for r in retos:
-        emoji = "[H] " if r.dificultad == 'PRINCIPIANTE' else "[R] " if r.dificultad == 'INTERMEDIO' else "[F] "
-        lista.append(f"{emoji} {r.titulo} ({r.puntos} pts)")
+        dificultad = ""
+        if r.dificultad == 'PRINCIPIANTE':
+            dificultad = "[Principiante]"
+        elif r.dificultad == 'INTERMEDIO':
+            dificultad = "[Intermedio]"
+        else:
+            dificultad = "[Avanzado]"
+        lista.append(f"{dificultad} {r.titulo} ({r.puntos} pts)")
     
-    return f"""[Bandera] Retos disponibles:
+    return f"""Retos disponibles:
 
 {chr(10).join(lista)}
 
-[Grafico] Distribucion:
-- [H] Principiantes: {principiantes}
-- [R] Intermedios: {intermedios}
-- [F] Avanzados: {avanzados}
+Distribucion:
+- Principiantes: {principiantes}
+- Intermedios: {intermedios}
+- Avanzados: {avanzados}
 
-[Info] Hay {total} retos en total. Empieza con los Principiante!"""
+Hay {total} retos en total. Empieza con los Principiante!"""
 
 
 def total_retos():
     total = Reto.objects.filter(esta_oculto=False).count()
-    return f"[Grafico] Hay {total} retos en total en CyberQuest.\n\n[Info] Quieres saber cuantos has resuelto? Preguntame 'mis retos'."
+    return f"Hay {total} retos en total en CyberQuest.\n\nQuieres saber cuantos has resuelto? Preguntame 'mis retos'."
 
 
 def ver_equipo(usuario):
     equipo = usuario.equipos.first() or usuario.equipos_liderados.first()
     
     if not equipo:
-        return """[Advertencia] No estas en ningun equipo.
+        return """No estas en ningun equipo.
 
 Puedes:
-- [Martillo] Crear un nuevo equipo - Ve a la seccion Equipos
-- [Llave] Unirte con codigo - Pidele el codigo al lider
+- Crear un nuevo equipo - Ve a la seccion Equipos
+- Unirte con codigo - Pidele el codigo al lider
 
-[Info] Los equipos suman puntos y pueden participar juntos en eventos CTF."""
+Los equipos suman puntos y pueden participar juntos en eventos CTF."""
     
     miembros = [equipo.lider.username] + [m.username for m in equipo.miembros.all()]
     
-    return f"""[Usuarios] Tu equipo: {equipo.nombre}
+    return f"""Tu equipo: {equipo.nombre}
 
-- [Corona] Lider: {equipo.lider.username}
-- [Usuario] Miembros: {', '.join(miembros)}
-- [Grafico] Puntos del equipo: {equipo.puntos}
-- [Usuarios] Total: {equipo.cantidad_miembros()} integrantes
+- Lider: {equipo.lider.username}
+- Miembros: {', '.join(miembros)}
+- Puntos del equipo: {equipo.puntos}
+- Total: {equipo.cantidad_miembros} integrantes
 
-[Info] Comparte el codigo de invitacion: {equipo.codigo_invitacion}"""
+Comparte el codigo de invitacion: {equipo.codigo_invitacion}"""
 
 
 def ver_eventos():
@@ -220,11 +214,11 @@ def ver_eventos():
             tiempo = e.fecha_fin - ahora
             horas = int(tiempo.total_seconds() / 3600)
             lista.append(f"- {e.nombre} - Termina en {horas} horas")
-        return f"""[Diana] Eventos CTF activos:
+        return f"""Eventos CTF activos:
 
 {chr(10).join(lista)}
 
-[Fuego] Inscribete y participa para ganar puntos extra!"""
+Inscribete y participa para ganar puntos extra!"""
     
     # Proximos eventos
     proximos = Evento.objects.filter(fecha_inicio__gt=ahora).order_by('fecha_inicio')[:3]
@@ -238,69 +232,69 @@ def ver_eventos():
                 lista.append(f"- {e.nombre} - Comienza en {dias} dias")
             else:
                 lista.append(f"- {e.nombre} - Comienza en {horas} horas")
-        return f"""[Reloj] Proximos eventos CTF:
+        return f"""Proximos eventos CTF:
 
 {chr(10).join(lista)}
 
-[Calendario] Preparate para competir!"""
+Preparate para competir!"""
     
-    return "[Diana] No hay eventos activos ni proximos en este momento. Pronto habra mas competencias!"
+    return "No hay eventos activos ni proximos en este momento. Pronto habra mas competencias!"
 
 
 def ver_cursos():
     modulos = Modulo.objects.filter(esta_publicado=True)
     
     if not modulos:
-        return "[Libro] Pronto habra cursos disponibles. Mantente atento a las novedades!"
+        return "Pronto habra cursos disponibles. Mantente atento a las novedades!"
     
     lista = []
     for m in modulos[:5]:
         lecciones_count = m.lecciones.count()
         lista.append(f"- {m.titulo} ({lecciones_count} lecciones)")
     
-    resultado = f"[Libro] Cursos disponibles:\n\n{chr(10).join(lista)}"
+    resultado = f"Cursos disponibles:\n\n{chr(10).join(lista)}"
     
     if modulos.count() > 5:
         resultado += f"\n\n... y {modulos.count() - 5} cursos mas."
     
-    resultado += "\n\n[Info] Ve a 'Mis Cursos' para comenzar a aprender."
+    resultado += "\n\nVe a 'Mis Cursos' para comenzar a aprender."
     return resultado
 
 
 def mostrar_ayuda():
-    return """[Ayuda] COMANDOS QUE ENTIENDO:
+    return """COMANDOS QUE ENTIENDO:
 
-[Grafico] PROGRESO PERSONAL:
+PROGRESO PERSONAL:
 - "mis puntos" - Ver tus puntos
 - "mi posicion" - Ver tu lugar en el ranking
 - "mis retos" - Ver cuantos retos has resuelto
 
-[Bandera] RETOS:
+RETOS:
 - "que retos hay" - Ver retos disponibles
 - "total retos" - Ver cuantos retos hay en total
 
-[Usuarios] EQUIPOS:
+EQUIPOS:
 - "mi equipo" - Informacion de tu equipo
 
-[Diana] EVENTOS:
+EVENTOS:
 - "eventos activos" - Ver eventos CTF actuales
 
-[Libro] CURSOS:
+CURSOS:
 - "que cursos hay" - Ver cursos disponibles
 
-[Hablar] EJEMPLOS:
+EJEMPLOS:
 - "Cuantos puntos tengo?"
 - "En que posicion estoy?"
 - "Cuantos retos he resuelto?"
 - "Muestrame los retos disponibles"
 
-[Info] Preguntame de forma natural! No necesitas palabras exactas."""
+Preguntame de forma natural! No necesitas palabras exactas."""
 
 
 def respuesta_no_entendida(pregunta):
-    return f"""[Interrogacion] No entendi: "{pregunta}"
+    return f"""No entendi: "{pregunta}"
 
-[Info] Preguntas que SI entiendo:
+Preguntas que SI entiendo:
 - "hola" - Saludar
 - "mis puntos" - Ver tus puntos
 - "mi posicion" - Ver tu ranking
@@ -312,6 +306,6 @@ def respuesta_no_entendida(pregunta):
 - "que cursos hay" - Cursos disponibles
 - "ayuda" - Ver todos los comandos
 
-[Ejemplo] "Cuantos puntos tengo?" o "En que posicion estoy?"
+Ejemplo: "Cuantos puntos tengo?" o "En que posicion estoy?"
 
 Puedes reformular tu pregunta?"""

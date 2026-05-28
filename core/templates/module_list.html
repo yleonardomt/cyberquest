@@ -307,29 +307,70 @@
             min-width: 250px;
         }
 
-        .alert {
-            padding: 0.8rem 1rem;
-            border-radius: var(--radius);
+        /* MODAL DE CONFIRMACION */
+        .modal-confirm {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-confirm.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            max-width: 400px;
+            text-align: center;
+        }
+        .modal-content i {
+            font-size: 3rem;
+            color: var(--primary);
             margin-bottom: 1rem;
-            font-size: 0.85rem;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
         }
 
-        .alert-success {
-            background: rgba(0, 255, 0, 0.1);
-            border-left: 4px solid #00ff00;
-            color: #00ff00;
+        /* MENSAJE FLOTANTE (TOAST) */
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #00aa00;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease, fadeOut 3s ease 2.7s forwards;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border-left: 4px solid white;
         }
-
-        .alert-error {
-            background: rgba(255, 0, 0, 0.1);
-            border-left: 4px solid #ff0000;
-            color: #ff6666;
+        .toast-message.error {
+            background: #cc0000;
         }
-
-        .alert-info {
-            background: rgba(0, 255, 255, 0.1);
-            border-left: 4px solid #00ffff;
-            color: #00ffff;
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
         }
 
         .badge-completado {
@@ -439,6 +480,17 @@
     {% include 'nav.html' %}
 
     <main class="main-content">
+
+        <!-- MENSAJES FLOTANTES (TOAST) -->
+        {% if messages %}
+            {% for message in messages %}
+            <div class="toast-message {% if message.tags == 'error' %}error{% endif %}">
+                <i class="fas {% if message.tags == 'error' %}fa-exclamation-triangle{% else %}fa-check-circle{% endif %}"></i>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+        {% endif %}
+
         <div class="top-header">
             <h1 class="page-title">
                 <i class="fas fa-book"></i> Gestión de Módulos
@@ -449,16 +501,6 @@
             </a>
             {% endif %}
         </div>
-
-        <!-- Mensajes -->
-        {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
-                {{ message }}
-            </div>
-            {% endfor %}
-        {% endif %}
 
         <!-- Resumen de progreso para estudiantes -->
         {% if rol == 'ESTUDIANTE' %}
@@ -608,11 +650,10 @@
                     </a>
                     {% endif %}
 
-                    <!-- Eliminar - solo para administrador -->
-                    {% if rol == 'ADMIN' %}
-                    <a href="{% url 'eliminar_modulo' modulo.id %}" class="btn btn-danger btn-sm" 
-                       onclick="return confirm('¿Eliminar el módulo \"{{ modulo.titulo }}\"? Todas las lecciones, preguntas y recursos serán eliminados.')">
-                        <i class="fas fa-trash"></i> Eliminar
+                    <!-- Eliminar - con MODAL (sin alert) -->
+                    {% if rol == 'ADMIN' or rol == 'INSTRUCTOR' %}
+                    <a href="#" class="btn btn-danger btn-sm" onclick="mostrarModalEliminarModulo('{{ modulo.id }}', '{{ modulo.titulo|escapejs }}')">
+                        <i class="fas fa-trash"></i> Eliminar Modulo
                     </a>
                     {% endif %}
                 </div>
@@ -634,21 +675,55 @@
     </main>
 </div>
 
+<!-- Modal de confirmacion para eliminar modulo -->
+<div id="modalConfirm" class="modal-confirm">
+    <div class="modal-content">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3 id="modalTitulo">Confirmar accion</h3>
+        <p id="modalMensaje">¿Estas seguro de realizar esta accion?</p>
+        <div class="modal-buttons">
+            <button class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+            <a id="modalConfirmarBtn" href="#" class="btn btn-danger">Confirmar</a>
+        </div>
+    </div>
+</div>
+
 <script>
-    // Auto-remover mensajes después de 3 segundos
+    // Mostrar modal para eliminar modulo
+    function mostrarModalEliminarModulo(moduloId, moduloTitulo) {
+        document.getElementById('modalTitulo').innerText = 'Eliminar modulo';
+        document.getElementById('modalMensaje').innerHTML = '¿Eliminar el modulo <strong>' + moduloTitulo + '</strong> permanentemente?<br>Todas las lecciones, preguntas y recursos seran eliminados.';
+        document.getElementById('modalConfirmarBtn').href = '/modulo/' + moduloId + '/eliminar/';
+        document.getElementById('modalConfirm').classList.add('active');
+    }
+
+    // Cerrar modal
+    function cerrarModal() {
+        document.getElementById('modalConfirm').classList.remove('active');
+    }
+
+    // Auto-remover mensajes toast despues de 3 segundos
     document.addEventListener('DOMContentLoaded', function() {
-        const alerts = document.querySelectorAll('.alert');
-        alerts.forEach(function(alert) {
+        var messages = document.querySelectorAll('.toast-message');
+        messages.forEach(function(msg) {
             setTimeout(function() {
-                if (alert && alert.remove) {
-                    alert.style.opacity = '0';
-                    alert.style.transition = 'opacity 0.5s ease';
-                    setTimeout(function() {
-                        if (alert && alert.remove) alert.remove();
-                    }, 500);
-                }
+                if (msg && msg.remove) msg.remove();
             }, 3000);
         });
+    });
+
+    // Cerrar modal al hacer clic fuera
+    document.getElementById('modalConfirm').addEventListener('click', function(e) {
+        if (e.target === this) {
+            cerrarModal();
+        }
+    });
+
+    // Cerrar modal con tecla ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            cerrarModal();
+        }
     });
 </script>
 

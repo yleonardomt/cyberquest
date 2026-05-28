@@ -192,6 +192,24 @@
             font-size: 1.2rem;
             color: var(--text-primary);
         }
+        .btn-history {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            transition: all 0.2s;
+            font-family: 'Orbitron', monospace;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-history:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
         .btn-clear {
             background: transparent;
             border: 1px solid var(--primary);
@@ -219,6 +237,129 @@
         .alert-warning i {
             font-size: 1.2rem;
         }
+        
+        /* Modal Historial */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal-container {
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            width: 90%;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: modalEntrada 0.3s ease;
+        }
+        @keyframes modalEntrada {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        .modal-title {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .modal-title i {
+            margin-right: 0.5rem;
+        }
+        .btn-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+        }
+        .btn-close:hover {
+            color: var(--primary);
+        }
+        .historial-item {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--primary);
+            transition: all 0.2s;
+        }
+        .historial-item:hover {
+            transform: translateX(5px);
+            background: var(--bg-primary);
+        }
+        .historial-pregunta {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        .historial-respuesta {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+            padding-left: 1.5rem;
+        }
+        .historial-fecha {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            text-align: right;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.3rem;
+        }
+        .empty-historial {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+        .empty-historial i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+        .btn-volver-modal {
+            margin-top: 1rem;
+            text-align: center;
+        }
+        .btn-volver-modal .btn {
+            padding: 0.5rem 1.5rem;
+        }
+        
+        .acciones-header {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+        }
     </style>
 </head>
 <body>
@@ -232,7 +373,12 @@
             <h1 class="page-title">
                 <i class="fas fa-robot"></i> Asistente IA
             </h1>
-          
+            <div class="acciones-header">
+                <button id="btnHistorial" class="btn-history" onclick="mostrarHistorial()">
+                    <i class="fas fa-history"></i> Ver historial
+                </button>
+                
+            </div>
         </div>
 
         <!-- Mensaje si la IA está deshabilitada -->
@@ -282,6 +428,28 @@
             <button class="suggestion-btn" onclick="preguntar('Que eventos hay activos')" {% if not ia_habilitado %}disabled{% endif %}>Eventos</button>
         </div>
     </main>
+</div>
+
+<!-- Modal para historial de consultas -->
+<div id="modalHistorial" class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-title">
+            <span><i class="fas fa-history"></i> Historial de consultas</span>
+            <button class="btn-close" onclick="cerrarHistorial()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="historialContent" style="max-height: 500px; overflow-y: auto;">
+            <div style="text-align: center; padding: 2rem;">
+                <i class="fas fa-spinner fa-spin"></i> Cargando historial...
+            </div>
+        </div>
+        <div class="btn-volver-modal" style="margin-top: 1rem; text-align: center;">
+            <button class="btn-send" onclick="cerrarHistorial()" style="padding: 0.5rem 1.5rem; font-size: 0.75rem;">
+                <i class="fas fa-arrow-left"></i> Volver al chat
+            </button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -421,6 +589,65 @@
         return cookieValue;
     }
     
+    // ========== FUNCIONES PARA EL HISTORIAL ==========
+    function mostrarHistorial() {
+        const modal = document.getElementById('modalHistorial');
+        const content = document.getElementById('historialContent');
+        
+        modal.classList.add('active');
+        content.innerHTML = '<div style="text-align: center; padding: 2rem;"><i class="fas fa-spinner fa-spin"></i> Cargando historial...</div>';
+        
+        fetch('/ai/historial/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.consultas && data.consultas.length > 0) {
+                    content.innerHTML = data.consultas.map(c => `
+                        <div class="historial-item">
+                            <div class="historial-pregunta">
+                                <i class="fas fa-user-circle" style="color: var(--primary);"></i>
+                                <strong>${escapeHtml(c.pregunta)}</strong>
+                            </div>
+                            <div class="historial-respuesta">
+                                <i class="fas fa-robot" style="color: #6c5ce7;"></i>
+                                ${escapeHtml(c.respuesta)}
+                            </div>
+                            <div class="historial-fecha">
+                                <i class="fas fa-calendar-alt"></i> ${c.fecha}
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    content.innerHTML = `
+                        <div class="empty-historial">
+                            <i class="fas fa-comments"></i>
+                            <p>No hay consultas previas</p>
+                            <p style="font-size: 0.7rem; margin-top: 0.5rem;">Realiza preguntas al asistente para ver tu historial aquí.</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                content.innerHTML = `
+                    <div class="empty-historial" style="color: #ff0000;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <p>Error al cargar el historial</p>
+                        <p style="font-size: 0.7rem;">Intenta nuevamente más tarde.</p>
+                    </div>
+                `;
+            });
+    }
+    
+    function cerrarHistorial() {
+        document.getElementById('modalHistorial').classList.remove('active');
+    }
+    
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+    
+    // Eventos
     chatInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey && iaHabilitado) {
             e.preventDefault();
@@ -430,6 +657,20 @@
     
     chatInput.addEventListener('input', ajustarAlturaInput);
     chatInput.focus();
+    
+    // Cerrar modal con ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            cerrarHistorial();
+        }
+    });
+    
+    // Cerrar modal al hacer clic fuera
+    document.getElementById('modalHistorial').addEventListener('click', function(e) {
+        if (e.target === this) {
+            cerrarHistorial();
+        }
+    });
 </script>
 
 </body>

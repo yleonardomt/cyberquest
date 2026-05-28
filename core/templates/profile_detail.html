@@ -234,6 +234,35 @@
             gap: 0.3rem;
         }
 
+        /* Toast messages */
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #00aa00;
+            color: white;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.85rem;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease, fadeOut 3s ease 2.7s forwards;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            border-left: 4px solid white;
+        }
+        .toast-message.error { background: #cc0000; }
+        .toast-message.warning { background: #ff8800; }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+
         @media (max-width: 768px) {
             .main-content {
                 margin-left: 80px;
@@ -269,6 +298,17 @@
         {% include 'nav.html' %}
 
         <main class="main-content">
+            
+            <!-- Mensajes toast -->
+            {% if messages %}
+                {% for message in messages %}
+                <div class="toast-message {% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% endif %}">
+                    <i class="fas {% if message.tags == 'error' %}fa-exclamation-triangle{% elif message.tags == 'success' %}fa-check-circle{% elif message.tags == 'warning' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+                    <span>{{ message }}</span>
+                </div>
+                {% endfor %}
+            {% endif %}
+
             <div class="perfil-contenedor">
                 <div class="perfil-cabecera">
                     <div class="avatar-circulo">
@@ -378,6 +418,18 @@
             </div>
         </main>
     </div>
+
+    <script>
+        // Auto-remover mensajes toast después de 3 segundos
+        document.addEventListener('DOMContentLoaded', function() {
+            var messages = document.querySelectorAll('.toast-message');
+            messages.forEach(function(msg) {
+                setTimeout(function() {
+                    if (msg && msg.remove) msg.remove();
+                }, 3000);
+            });
+        });
+    </script>
 </body>
 
 </html>

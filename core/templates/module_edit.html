@@ -88,6 +88,10 @@
             padding: 0.3rem 0.8rem;
             font-size: 0.7rem;
         }
+        .btn-back {
+            padding: 0.4rem 1rem;
+            font-size: 0.7rem;
+        }
         .activity-card {
             background: var(--bg-card);
             border: 1px solid var(--border-dark);
@@ -160,25 +164,73 @@
             gap: 1rem;
             flex-wrap: wrap;
         }
-        .alert {
-            padding: 0.75rem;
+        .preguntas-container {
+            margin-top: 1rem;
+            padding: 0.5rem;
+            background: var(--bg-dark);
             border-radius: var(--radius);
+        }
+        .pregunta-item {
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+            border-left: 2px solid var(--primary);
+        }
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #00aa00;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease, fadeOut 3s ease 2.7s forwards;
+        }
+        .toast-message.error { background: #cc0000; }
+        .toast-message.warning { background: #ff8800; }
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes fadeOut {
+            to { opacity: 0; visibility: hidden; }
+        }
+        .modal-confirm {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-confirm.active { display: flex; }
+        .modal-content {
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            max-width: 400px;
+            text-align: center;
+        }
+        .modal-content i {
+            font-size: 3rem;
+            color: var(--primary);
             margin-bottom: 1rem;
         }
-        .alert-success {
-            background: rgba(0, 255, 0, 0.1);
-            border: 1px solid #00ff00;
-            color: #00ff00;
-        }
-        .alert-error {
-            background: rgba(255, 0, 0, 0.1);
-            border: 1px solid #ff0000;
-            color: #ff6666;
-        }
-        .alert-info {
-            background: rgba(0, 255, 255, 0.1);
-            border: 1px solid #00ffff;
-            color: #00ffff;
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
         }
         .acciones {
             display: flex;
@@ -204,45 +256,46 @@
     {% include 'nav.html' %}
 
     <main class="main-content">
-        <div class="top-header">
-            <h1 class="page-title">Editar Módulo: {{ modulo.titulo }}</h1>
-        </div>
-
+        
         {% if messages %}
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}times-circle{% else %}info-circle{% endif %}"></i>
-                {{ message }}
+            <div class="toast-message {% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% endif %}">
+                <i class="fas {% if message.tags == 'error' %}fa-exclamation-triangle{% elif message.tags == 'success' %}fa-check-circle{% elif message.tags == 'warning' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+                <span>{{ message }}</span>
             </div>
             {% endfor %}
         {% endif %}
 
+        <div class="top-header">
+            <h1 class="page-title">
+                <i class="fas fa-edit"></i> Editar Módulo: {{ modulo.titulo }}
+            </h1>
+            <a href="{% url 'listar_modulos' %}" class="btn btn-outline btn-back">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+        </div>
+
+        <!-- Información del módulo -->
         <div class="activity-card">
-            <form method="POST">
+            <form method="POST" id="formModulo">
                 {% csrf_token %}
                 
                 <div style="margin-bottom: 1.5rem;">
-                    <label>Título del Módulo</label>
+                    <label><i class="fas fa-heading"></i> Título del Módulo</label>
                     <input type="text" name="titulo" class="form-control" value="{{ modulo.titulo }}" required>
                 </div>
                 
                 <div style="margin-bottom: 1.5rem;">
-                    <label>Descripción</label>
+                    <label><i class="fas fa-align-left"></i> Descripción</label>
                     <textarea name="descripcion" rows="5" class="form-control" required>{{ modulo.descripcion }}</textarea>
                 </div>
                 
-                <div class="checkbox-group">
-                    <input type="checkbox" name="esta_publicado" id="esta_publicado" {% if modulo.esta_publicado %}checked{% endif %}>
-                    <label for="esta_publicado" style="margin-bottom: 0;">Publicar módulo (visible para estudiantes)</label>
-                </div>
+                
                 
                 <div class="btn-group">
                     <button type="submit" class="btn btn-primary">
                         <i class="fas fa-save"></i> Guardar Cambios
                     </button>
-                    <a href="{% url 'listar_modulos' %}" class="btn btn-outline">
-                        <i class="fas fa-times"></i> Cancelar
-                    </a>
                 </div>
             </form>
         </div>
@@ -252,7 +305,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 1rem;">
                 <h3 class="section-title"><i class="fas fa-list"></i> Lecciones del Módulo ({{ modulo.lecciones.count }})</h3>
                 <a href="#" class="btn btn-primary btn-sm" id="btn-agregar-leccion">
-                    <i class="fas fa-plus"></i> Agregar Nueva Lección
+                    <i class="fas fa-plus"></i> Agregar Lección
                 </a>
             </div>
             
@@ -263,7 +316,7 @@
                         <div class="leccion-titulo">
                             <i class="fas fa-book"></i> {{ leccion.titulo }}
                             <span style="float: right; font-size: 0.7rem; color: var(--text-muted);">
-                                Orden: {{ leccion.orden }}
+                                <i class="fas fa-sort-numeric-down"></i> Orden: {{ leccion.orden }}
                             </span>
                         </div>
                         <div class="leccion-contenido">
@@ -273,6 +326,39 @@
                             <span><i class="fas fa-question-circle"></i> {{ leccion.preguntas.count }} preguntas</span>
                             <span><i class="fas fa-paperclip"></i> {{ leccion.recursos.count }} recursos</span>
                         </div>
+                        
+                        <!-- Mostrar preguntas existentes -->
+                        {% if leccion.preguntas.all %}
+                        <div class="preguntas-container">
+                            <strong><i class="fas fa-list"></i> Preguntas de esta lección:</strong>
+                            {% for pregunta in leccion.preguntas.all %}
+                            <div class="pregunta-item" id="pregunta-{{ pregunta.id }}">
+                                <div><strong><i class="fas fa-question"></i> {{ pregunta.texto_pregunta|truncatechars:80 }}</strong></div>
+                                <div style="font-size: 0.7rem; color: #00ff00; margin-top: 0.3rem;">
+                                    <i class="fas fa-check-circle"></i> Respuesta: {{ pregunta.respuesta_correcta }}
+                                </div>
+                                <div style="font-size: 0.7rem; color: var(--primary);">
+                                    <i class="fas fa-star"></i> Puntos: {{ pregunta.puntos }}
+                                </div>
+                                <div class="acciones" style="margin-top: 0.5rem;">
+                                    <button type="button" class="btn btn-warning btn-sm btn-editar-pregunta" 
+                                            data-id="{{ pregunta.id }}" 
+                                            data-texto="{{ pregunta.texto_pregunta|escapejs }}" 
+                                            data-respuesta="{{ pregunta.respuesta_correcta|escapejs }}" 
+                                            data-puntos="{{ pregunta.puntos }}">
+                                        <i class="fas fa-edit"></i> Editar
+                                    </button>
+                                    <button type="button" class="btn btn-danger btn-sm btn-eliminar-pregunta" 
+                                            data-id="{{ pregunta.id }}" 
+                                            data-texto="{{ pregunta.texto_pregunta|escapejs }}">
+                                        <i class="fas fa-trash"></i> Eliminar
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
                         <div class="acciones">
                             <a href="{% url 'ver_leccion' leccion.id %}" class="btn btn-outline btn-sm" target="_blank">
                                 <i class="fas fa-eye"></i> Ver
@@ -284,10 +370,15 @@
                                data-orden="{{ leccion.orden }}">
                                 <i class="fas fa-edit"></i> Editar
                             </a>
-                            <a href="#" class="btn btn-danger btn-sm btn-eliminar-leccion" 
-                               data-id="{{ leccion.id }}" 
-                               data-titulo="{{ leccion.titulo }}">
+                            <button type="button" class="btn btn-danger btn-sm btn-eliminar-leccion-modal" 
+                                    data-id="{{ leccion.id }}" 
+                                    data-titulo="{{ leccion.titulo }}">
                                 <i class="fas fa-trash"></i> Eliminar
+                            </button>
+                            <a href="#" class="btn btn-primary btn-sm btn-agregar-pregunta" 
+                               data-leccion-id="{{ leccion.id }}" 
+                               data-leccion-titulo="{{ leccion.titulo }}">
+                                <i class="fas fa-plus-circle"></i> Agregar Pregunta
                             </a>
                         </div>
                     </div>
@@ -307,24 +398,42 @@
 </div>
 
 <!-- Modal para agregar/editar lección -->
-<div id="modal-leccion" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center;">
-    <div style="background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-lg); padding: 2rem; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto;">
-        <h2 id="modal-title" style="color: var(--primary); margin-bottom: 1rem; font-family: 'Orbitron', monospace;">Agregar Lección</h2>
+<div id="modal-leccion" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-lg); padding: 2rem; width: 90%; max-width: 700px; max-height: 85vh; overflow-y: auto;">
+        <h2 id="modal-title" style="color: var(--primary); margin-bottom: 1rem; font-family: 'Orbitron', monospace;">
+            <i class="fas fa-book"></i> Agregar Lección
+        </h2>
         <form id="form-leccion" method="POST">
             {% csrf_token %}
             <input type="hidden" name="leccion_id" id="leccion_id" value="">
             <div style="margin-bottom: 1rem;">
-                <label>Título de la Lección</label>
+                <label><i class="fas fa-heading"></i> Título de la Lección</label>
                 <input type="text" name="titulo" id="leccion_titulo" class="form-control" required>
             </div>
             <div style="margin-bottom: 1rem;">
-                <label>Contenido</label>
+                <label><i class="fas fa-align-left"></i> Contenido</label>
                 <textarea name="contenido" id="leccion_contenido" rows="8" class="form-control" required></textarea>
             </div>
             <div style="margin-bottom: 1rem;">
-                <label>Orden</label>
+                <label><i class="fas fa-sort-numeric-down"></i> Orden</label>
                 <input type="number" name="orden" id="leccion_orden" class="form-control" value="0" style="width: 100px;">
             </div>
+            
+            <!-- Sección para agregar preguntas directamente -->
+            <div style="margin-top: 1rem; border-top: 1px solid var(--border-dark); padding-top: 1rem;">
+                <label><i class="fas fa-question-circle"></i> Preguntas de la lección</label>
+                <div id="preguntas-container-modal">
+                    <div class="pregunta-modal-item" style="background: var(--bg-secondary); padding: 0.8rem; border-radius: var(--radius); margin-bottom: 0.8rem;">
+                        <input type="text" name="pregunta_texto_0" class="form-control" placeholder="Enunciado de la pregunta" style="margin-bottom: 0.5rem;">
+                        <input type="text" name="pregunta_respuesta_0" class="form-control" placeholder="Respuesta correcta" style="margin-bottom: 0.5rem;">
+                        <input type="number" name="pregunta_puntos_0" class="form-control" placeholder="Puntos" value="10" style="width: 120px;">
+                    </div>
+                </div>
+                <button type="button" class="btn btn-outline btn-sm" id="btn-agregar-pregunta-modal" style="margin-top: 0.5rem;">
+                    <i class="fas fa-plus"></i> Agregar otra pregunta
+                </button>
+            </div>
+            
             <div class="btn-group" style="justify-content: flex-end; margin-top: 1rem;">
                 <button type="button" class="btn btn-outline" id="btn-cerrar-modal">Cancelar</button>
                 <button type="submit" class="btn btn-primary">Guardar Lección</button>
@@ -333,87 +442,235 @@
     </div>
 </div>
 
+<!-- Modal para agregar/editar pregunta -->
+<div id="modal-pregunta" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1001; justify-content: center; align-items: center;">
+    <div style="background: var(--bg-card); border: 1px solid var(--border-dark); border-radius: var(--radius-lg); padding: 2rem; width: 90%; max-width: 500px;">
+        <h2 id="modal-pregunta-title" style="color: var(--primary); margin-bottom: 1rem; font-family: 'Orbitron', monospace;">
+            <i class="fas fa-question-circle"></i> Agregar Pregunta
+        </h2>
+        <form id="form-pregunta" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="pregunta_id" id="pregunta_id" value="">
+            <input type="hidden" name="leccion_id_pregunta" id="leccion_id_pregunta" value="">
+            <div style="margin-bottom: 1rem;">
+                <label><i class="fas fa-question"></i> Enunciado de la pregunta</label>
+                <textarea name="texto_pregunta" id="texto_pregunta" rows="3" class="form-control" required></textarea>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label><i class="fas fa-check-circle"></i> Respuesta correcta</label>
+                <input type="text" name="respuesta_correcta" id="respuesta_correcta" class="form-control" required>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label><i class="fas fa-star"></i> Puntos</label>
+                <input type="number" name="puntos" id="puntos_pregunta" class="form-control" value="10" style="width: 120px;">
+            </div>
+            <div class="btn-group" style="justify-content: flex-end; margin-top: 1rem;">
+                <button type="button" class="btn btn-outline" id="btn-cerrar-modal-pregunta">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar Pregunta</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de confirmación para eliminar -->
+<div id="modalConfirm" class="modal-confirm">
+    <div class="modal-content">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3 id="modalTitulo">Confirmar acción</h3>
+        <p id="modalMensaje">¿Estás seguro de realizar esta acción?</p>
+        <div class="modal-buttons">
+            <button class="btn btn-outline" onclick="cerrarModalConfirm()">Cancelar</button>
+            <a id="modalConfirmarBtn" href="#" class="btn btn-danger">Confirmar</a>
+        </div>
+    </div>
+</div>
+
 <script>
-    // Modal para agregar/editar lección
-    const modal = document.getElementById('modal-leccion');
-    const modalTitle = document.getElementById('modal-title');
-    const leccionId = document.getElementById('leccion_id');
-    const leccionTitulo = document.getElementById('leccion_titulo');
-    const leccionContenido = document.getElementById('leccion_contenido');
-    const leccionOrden = document.getElementById('leccion_orden');
-    const formLeccion = document.getElementById('form-leccion');
+    // Variables para modales
+    const modalLeccion = document.getElementById('modal-leccion');
+    const modalPregunta = document.getElementById('modal-pregunta');
+    const modalConfirm = document.getElementById('modalConfirm');
     
-    function abrirModal(titulo, id, tituloLeccion, contenido, orden) {
-        modalTitle.textContent = titulo;
-        leccionId.value = id || '';
-        leccionTitulo.value = tituloLeccion || '';
-        leccionContenido.value = contenido || '';
-        leccionOrden.value = orden || '0';
+    let preguntaCount = 1;
+    
+    // ========== FUNCIONES MODAL LECCIÓN ==========
+    function abrirModalLeccion(titulo, id, tituloLeccion, contenido, orden) {
+        document.getElementById('modal-title').innerHTML = '<i class="fas fa-book"></i> ' + titulo;
+        document.getElementById('leccion_id').value = id || '';
+        document.getElementById('leccion_titulo').value = tituloLeccion || '';
+        document.getElementById('leccion_contenido').value = contenido || '';
+        document.getElementById('leccion_orden').value = orden || '0';
         
         if (id) {
-            formLeccion.action = "{% url 'editar_leccion' 0 %}".replace('0', id);
+            document.getElementById('form-leccion').action = "{% url 'editar_leccion' 0 %}".replace('0', id);
         } else {
-            formLeccion.action = "{% url 'agregar_leccion' modulo.id %}";
+            document.getElementById('form-leccion').action = "{% url 'agregar_leccion' modulo.id %}";
         }
         
-        modal.style.display = 'flex';
+        modalLeccion.style.display = 'flex';
     }
     
-    function cerrarModal() {
-        modal.style.display = 'none';
+    function cerrarModalLeccion() {
+        modalLeccion.style.display = 'none';
+        preguntaCount = 1;
     }
     
-    // Eventos para abrir modal de agregar lección
-    const btnAgregar = document.getElementById('btn-agregar-leccion');
-    const btnAgregarEmpty = document.getElementById('btn-agregar-leccion-empty');
+    // ========== FUNCIONES MODAL PREGUNTA ==========
+    function abrirModalPregunta(leccionId, leccionTitulo, preguntaId, texto, respuesta, puntos) {
+        document.getElementById('modal-pregunta-title').innerHTML = '<i class="fas fa-question-circle"></i> Agregar Pregunta a: ' + leccionTitulo;
+        document.getElementById('leccion_id_pregunta').value = leccionId;
+        document.getElementById('pregunta_id').value = preguntaId || '';
+        document.getElementById('texto_pregunta').value = texto || '';
+        document.getElementById('respuesta_correcta').value = respuesta || '';
+        document.getElementById('puntos_pregunta').value = puntos || '10';
+        
+        if (preguntaId) {
+    document.getElementById('form-pregunta').action = "/pregunta/" + preguntaId + "/editar/";
+} else {
+    document.getElementById('form-pregunta').action = "/pregunta/agregar/";
+}
+        
+        modalPregunta.style.display = 'flex';
+    }
     
-    if (btnAgregar) {
-        btnAgregar.addEventListener('click', (e) => {
-            e.preventDefault();
-            abrirModal('Agregar Nueva Lección', '', '', '', '0');
+    function cerrarModalPregunta() {
+        modalPregunta.style.display = 'none';
+    }
+    
+    // ========== FUNCIONES MODAL CONFIRMACIÓN ==========
+    function mostrarModalEliminar(url, titulo, tipo) {
+        if (tipo === 'leccion') {
+            document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-trash"></i> Eliminar Lección';
+            document.getElementById('modalMensaje').innerHTML = '¿Eliminar la lección <strong>' + titulo + '</strong>? Esta acción no se puede deshacer.';
+        } else if (tipo === 'pregunta') {
+            document.getElementById('modalTitulo').innerHTML = '<i class="fas fa-trash"></i> Eliminar Pregunta';
+            document.getElementById('modalMensaje').innerHTML = '¿Eliminar esta pregunta? Esta acción no se puede deshacer.';
+        }
+        document.getElementById('modalConfirmarBtn').href = url;
+        modalConfirm.classList.add('active');
+    }
+    
+    function cerrarModalConfirm() {
+        modalConfirm.classList.remove('active');
+    }
+    
+    // ========== EVENTOS ==========
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-remover mensajes toast
+        var messages = document.querySelectorAll('.toast-message');
+        messages.forEach(function(msg) {
+            setTimeout(function() {
+                if (msg && msg.remove) msg.remove();
+            }, 3000);
         });
-    }
-    
-    if (btnAgregarEmpty) {
-        btnAgregarEmpty.addEventListener('click', (e) => {
-            e.preventDefault();
-            abrirModal('Agregar Nueva Lección', '', '', '', '0');
+        
+        // Agregar lección
+        const btnAgregar = document.getElementById('btn-agregar-leccion');
+        const btnAgregarEmpty = document.getElementById('btn-agregar-leccion-empty');
+        
+        if (btnAgregar) {
+            btnAgregar.addEventListener('click', (e) => {
+                e.preventDefault();
+                abrirModalLeccion('Agregar Nueva Lección', '', '', '', '0');
+            });
+        }
+        
+        if (btnAgregarEmpty) {
+            btnAgregarEmpty.addEventListener('click', (e) => {
+                e.preventDefault();
+                abrirModalLeccion('Agregar Nueva Lección', '', '', '', '0');
+            });
+        }
+        
+        // Editar lección
+        document.querySelectorAll('.btn-editar-leccion').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const id = btn.dataset.id;
+                const titulo = btn.dataset.titulo;
+                const contenido = btn.dataset.contenido;
+                const orden = btn.dataset.orden;
+                abrirModalLeccion('Editar Lección', id, titulo, contenido, orden);
+            });
         });
-    }
-    
-    // Eventos para editar lección
-    document.querySelectorAll('.btn-editar-leccion').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const id = btn.dataset.id;
-            const titulo = btn.dataset.titulo;
-            const contenido = btn.dataset.contenido;
-            const orden = btn.dataset.orden;
-            abrirModal('Editar Lección', id, titulo, contenido, orden);
+        
+        // Eliminar lección con modal
+        document.querySelectorAll('.btn-eliminar-leccion-modal').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const id = btn.dataset.id;
+                const titulo = btn.dataset.titulo;
+                mostrarModalEliminar("{% url 'eliminar_leccion' 0 %}".replace('0', id), titulo, 'leccion');
+            });
         });
-    });
-    
-    // Eventos para eliminar lección
-    document.querySelectorAll('.btn-eliminar-leccion').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const id = btn.dataset.id;
-            const titulo = btn.dataset.titulo;
-            if (confirm(`¿Eliminar la lección "${titulo}"? Esta acción no se puede deshacer.`)) {
-                window.location.href = "{% url 'eliminar_leccion' 0 %}".replace('0', id);
-            }
+        
+        // Agregar pregunta
+        document.querySelectorAll('.btn-agregar-pregunta').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const leccionId = btn.dataset.leccionId;
+                const leccionTitulo = btn.dataset.leccionTitulo;
+                abrirModalPregunta(leccionId, leccionTitulo, '', '', '', '10');
+            });
         });
-    });
-    
-    // Cerrar modal
-    const btnCerrar = document.getElementById('btn-cerrar-modal');
-    if (btnCerrar) {
-        btnCerrar.addEventListener('click', cerrarModal);
-    }
-    
-    // Cerrar modal con click fuera
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) cerrarModal();
+        
+        // Editar pregunta
+        document.querySelectorAll('.btn-editar-pregunta').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const preguntaId = btn.dataset.id;
+                const texto = btn.dataset.texto;
+                const respuesta = btn.dataset.respuesta;
+                const puntos = btn.dataset.puntos;
+                // Obtener el id de la lección del elemento padre
+                const leccionItem = btn.closest('.leccion-item');
+                const leccionId = leccionItem.id.split('-')[1];
+                const leccionTitulo = leccionItem.querySelector('.leccion-titulo').textContent.trim();
+                abrirModalPregunta(leccionId, leccionTitulo, preguntaId, texto, respuesta, puntos);
+            });
+        });
+        
+        // Eliminar pregunta con modal
+        document.querySelectorAll('.btn-eliminar-pregunta').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const id = btn.dataset.id;
+                mostrarModalEliminar("{% url 'eliminar_pregunta' 0 %}".replace('0', id), '', 'pregunta');
+            });
+        });
+        
+        // Cerrar modales
+        document.getElementById('btn-cerrar-modal').addEventListener('click', cerrarModalLeccion);
+        document.getElementById('btn-cerrar-modal-pregunta').addEventListener('click', cerrarModalPregunta);
+        
+        // Cerrar modal al hacer clic fuera
+        modalLeccion.addEventListener('click', (e) => { if (e.target === modalLeccion) cerrarModalLeccion(); });
+        modalPregunta.addEventListener('click', (e) => { if (e.target === modalPregunta) cerrarModalPregunta(); });
+        modalConfirm.addEventListener('click', (e) => { if (e.target === modalConfirm) cerrarModalConfirm(); });
+        
+        // Agregar preguntas dinámicas en el modal de lección
+        document.getElementById('btn-agregar-pregunta-modal').addEventListener('click', function() {
+            const container = document.getElementById('preguntas-container-modal');
+            const newDiv = document.createElement('div');
+            newDiv.className = 'pregunta-modal-item';
+            newDiv.style.background = 'var(--bg-secondary)';
+            newDiv.style.padding = '0.8rem';
+            newDiv.style.borderRadius = 'var(--radius)';
+            newDiv.style.marginBottom = '0.8rem';
+            newDiv.innerHTML = `
+                <input type="text" name="pregunta_texto_${preguntaCount}" class="form-control" placeholder="Enunciado de la pregunta" style="margin-bottom: 0.5rem;">
+                <input type="text" name="pregunta_respuesta_${preguntaCount}" class="form-control" placeholder="Respuesta correcta" style="margin-bottom: 0.5rem;">
+                <input type="number" name="pregunta_puntos_${preguntaCount}" class="form-control" placeholder="Puntos" value="10" style="width: 120px;">
+                <button type="button" class="btn btn-danger btn-sm btn-remove-pregunta-modal" style="margin-top: 0.5rem;">Eliminar</button>
+            `;
+            container.appendChild(newDiv);
+            preguntaCount++;
+            
+            // Eliminar pregunta dinámica
+            newDiv.querySelector('.btn-remove-pregunta-modal').addEventListener('click', function() {
+                newDiv.remove();
+            });
+        });
     });
 </script>
 

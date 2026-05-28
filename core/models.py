@@ -281,7 +281,7 @@ class ConsultaIA(models.Model):
 
 class ConfiguracionIA(models.Model):
     asistente_activo = models.BooleanField(default=True)
-    limite_consultas_por_dia = models.IntegerField(default=10)
+    # limite_consultas_por_dia = models.IntegerField(default=10)
     actualizado_en = models.DateTimeField(auto_now=True)
     actualizado_por = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     

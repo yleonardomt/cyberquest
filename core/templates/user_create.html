@@ -43,12 +43,43 @@
         .btn-group {
             display: flex;
             gap: 1rem;
-            margin-top: 1rem;
+            margin-top: 1.5rem;
+            justify-content: center;
         }
         .btn {
-            flex: 1;
-            padding: 0.75rem;
-            justify-content: center;
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Orbitron', monospace;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+        .btn-outline:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        .btn-back {
+            padding: 0.4rem 1rem;
+            font-size: 0.7rem;
         }
         .top-header {
             display: flex;
@@ -63,20 +94,48 @@
             font-size: 1.3rem;
             color: var(--text-primary);
         }
-        .btn-outline {
-            background: transparent;
-            border: 1px solid var(--primary);
-            color: var(--primary);
-        }
-        .btn-outline:hover {
-            background: var(--primary-light);
-        }
-        .btn-primary {
-            background: var(--primary);
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #00aa00;
             color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease, fadeOut 3s ease 2.7s forwards;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border-left: 4px solid white;
         }
-        .btn-primary:hover {
-            background: var(--primary-hover);
+        .toast-message.error {
+            background: #cc0000;
+        }
+        .toast-message.warning {
+            background: #ff8800;
+        }
+        .toast-message i {
+            font-size: 1.2rem;
+        }
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
         }
     </style>
 </head>
@@ -87,40 +146,50 @@
     {% include 'nav.html' %}
 
     <main class="main-content">
+        
+        {% if messages %}
+            {% for message in messages %}
+            <div class="toast-message {% if message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% endif %}">
+                <i class="fas {% if message.tags == 'error' %}fa-exclamation-triangle{% elif message.tags == 'success' %}fa-check-circle{% elif message.tags == 'warning' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+        {% endif %}
+
         <div class="top-header">
             <h1 class="page-title">
                 <i class="fas fa-user-plus"></i> Crear Usuario
             </h1>
-            <a href="{% url 'listar_usuarios' %}" class="btn btn-outline">
+            <a href="{% url 'listar_usuarios' %}" class="btn btn-outline btn-back">
                 <i class="fas fa-arrow-left"></i> Volver
             </a>
         </div>
 
         <div class="form-container">
-            <form method="POST">
+            <form method="POST" id="createUserForm">
                 {% csrf_token %}
                 
                 <div class="form-group">
-                    <label><i class="fas fa-user"></i> Nombre de usuario *</label>
-                    <input type="text" name="username" class="form-control" required placeholder="Ej: juan123">
+                    <label><i class="fas fa-user"></i> Nombre de usuario</label>
+                    <input type="text" name="username" class="form-control" required placeholder="juan123">
                 </div>
 
                 <div class="form-group">
-                    <label><i class="fas fa-envelope"></i> Correo electrónico *</label>
+                    <label><i class="fas fa-envelope"></i> Correo electrónico</label>
                     <input type="email" name="email" class="form-control" required placeholder="usuario@example.com">
                 </div>
 
                 <div class="form-group">
-                    <label><i class="fas fa-lock"></i> Contraseña *</label>
-                    <input type="password" name="password" class="form-control" required placeholder="••••••••">
+                    <label><i class="fas fa-lock"></i> Contraseña</label>
+                    <input type="password" name="password" class="form-control" required placeholder="********">
                 </div>
 
                 <div class="form-group">
-                    <label><i class="fas fa-tag"></i> Rol *</label>
+                    <label><i class="fas fa-tag"></i> Rol</label>
                     <select name="rol" class="form-control">
-                        <option value="ESTUDIANTE">🎓 Competidor</option>
-                        <option value="INSTRUCTOR">📚 Instructor</option>
-                        <option value="ADMIN">👑 Administrador</option>
+                        <option value="ESTUDIANTE">Competidor</option>
+                        <option value="INSTRUCTOR">Instructor</option>
+                        <option value="ADMIN">Administrador</option>
                     </select>
                 </div>
 
@@ -136,6 +205,24 @@
         </div>
     </main>
 </div>
+
+<script>
+    document.getElementById('createUserForm').addEventListener('submit', function(e) {
+        const btn = this.querySelector('button[type="submit"]');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
+        btn.disabled = true;
+    });
+
+    // Auto-remover mensajes toast
+    document.addEventListener('DOMContentLoaded', function() {
+        var messages = document.querySelectorAll('.toast-message');
+        messages.forEach(function(msg) {
+            setTimeout(function() {
+                if (msg && msg.remove) msg.remove();
+            }, 3000);
+        });
+    });
+</script>
 
 </body>
 </html>

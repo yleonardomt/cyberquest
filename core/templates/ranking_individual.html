@@ -56,7 +56,6 @@
             padding: 2rem;
         }
 
-        /* Stats Cards */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -98,7 +97,6 @@
             margin-top: 0.5rem;
         }
 
-        /* Charts */
         .charts-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -128,7 +126,6 @@
             width: 100%;
         }
 
-        /* Podium */
         .podium-container {
             background: var(--bg-card);
             border: 1px solid var(--border-dark);
@@ -198,7 +195,6 @@
             font-weight: bold;
         }
 
-        /* Table */
         .ranking-table-container {
             background: var(--bg-card);
             border: 1px solid var(--border-dark);
@@ -305,7 +301,6 @@
             color: var(--text-primary);
         }
 
-        /* Sidebar */
         .sidebar {
             width: 280px;
             background: #0a0a0f;
@@ -437,8 +432,7 @@
             color: #ff4444;
         }
 
-        /* RF-39 Header */
-        .rf39-header {
+        .stats-header {
             background: var(--primary-light);
             padding: 0.75rem 1rem;
             border-radius: var(--radius);
@@ -451,7 +445,7 @@
             border-left: 3px solid var(--primary);
         }
 
-        .rf39-title {
+        .stats-title {
             font-family: 'Orbitron', monospace;
             font-size: 0.85rem;
             font-weight: 600;
@@ -459,15 +453,6 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-        }
-
-        .rf39-badge {
-            background: var(--primary);
-            color: white;
-            padding: 0.2rem 0.6rem;
-            border-radius: 20px;
-            font-size: 0.6rem;
-            font-weight: 600;
         }
 
         @media (max-width: 1024px) {
@@ -525,7 +510,6 @@
 
     <div class="app-container">
 
-        <!-- SIDEBAR -->
         <aside class="sidebar">
             <div class="sidebar-logo">
                 <h2><span>CYBER</span>QUEST</h2>
@@ -591,7 +575,6 @@
             </div>
         </aside>
 
-        <!-- Main Content -->
         <main class="main-content">
             <div class="top-header">
                 <h1 class="page-title">
@@ -608,40 +591,15 @@
             </div>
 
             <!-- ============================================================ -->
-            <!-- RF-39: ESTADISTICAS GENERALES -->
+            <!-- ESTADISTICAS GENERALES (Solo INSTRUCTOR y ADMIN) -->
             <!-- ============================================================ -->
-            <div class="rf39-header">
-                <div class="rf39-title">
-                    <i class="fas fa-chart-line"></i> ESTADISTICAS GENERALES
-                </div>
-               
-            </div>
-
-            <!-- Tarjetas de estadisticas generales -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-users"></i></div>
-                    <div class="stat-value">{{ total_competidores }}</div>
-                    <div class="stat-label">Competidores Activos</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-trophy"></i></div>
-                    <div class="stat-value">{{ total_puntos_competidores }}</div>
-                    <div class="stat-label">Puntos Totales</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-flag-checkered"></i></div>
-                    <div class="stat-value">{{ total_retos_resueltos }}</div>
-                    <div class="stat-label">Retos Resueltos</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
-                    <div class="stat-value">#{{ mi_posicion }}</div>
-                    <div class="stat-label">Mi Posicion</div>
+            {% if rol == 'INSTRUCTOR' or rol == 'ADMIN' %}
+            <div class="stats-header">
+                <div class="stats-title">
+                    <i class="fas fa-chart-line"></i> Estadisticas Generales
                 </div>
             </div>
 
-            <!-- Graficas -->
             <div class="charts-grid">
                 <div class="chart-card">
                     <div class="chart-title">
@@ -655,12 +613,11 @@
                     </div>
                     <canvas id="top10Chart"></canvas>
                 </div>
-                <!-- RF-38: Evolucion de Puntos del Usuario (Individual) -->
                 <div class="chart-card">
                     <div class="chart-title">
-                        <i class="fas fa-chart-line"></i> Mi Progreso por Fechas
+                        <i class="fas fa-chart-line"></i> Evolucion de Puntos (Top 5)
                     </div>
-                    <canvas id="miEvolucionChart"></canvas>
+                    <canvas id="evolutionChart"></canvas>
                 </div>
                 <div class="chart-card">
                     <div class="chart-title">
@@ -669,8 +626,26 @@
                     <canvas id="difficultyChart"></canvas>
                 </div>
             </div>
+            {% endif %}
 
-            <!-- Podium Top 3 -->
+            <!-- ============================================================ -->
+            <!-- MI PROGRESO POR FECHAS (Solo COMPETIDOR) -->
+            <!-- ============================================================ -->
+            {% if rol == 'ESTUDIANTE' %}
+            <div class="stats-header">
+                <div class="stats-title">
+                    <i class="fas fa-chart-line"></i> Mi Progreso por Fechas
+                </div>
+            </div>
+
+            <div class="chart-card" style="margin-bottom: 2rem;">
+                <canvas id="miEvolucionChart"></canvas>
+            </div>
+            {% endif %}
+
+            <!-- ============================================================ -->
+            <!-- PODIUM TOP 3 -->
+            <!-- ============================================================ -->
             <div class="podium-container">
                 <div class="podium">
                     {% with top3=competencias|slice:":3" %}
@@ -695,8 +670,15 @@
                 </div>
             </div>
 
-            <!-- RF-35: Tabla de Ranking Individual -->
+            <!-- ============================================================ -->
+            <!-- RANKING INDIVIDUAL -->
+            <!-- ============================================================ -->
             <div class="ranking-table-container">
+                <div class="stats-header" style="margin-bottom: 1rem;">
+                    <div class="stats-title">
+                        <i class="fas fa-table-list"></i> Ranking Individual
+                    </div>
+                </div>
                 <table class="ranking-table">
                     <thead>
                         <tr>
@@ -774,30 +756,149 @@
         </main>
     </div>
 
-    <script>
-        const nivelData = {{ nivel_data| safe }};
-        const top10Data = {{ top10_data| safe }};
-        const difficultyData = {{ difficulty_data| safe }};
+<script>
+    // ============================================================
+    // DATOS DESDE EL BACKEND
+    // ============================================================
+    const nivelData = {{ nivel_data|safe }};
+    const top10Data = {{ top10_data|safe }};
+    const difficultyData = {{ difficulty_data|safe }};
+    const evolutionData = {{ evolution_data|safe }};
+
+    // ============================================================
+    // GRAFICA 1: Distribucion por Nivel
+    // ============================================================
+    new Chart(document.getElementById('nivelChart'), {
+        type: 'doughnut',
+        data: { 
+            labels: nivelData.labels, 
+            datasets: [{ 
+                data: nivelData.values, 
+                backgroundColor: ['#E10600', '#FF6B6B', '#FFA07A', '#FFD700'], 
+                borderWidth: 0 
+            }] 
+        },
+        options: { 
+            responsive: true, 
+            plugins: { 
+                legend: { labels: { color: '#F5F5F5' } } 
+            } 
+        }
+    });
+
+    // ============================================================
+    // GRAFICA 2: Top 10 Competidores
+    // ============================================================
+    new Chart(document.getElementById('top10Chart'), {
+        type: 'bar',
+        data: { 
+            labels: top10Data.labels, 
+            datasets: [{ 
+                label: 'Puntos', 
+                data: top10Data.values, 
+                backgroundColor: '#E10600', 
+                borderRadius: 8 
+            }] 
+        },
+        options: { 
+            responsive: true, 
+            plugins: { 
+                legend: { labels: { color: '#F5F5F5' } } 
+            }, 
+            scales: { 
+                y: { 
+                    ticks: { color: '#F5F5F5' }, 
+                    grid: { color: 'rgba(225, 6, 0, 0.1)' } 
+                }, 
+                x: { 
+                    ticks: { color: '#F5F5F5', rotation: 45 }, 
+                    grid: { display: false } 
+                } 
+            } 
+        }
+    });
+
+    // ============================================================
+    // GRAFICA 3: Evolucion de Puntos Top 5
+    // ============================================================
+    if (evolutionData && evolutionData.datasets) {
+        new Chart(document.getElementById('evolutionChart'), {
+            type: 'line',
+            data: {
+                labels: evolutionData.labels,
+                datasets: evolutionData.datasets
+            },
+            options: {
+                responsive: true,
+                plugins: { 
+                    legend: { labels: { color: '#F5F5F5' } } 
+                },
+                scales: { 
+                    y: { 
+                        ticks: { color: '#F5F5F5' }, 
+                        grid: { color: 'rgba(225, 6, 0, 0.1)' } 
+                    }, 
+                    x: { 
+                        ticks: { color: '#F5F5F5' }, 
+                        grid: { display: false } 
+                    } 
+                }
+            }
+        });
+    }
+
+    // ============================================================
+    // GRAFICA 4: Retos por Dificultad
+    // ============================================================
+    new Chart(document.getElementById('difficultyChart'), {
+        type: 'pie',
+        data: { 
+            labels: difficultyData.labels, 
+            datasets: [{ 
+                data: difficultyData.values, 
+                backgroundColor: ['#E10600', '#FF6B6B', '#FFA07A'], 
+                borderWidth: 0 
+            }] 
+        },
+        options: { 
+            responsive: true, 
+            plugins: { 
+                legend: { labels: { color: '#F5F5F5' } } 
+            } 
+        }
+    });
+</script>
+
+<!-- ============================================================ -->
+<!-- SCRIPT PARA MI PROGRESO POR FECHAS (R38) - SOLO COMPETIDOR -->
+<!-- ============================================================ -->
+{% if rol == 'ESTUDIANTE' %}
+<script>
+    (function() {
+        var canvas = document.getElementById('miEvolucionChart');
+        if (!canvas) {
+            console.error('Canvas miEvolucionChart no encontrado');
+            return;
+        }
         
-        // RF-38: Datos del progreso individual del usuario
-        const miEvolucionData = {{ mi_evolution_data| safe }};
-
-        // Grafica 1: Distribucion por Nivel
-        new Chart(document.getElementById('nivelChart'), {
-            type: 'doughnut',
-            data: { labels: nivelData.labels, datasets: [{ data: nivelData.values, backgroundColor: ['#E10600', '#FF6B6B', '#FFA07A', '#FFD700'], borderWidth: 0 }] },
-            options: { responsive: true, plugins: { legend: { labels: { color: '#F5F5F5' } } } }
-        });
-
-        // Grafica 2: Top 10 Competidores
-        new Chart(document.getElementById('top10Chart'), {
-            type: 'bar',
-            data: { labels: top10Data.labels, datasets: [{ label: 'Puntos', data: top10Data.values, backgroundColor: '#E10600', borderRadius: 8 }] },
-            options: { responsive: true, plugins: { legend: { labels: { color: '#F5F5F5' } } }, scales: { y: { ticks: { color: '#F5F5F5' }, grid: { color: 'rgba(225, 6, 0, 0.1)' } }, x: { ticks: { color: '#F5F5F5', rotation: 45 }, grid: { display: false } } } }
-        });
-
-        // RF-38: Grafica de Progreso Individual del Usuario
-        new Chart(document.getElementById('miEvolucionChart'), {
+        var datosRaw = '{{ mi_evolution_data|escapejs }}';
+        var miEvolucionData;
+        
+        try {
+            miEvolucionData = JSON.parse(datosRaw);
+            console.log('Datos de progreso:', miEvolucionData);
+        } catch(e) {
+            console.error('Error al parsear datos:', e);
+            canvas.parentElement.innerHTML = '<div style="text-align: center; padding: 2rem;">No hay datos de progreso disponibles</div>';
+            return;
+        }
+        
+        if (!miEvolucionData || !miEvolucionData.values) {
+            canvas.parentElement.innerHTML = '<div style="text-align: center; padding: 2rem;">No hay datos de progreso. Resuelve retos para ver tu evolución.</div>';
+            return;
+        }
+        
+        new Chart(canvas, {
             type: 'line',
             data: {
                 labels: miEvolucionData.labels,
@@ -815,24 +916,28 @@
             },
             options: {
                 responsive: true,
+                maintainAspectRatio: true,
                 plugins: { 
                     legend: { labels: { color: '#F5F5F5' } },
                     tooltip: { callbacks: { label: function(context) { return context.raw + ' puntos'; } } }
                 },
                 scales: { 
-                    y: { ticks: { color: '#F5F5F5' }, grid: { color: 'rgba(225, 6, 0, 0.1)' }, title: { display: true, text: 'Puntos', color: '#F5F5F5' } }, 
-                    x: { ticks: { color: '#F5F5F5' }, grid: { display: false }, title: { display: true, text: 'Semana', color: '#F5F5F5' } } 
+                    y: { 
+                        ticks: { color: '#F5F5F5' }, 
+                        grid: { color: 'rgba(225, 6, 0, 0.1)' }, 
+                        title: { display: true, text: 'Puntos', color: '#F5F5F5' }
+                    }, 
+                    x: { 
+                        ticks: { color: '#F5F5F5' }, 
+                        grid: { display: false }, 
+                        title: { display: true, text: 'Semana', color: '#F5F5F5' }
+                    } 
                 }
             }
         });
-
-        // Grafica 4: Retos por Dificultad
-        new Chart(document.getElementById('difficultyChart'), {
-            type: 'pie',
-            data: { labels: difficultyData.labels, datasets: [{ data: difficultyData.values, backgroundColor: ['#E10600', '#FF6B6B', '#FFA07A'], borderWidth: 0 }] },
-            options: { responsive: true, plugins: { legend: { labels: { color: '#F5F5F5' } } } }
-        });
-    </script>
+    })();
+</script>
+{% endif %}
 
 </body>
 

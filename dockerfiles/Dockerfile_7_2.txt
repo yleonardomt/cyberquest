@@ -1,0 +1,5 @@
+FROM nginx:alpine
+
+RUN echo "<h1>CyberQuest CTF - Reto Docker</h1><p>Encuentra la bandera</p><p>Bandera: flag{docker_test_ok}</p>" > /usr/share/nginx/html/index.html
+
+EXPOSE 80

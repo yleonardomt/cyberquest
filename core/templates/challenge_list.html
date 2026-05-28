@@ -392,6 +392,81 @@
             margin-bottom: 1rem;
         }
 
+        /* ========== MODAL DE CONFIRMACION ========== */
+        .modal-confirm {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-confirm.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--bg-card);
+            border: 2px solid var(--primary);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            max-width: 400px;
+            text-align: center;
+        }
+        .modal-content i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        .modal-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+
+        /* ========== MENSAJE FLOTANTE (TOAST) ========== */
+        .toast-message {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #00aa00;
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.9rem;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease, fadeOut 3s ease 2.7s forwards;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            border-left: 4px solid white;
+        }
+        .toast-message.error {
+            background: #cc0000;
+        }
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
         @media (max-width: 1024px) {
             .stats-resumen {
                 grid-template-columns: repeat(2, 1fr);
@@ -442,12 +517,23 @@
     {% include 'nav.html' %}
 
     <main class="main-content">
+
+        <!-- MENSAJES FLOTANTES (TOAST) -->
+        {% if messages %}
+            {% for message in messages %}
+            <div class="toast-message {% if message.tags == 'error' %}error{% endif %}">
+                <i class="fas {% if message.tags == 'error' %}fa-exclamation-triangle{% else %}fa-check-circle{% endif %}"></i>
+                <span>{{ message }}</span>
+            </div>
+            {% endfor %}
+        {% endif %}
+
         <!-- Header -->
         <div class="top-header">
             <h1 class="page-title">
                 <i class="fas fa-flag-checkered"></i> Gestión de Retos
             </h1>
-            {% if rol == 'INSTRUCTOR' or rol == 'ADMIN' %}
+            {% if rol == 'INSTRUCTOR' %}
             <a href="{% url 'crear_reto' %}" class="btn btn-primary">
                 <i class="fas fa-plus-circle"></i> Crear Nuevo Reto
             </a>
@@ -480,7 +566,7 @@
                 <div class="filter-group">
                     <div class="filter-controls">
                         <select name="categoria" class="form-control">
-                            <option value="">📂 Todas las categorías</option>
+                            <option value=""> Todas las categorías</option>
                             {% for categoria in categorias %}
                             <option value="{{ categoria.id }}" {% if request.GET.categoria == categoria.id|stringformat:"s" %}selected{% endif %}>
                                 {{ categoria.nombre }}
@@ -489,16 +575,16 @@
                         </select>
                         
                         <select name="dificultad" class="form-control">
-                            <option value="">🎯 Todas las dificultades</option>
-                            <option value="PRINCIPIANTE" {% if request.GET.dificultad == 'PRINCIPIANTE' %}selected{% endif %}>🌱 Principiante</option>
-                            <option value="INTERMEDIO" {% if request.GET.dificultad == 'INTERMEDIO' %}selected{% endif %}>⚡ Intermedio</option>
-                            <option value="AVANZADO" {% if request.GET.dificultad == 'AVANZADO' %}selected{% endif %}>🔥 Avanzado</option>
+                            <option value=""> Todas las dificultades</option>
+                            <option value="PRINCIPIANTE" {% if request.GET.dificultad == 'PRINCIPIANTE' %}selected{% endif %}> Principiante</option>
+                            <option value="INTERMEDIO" {% if request.GET.dificultad == 'INTERMEDIO' %}selected{% endif %}> Intermedio</option>
+                            <option value="AVANZADO" {% if request.GET.dificultad == 'AVANZADO' %}selected{% endif %}> Avanzado</option>
                         </select>
                         
                         <select name="estado" class="form-control">
-                            <option value="">📋 Todos los estados</option>
-                            <option value="resuelto" {% if request.GET.estado == 'resuelto' %}selected{% endif %}>✅ Resueltos</option>
-                            <option value="pendiente" {% if request.GET.estado == 'pendiente' %}selected{% endif %}>⏳ Pendientes</option>
+                            <option value=""> Todos los estados</option>
+                            <option value="resuelto" {% if request.GET.estado == 'resuelto' %}selected{% endif %}> Resueltos</option>
+                            <option value="pendiente" {% if request.GET.estado == 'pendiente' %}selected{% endif %}> Pendientes</option>
                         </select>
                     </div>
                     
@@ -562,16 +648,16 @@
                         {% if reto.dificultad == 'PRINCIPIANTE' %}difficulty-easy
                         {% elif reto.dificultad == 'INTERMEDIO' %}difficulty-medium
                         {% else %}difficulty-hard{% endif %}">
-                        {% if reto.dificultad == 'PRINCIPIANTE' %}🌱 Principiante
-                        {% elif reto.dificultad == 'INTERMEDIO' %}⚡ Intermedio
-                        {% else %}🔥 Avanzado{% endif %}
+                        {% if reto.dificultad == 'PRINCIPIANTE' %} Principiante
+                        {% elif reto.dificultad == 'INTERMEDIO' %} Intermedio
+                        {% else %} Avanzado{% endif %}
                     </span>
                     <span class="points"><i class="fas fa-star"></i> {{ reto.puntos }} pts</span>
                 </div>
                 
                 <div class="challenge-actions">
                     <a href="{% url 'detalle_reto' reto.id %}" class="btn btn-primary btn-sm">
-                        <i class="fas fa-eye"></i> Ver detalles
+                        <i class="fas fa-eye"></i> Ver Reto
                     </a>
                     
                     {% if reto.id in retos_resueltos_ids %}
@@ -580,17 +666,16 @@
                     </span>
                     {% endif %}
                     
-                   {% if rol == 'INSTRUCTOR' or rol == 'ADMIN' %}
+                    {% if rol == 'INSTRUCTOR' or rol == 'ADMIN' %}
                     <a href="{% url 'editar_reto' reto.id %}" class="btn btn-outline btn-sm">
                         <i class="fas fa-edit"></i> Editar
                     </a>
                     {% endif %}
 
-                    {% if rol == 'ADMIN' %}
-                        <a href="{% url 'eliminar_reto' reto.id %}" class="btn btn-danger btn-sm" 
-                        onclick="return confirm('¿Eliminar el reto "{{ reto.titulo }}" permanentemente?')">
-                            <i class="fas fa-trash-alt"></i>
-                        </a>
+                    {% if rol == 'INSTRUCTOR' or rol == 'ADMIN' %}
+                    <a href="#" class="btn btn-danger btn-sm" onclick="mostrarModalEliminarReto('{{ reto.id }}', '{{ reto.titulo|escapejs }}')">
+                        <i class="fas fa-trash-alt"></i> Eliminar reto
+                    </a>
                     {% endif %}
                 </div>
             </div>
@@ -609,6 +694,58 @@
         </div>
     </main>
 </div>
+
+<!-- Modal de confirmacion para eliminar reto -->
+<div id="modalConfirm" class="modal-confirm">
+    <div class="modal-content">
+        <i class="fas fa-exclamation-triangle"></i>
+        <h3 id="modalTitulo">Confirmar accion</h3>
+        <p id="modalMensaje">¿Estas seguro de realizar esta accion?</p>
+        <div class="modal-buttons">
+            <button class="btn btn-outline" onclick="cerrarModal()">Cancelar</button>
+            <a id="modalConfirmarBtn" href="#" class="btn btn-danger">Confirmar</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Mostrar modal para eliminar reto
+    function mostrarModalEliminarReto(retoId, retoTitulo) {
+        document.getElementById('modalTitulo').innerText = 'Eliminar reto';
+        document.getElementById('modalMensaje').innerHTML = '¿Eliminar el reto <strong>' + retoTitulo + '</strong> permanentemente?<br>Esta accion no se puede deshacer.';
+        document.getElementById('modalConfirmarBtn').href = '/challenge/' + retoId + '/delete/';
+        document.getElementById('modalConfirm').classList.add('active');
+    }
+
+    // Cerrar modal
+    function cerrarModal() {
+        document.getElementById('modalConfirm').classList.remove('active');
+    }
+
+    // Auto-remover mensajes toast despues de 3 segundos
+    document.addEventListener('DOMContentLoaded', function() {
+        var messages = document.querySelectorAll('.toast-message');
+        messages.forEach(function(msg) {
+            setTimeout(function() {
+                if (msg && msg.remove) msg.remove();
+            }, 3000);
+        });
+    });
+
+    // Cerrar modal al hacer clic fuera
+    document.getElementById('modalConfirm').addEventListener('click', function(e) {
+        if (e.target === this) {
+            cerrarModal();
+        }
+    });
+
+    // Cerrar modal con tecla ESC
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            cerrarModal();
+        }
+    });
+</script>
 
 </body>
 </html>

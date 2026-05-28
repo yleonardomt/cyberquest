@@ -65,16 +65,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "cyberquest.wsgi.application"
 
-# ============================================================
-# DATABASE
-# ============================================================
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "cyberquest_db",
+        "USER": "postgres",
+        "PASSWORD": "postgres123",  # La contraseña que pusiste
+        "HOST": "localhost",
+        "PORT": "5432",
     }
 }
-
 # ============================================================
 # PASSWORD VALIDATION
 # ============================================================
@@ -126,4 +126,8 @@ LOGOUT_REDIRECT_URL = "/"
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_SAVE_EVERY_REQUEST = True
 # Duración de sesión en segundos
-SESSION_COOKIE_AGE = 3600  # 1 hora (en lugar de 2 semanas)
+SESSION_COOKIE_AGE = 3600  
+# Al final del archivo
+HANDLER404 = 'core.views.handler404'
+HANDLER500 = 'core.views.handler500'
+HANDLER403 = 'core.views.handler403'

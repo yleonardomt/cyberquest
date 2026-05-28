@@ -502,13 +502,13 @@
             
             <div class="action-buttons">
                 <a href="{% url 'detalle_evento' evento.id %}" class="btn btn-primary btn-sm">
-                    <i class="fas fa-eye"></i> Ver detalles
+                    <i class="fas fa-eye"></i> Ver evento
                 </a>
                 
                 {% if not evento.esta_inscrito and rol == 'ESTUDIANTE' %}
                     {% if evento.fecha_inicio > now %}
                     <button onclick="unirseEvento({{ evento.id }}, '{{ evento.nombre|escapejs }}')" class="btn btn-success btn-sm btn-unirse">
-                        <i class="fas fa-user-plus"></i> Unirse al Evento
+                        <i class="fas fa-user-plus"></i> Inscribirse a evento 
                     </button>
                     {% elif evento.fecha_inicio <= now and evento.fecha_fin >= now %}
                     <button onclick="unirseEvento({{ evento.id }}, '{{ evento.nombre|escapejs }}')" class="btn btn-warning btn-sm">
