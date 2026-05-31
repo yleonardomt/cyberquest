@@ -12,7 +12,7 @@ import traceback
 from django.conf import settings
 from django.db.models import Count, Sum, Q
 import json
-
+from core.utils.ratelimit import ratelimit
 from .models import (
     Perfil,
     RestablecerContrasena,
@@ -62,27 +62,44 @@ def home(request):
     return render(request, "home.html")
 
 
+from django.core.exceptions import ValidationError
+from django.contrib.auth.password_validation import validate_password
+
 def register(request):
     if request.method == "POST":
         username = request.POST.get("username")
         email = request.POST.get("email")
         password = request.POST.get("password")
 
+        # Validar nombre de usuario único
         if User.objects.filter(username=username).exists():
             messages.error(request, "El nombre de usuario ya existe")
-        elif User.objects.filter(email=email).exists():
+            return render(request, "register.html")
+        
+        # Validar correo único
+        if User.objects.filter(email=email).exists():
             messages.error(request, "El correo ya está registrado")
-        else:
-            user = User.objects.create_user(
-                username=username, email=email, password=password
-            )
-            Perfil.objects.create(usuario=user)
-            messages.success(request, "¡Registro exitoso! Ahora inicia sesión")
-            return redirect("login")
+            return render(request, "register.html")
+        
+        # VALIDAR CONTRASEÑA CON LOS VALIDADORES
+        try:
+            validate_password(password)
+        except ValidationError as e:
+            for error in e.messages:
+                messages.error(request, error)
+            return render(request, "register.html")
+
+        # Si todo está bien, crear el usuario
+        user = User.objects.create_user(
+            username=username, email=email, password=password
+        )
+        Perfil.objects.create(usuario=user)
+        messages.success(request, "¡Registro exitoso! Ahora inicia sesión")
+        return redirect("login")
 
     return render(request, "register.html")
 
-
+@ratelimit(key='ip', rate=5, timeout=300)
 def login_view(request):
     if request.method == "POST":
         username = request.POST.get("username")
